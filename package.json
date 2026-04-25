@@ -1,0 +1,18 @@
+{
+  "name": "spidey-monorepo",
+  "private": true,
+  "version": "0.1.0",
+  "workspaces": [
+    "packages/*",
+    "examples/*"
+  ],
+  "scripts": {
+    "build": "cd packages/viewer && bun run build",
+    "spidey": "bun packages/cli/src/index.ts",
+    "example:vite": "cd examples/vite-app && bun run dev",
+    "example:next": "cd examples/next-app && bun run dev"
+  },
+  "devDependencies": {
+    "typescript": "^5.5.0"
+  }
+}

@@ -1,0 +1,195 @@
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import type { SpideyDocument } from "@spidey/shared";
+import { Sidebar } from "./Sidebar";
+import { Toolbar, type ViewportPreset, VIEWPORTS } from "./Toolbar";
+import { Canvas } from "./Canvas";
+import { Inspector } from "./Inspector";
+import type { TreeNode } from "./inspect/buildTree";
+
+type LoadState =
+  | { status: "loading" }
+  | { status: "error"; message: string }
+  | { status: "ready"; doc: SpideyDocument };
+
+export function App() {
+  const [state, setState] = useState<LoadState>({ status: "loading" });
+  const [viewport, setViewport] = useState<ViewportPreset>("desktop");
+  const [focusId, setFocusId] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
+
+  // Inspect state
+  const [activeTileId, setActiveTileId] = useState<string | null>(null);
+  const [selectedElement, setSelectedElement] = useState<HTMLElement | null>(null);
+  const [hoveredElement, setHoveredElement] = useState<HTMLElement | null>(null);
+  const [altPressed, setAltPressed] = useState(false);
+  const [scale, setScale] = useState(1);
+  const [activeTileBody, setActiveTileBody] = useState<HTMLElement | null>(null);
+  const treesRef = useRef<Map<string, TreeNode[]>>(new Map());
+  const tileBodiesRef = useRef<Map<string, HTMLElement>>(new Map());
+  const [treesVersion, setTreesVersion] = useState(0);
+
+  useEffect(() => {
+    fetch("/spidey.json")
+      .then((r) => {
+        if (!r.ok) throw new Error(`spidey.json HTTP ${r.status}`);
+        return r.json();
+      })
+      .then((doc: SpideyDocument) => setState({ status: "ready", doc }))
+      .catch((e) => setState({ status: "error", message: String(e?.message ?? e) }));
+  }, []);
+
+  // Alt key tracking
+  useEffect(() => {
+    const onDown = (e: KeyboardEvent) => {
+      if (e.key === "Alt") setAltPressed(true);
+      if (e.key === "Escape") {
+        setSelectedElement(null);
+        setActiveTileId(null);
+      }
+    };
+    const onUp = (e: KeyboardEvent) => {
+      if (e.key === "Alt") setAltPressed(false);
+    };
+    const onBlur = () => setAltPressed(false);
+    window.addEventListener("keydown", onDown);
+    window.addEventListener("keyup", onUp);
+    window.addEventListener("blur", onBlur);
+    return () => {
+      window.removeEventListener("keydown", onDown);
+      window.removeEventListener("keyup", onUp);
+      window.removeEventListener("blur", onBlur);
+    };
+  }, []);
+
+  // Reset selection when active tile or viewport changes
+  useEffect(() => {
+    setSelectedElement(null);
+    setHoveredElement(null);
+  }, [activeTileId, viewport]);
+
+  // Update active tile body whenever activeTileId changes
+  useEffect(() => {
+    if (activeTileId == null) {
+      setActiveTileBody(null);
+      return;
+    }
+    const body = tileBodiesRef.current.get(activeTileId) ?? null;
+    setActiveTileBody(body);
+  }, [activeTileId, treesVersion]);
+
+  const filteredPages = useMemo(() => {
+    if (state.status !== "ready") return [];
+    const q = search.trim().toLowerCase();
+    if (!q) return state.doc.pages;
+    return state.doc.pages.filter(
+      (p) =>
+        p.route.toLowerCase().includes(q) ||
+        (p.title ?? "").toLowerCase().includes(q),
+    );
+  }, [state, search]);
+
+  const handleActivateTile = useCallback((id: string | null) => {
+    setActiveTileId(id);
+  }, []);
+
+  const handleSelectElement = useCallback(
+    (el: HTMLElement | null, body: HTMLElement | null) => {
+      setSelectedElement(el);
+      if (body) setActiveTileBody(body);
+    },
+    [],
+  );
+
+  const handleHoverElement = useCallback((el: HTMLElement | null) => {
+    setHoveredElement(el);
+  }, []);
+
+  const handleTreeReady = useCallback(
+    (id: string, trees: TreeNode[], body: HTMLElement) => {
+      treesRef.current.set(id, trees);
+      tileBodiesRef.current.set(id, body);
+      setTreesVersion((v) => v + 1);
+    },
+    [],
+  );
+
+  const handleSelectFromInspector = useCallback((el: HTMLElement) => {
+    setSelectedElement(el);
+  }, []);
+
+  if (state.status === "loading") {
+    return (
+      <div className="absolute inset-0 grid place-items-center text-center text-fg-dim">
+        <div>
+          <div className="text-lg mb-1.5 text-fg">Loading…</div>
+          <div>Fetching spidey.json</div>
+        </div>
+      </div>
+    );
+  }
+
+  if (state.status === "error") {
+    return (
+      <div className="absolute inset-0 grid place-items-center text-center text-fg-dim">
+        <div>
+          <div className="text-lg mb-1.5 text-fg">Could not load spidey.json</div>
+          <div>{state.message}</div>
+        </div>
+      </div>
+    );
+  }
+
+  const { doc } = state;
+  const dims = VIEWPORTS[viewport];
+  const activeTrees =
+    activeTileId != null ? treesRef.current.get(activeTileId) ?? null : null;
+
+  return (
+    <div className="grid grid-cols-[260px_1fr_340px] grid-rows-[44px_1fr] h-full">
+      <Sidebar
+        doc={doc}
+        pages={filteredPages}
+        search={search}
+        onSearch={setSearch}
+        focusId={focusId}
+        activeId={activeTileId}
+        onSelect={(id) => {
+          setFocusId(id);
+          setActiveTileId(id);
+        }}
+      />
+      <Toolbar
+        doc={doc}
+        viewport={viewport}
+        onViewport={setViewport}
+        focusId={focusId}
+        onFocus={setFocusId}
+        selectedElement={selectedElement}
+        scale={scale}
+      />
+      <Canvas
+        pages={doc.pages}
+        viewport={dims}
+        focusId={focusId}
+        onClearFocus={() => setFocusId(null)}
+        activeTileId={activeTileId}
+        selectedElement={selectedElement}
+        hoveredElement={hoveredElement}
+        altPressed={altPressed}
+        onActivateTile={handleActivateTile}
+        onSelectElement={handleSelectElement}
+        onHoverElement={handleHoverElement}
+        onTreeReady={handleTreeReady}
+        onScaleChange={setScale}
+      />
+      <Inspector
+        trees={activeTrees}
+        selected={selectedElement}
+        tileBody={activeTileBody}
+        scale={scale}
+        onSelect={handleSelectFromInspector}
+        recomputeKey={treesVersion}
+      />
+    </div>
+  );
+}

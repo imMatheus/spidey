@@ -1,0 +1,44 @@
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; color: #1a1a1a; background: #fafafa; }
+
+.page { min-height: 100vh; display: flex; flex-direction: column; }
+.nav {
+  display: flex; gap: 20px; align-items: center;
+  padding: 16px 32px;
+  background: white;
+  border-bottom: 1px solid #eaeaea;
+}
+.nav a { color: #444; text-decoration: none; font-size: 14px; }
+.nav a:hover { color: #0070f3; }
+.nav .brand { font-weight: 700; font-size: 18px; color: #1a1a1a; margin-right: auto; }
+
+.main { flex: 1; padding: 48px 32px; max-width: 960px; width: 100%; margin: 0 auto; }
+.main h1 { font-size: 36px; margin: 0 0 16px; }
+.main h2 { font-size: 22px; margin: 0; }
+.main .lead { font-size: 18px; color: #555; margin-bottom: 32px; }
+
+.card-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.card {
+  background: white;
+  border: 1px solid #eaeaea;
+  border-radius: 8px;
+  padding: 24px;
+}
+.card h3 { margin: 0 0 8px; font-size: 16px; }
+.card p { margin: 0; color: #666; font-size: 14px; }
+
+.tbl { width: 100%; border-collapse: collapse; background: white; border: 1px solid #eaeaea; border-radius: 8px; overflow: hidden; }
+.tbl th, .tbl td { padding: 12px 16px; text-align: left; }
+.tbl thead { background: #f4f4f4; font-size: 12px; text-transform: uppercase; letter-spacing: .5px; color: #555; }
+.tbl tbody tr { border-top: 1px solid #eaeaea; }
+
+.profile { display: flex; gap: 20px; align-items: center; background: white; padding: 24px; border: 1px solid #eaeaea; border-radius: 8px; }
+.avatar {
+  width: 64px; height: 64px; border-radius: 50%;
+  background: linear-gradient(135deg, #6e8efb, #a777e3);
+  color: white; font-size: 24px; font-weight: 700;
+  display: grid; place-items: center;
+}
+.dim { color: #888; }
+
+.footer { padding: 16px 32px; color: #888; font-size: 12px; border-top: 1px solid #eaeaea; background: white; }

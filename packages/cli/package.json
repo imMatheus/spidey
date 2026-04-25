@@ -1,0 +1,26 @@
+{
+  "name": "spidey",
+  "version": "0.1.0",
+  "type": "module",
+  "bin": {
+    "spidey": "./bin/spidey.js"
+  },
+  "scripts": {
+    "start": "bun src/index.ts"
+  },
+  "dependencies": {
+    "@spidey/shared": "workspace:*",
+    "@babel/parser": "^7.25.0",
+    "@babel/traverse": "^7.25.0",
+    "@babel/types": "^7.25.0",
+    "playwright": "^1.46.0"
+  },
+  "devDependencies": {
+    "@types/babel__traverse": "^7.20.6",
+    "@types/node": "^22.0.0"
+  },
+  "files": [
+    "src",
+    "bin"
+  ]
+}
