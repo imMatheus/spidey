@@ -45,7 +45,7 @@ export function Sidebar({
             <select
               value={activeProjectId ?? ""}
               onChange={(e) => onSwitchProject(e.target.value)}
-              className="bg-panel-2 text-fg border border-edge rounded px-1.5 py-1 text-[11px] cursor-pointer focus:outline-none focus:border-accent min-w-0 max-w-[150px]"
+              className="bg-panel-2 text-fg border border-edge rounded px-1.5 py-1 text-[11px] cursor-pointer focus:outline-hidden focus:border-accent min-w-0 max-w-[150px]"
               title="Switch project"
             >
               {projects.map((p) => (
@@ -61,7 +61,7 @@ export function Sidebar({
           placeholder="Filter…"
           value={search}
           onChange={(e) => onSearch(e.target.value)}
-          className="w-full bg-panel-2 text-fg border border-edge rounded px-2 py-1.5 text-xs focus:outline-none focus:border-accent"
+          className="w-full bg-panel-2 text-fg border border-edge rounded px-2 py-1.5 text-xs focus:outline-hidden focus:border-accent"
         />
       </div>
       <div className="flex-1 overflow-y-auto py-1">

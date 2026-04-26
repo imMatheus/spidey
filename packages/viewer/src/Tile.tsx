@@ -409,12 +409,12 @@ export function Tile({
         )}
         <div className="flex items-center gap-1.5 shrink-0">
           {page.kind === "component" && (
-            <span className="text-[10px] px-1.5 py-0.5 rounded-sm bg-accent-soft text-accent uppercase tracking-[0.5px]">
+            <span className="text-[10px] px-1.5 py-0.5 rounded-xs bg-accent-soft text-accent uppercase tracking-[0.5px]">
               component
             </span>
           )}
           {isErr && (
-            <span className="text-[10px] px-1.5 py-0.5 rounded-sm bg-danger/20 text-[#ff8a8a] uppercase tracking-[0.5px]">
+            <span className="text-[10px] px-1.5 py-0.5 rounded-xs bg-danger/20 text-[#ff8a8a] uppercase tracking-[0.5px]">
               error
             </span>
           )}

@@ -277,7 +277,7 @@ export function SelectionOverlay({
             )}
           </div>
           <div
-            className="absolute pointer-events-none bg-accent text-white px-1.5 py-0.5 text-[11px] font-mono rounded-sm whitespace-nowrap"
+            className="absolute pointer-events-none bg-accent text-white px-1.5 py-0.5 text-[11px] font-mono rounded-xs whitespace-nowrap"
             style={{
               left: selRect.x,
               top: selRect.y + selRect.height + 6,
@@ -344,7 +344,7 @@ function Measurement({
         }
       />
       <div
-        className="absolute bg-warn text-white text-[11px] font-mono px-1.5 py-px rounded-sm whitespace-nowrap pointer-events-none"
+        className="absolute bg-warn text-white text-[11px] font-mono px-1.5 py-px rounded-xs whitespace-nowrap pointer-events-none"
         style={{
           left: m.label.x,
           top: m.label.y,

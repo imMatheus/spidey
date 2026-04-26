@@ -1,36 +1,66 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
-@layer base {
-  html,
-  body,
-  #root {
-    @apply h-full w-full m-0 p-0 bg-bg text-fg overflow-hidden font-sans;
-  }
+/* CSS-first theme: palette + fonts that used to live in tailwind.config.js.
+ * Each --color-* / --font-* declaration generates the matching utilities
+ * (text-fg, bg-panel, font-mono, etc.) plus inline `theme()` access. */
+@theme {
+  --color-bg: #1a1a1a;
+
+  --color-panel: #232323;
+  --color-panel-2: #2c2c2c;
+
+  --color-edge: #383838;
+
+  --color-fg: #e8e8e8;
+  --color-fg-dim: #9a9a9a;
+  --color-fg-faint: #6a6a6a;
+
+  --color-accent: #5b8cff;
+  --color-accent-soft: rgba(91, 140, 255, 0.18);
+
+  --color-danger: #ff6464;
+  --color-ok: #3ec27b;
+  --color-warn: #ff5d8a;
+  --color-amberish: #f0a000;
+
+  --font-mono:
+    ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  --font-sans:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
 }
 
-@layer components {
-  /* Transparent checkerboard for color value chips */
-  .color-chip {
-    background-image:
-      linear-gradient(45deg, rgba(255, 255, 255, 0.1) 25%, transparent 25%),
-      linear-gradient(-45deg, rgba(255, 255, 255, 0.1) 25%, transparent 25%),
-      linear-gradient(45deg, transparent 75%, rgba(255, 255, 255, 0.1) 75%),
-      linear-gradient(-45deg, transparent 75%, rgba(255, 255, 255, 0.1) 75%);
-    background-size: 6px 6px;
-    background-position:
-      0 0,
-      0 3px,
-      3px -3px,
-      -3px 0;
-  }
+html,
+body,
+#root {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  background: var(--color-bg);
+  color: var(--color-fg);
+  font-family: var(--font-sans);
+}
 
-  /* Dot-grid backdrop for the canvas */
-  .canvas-grid-bg {
-    background:
-      radial-gradient(circle at 50% 50%, #2a2a2a 1px, transparent 1px) 0 0 /
-        24px 24px,
-      #1a1a1a;
-  }
+/* Transparent checkerboard for color value chips */
+.color-chip {
+  background-image:
+    linear-gradient(45deg, rgba(255, 255, 255, 0.1) 25%, transparent 25%),
+    linear-gradient(-45deg, rgba(255, 255, 255, 0.1) 25%, transparent 25%),
+    linear-gradient(45deg, transparent 75%, rgba(255, 255, 255, 0.1) 75%),
+    linear-gradient(-45deg, transparent 75%, rgba(255, 255, 255, 0.1) 75%);
+  background-size: 6px 6px;
+  background-position:
+    0 0,
+    0 3px,
+    3px -3px,
+    -3px 0;
+}
+
+/* Dot-grid backdrop for the canvas */
+.canvas-grid-bg {
+  background:
+    radial-gradient(circle at 50% 50%, #2a2a2a 1px, transparent 1px) 0 0 / 24px
+      24px,
+    #1a1a1a;
 }

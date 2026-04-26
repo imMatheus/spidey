@@ -721,7 +721,7 @@ function StylePanels({
             {summary.classes.map((c) => (
               <span
                 key={c}
-                className="bg-panel-2 border border-edge text-fg-dim font-mono text-[11px] px-1.5 py-px rounded-sm"
+                className="bg-panel-2 border border-edge text-fg-dim font-mono text-[11px] px-1.5 py-px rounded-xs"
               >
                 .{c}
               </span>
@@ -856,7 +856,7 @@ function FieldRow({
             placeholder="—"
             onChange={(e) => setDraft(e.target.value)}
             onBlur={(e) => commit(e.target.value.trim())}
-            className="flex-1 min-w-0 bg-panel-2 border border-edge rounded px-1.5 py-1 text-[11px] font-mono text-fg focus:outline-none focus:border-accent"
+            className="flex-1 min-w-0 bg-panel-2 border border-edge rounded px-1.5 py-1 text-[11px] font-mono text-fg focus:outline-hidden focus:border-accent"
           />
         </span>
       </>
@@ -872,7 +872,7 @@ function FieldRow({
             setDraft(e.target.value);
             commit(e.target.value);
           }}
-          className="bg-panel-2 border border-edge rounded px-1.5 py-1 text-[11px] font-mono text-fg focus:outline-none focus:border-accent"
+          className="bg-panel-2 border border-edge rounded px-1.5 py-1 text-[11px] font-mono text-fg focus:outline-hidden focus:border-accent"
         >
           {field.options.map((o) => (
             <option key={o} value={o}>
@@ -899,7 +899,7 @@ function FieldRow({
             (e.target as HTMLInputElement).blur();
           }
         }}
-        className="bg-panel-2 border border-edge rounded px-1.5 py-1 text-[11px] font-mono text-fg focus:outline-none focus:border-accent"
+        className="bg-panel-2 border border-edge rounded px-1.5 py-1 text-[11px] font-mono text-fg focus:outline-hidden focus:border-accent"
       />
     </>
   );
@@ -940,7 +940,7 @@ function SectionBlock({ section }: { section: StyleSection }) {
           <Row key={p.label} label={p.label}>
             {p.color && (
               <span
-                className="color-chip inline-block w-3.5 h-3.5 rounded-sm border border-white/20 shrink-0"
+                className="color-chip inline-block w-3.5 h-3.5 rounded-xs border border-white/20 shrink-0"
                 style={{
                   backgroundColor: `rgba(${p.color.r}, ${p.color.g}, ${p.color.b}, ${p.color.a})`,
                 }}
