@@ -25,6 +25,24 @@ type Props = {
 const CLICK_TIME_MS = 350;
 const CLICK_DIST_PX = 5;
 
+function applyAttrs(
+  el: Element,
+  attrs: Record<string, string> | undefined,
+): void {
+  if (!attrs) return;
+  for (const [name, value] of Object.entries(attrs)) {
+    // Defense in depth — capture already strips on*, but the JSON could
+    // come from elsewhere.
+    if (name.toLowerCase().startsWith("on")) continue;
+    try {
+      el.setAttribute(name, value);
+    } catch {
+      // Some attribute names (e.g. ones with weird characters from
+      // exotic frameworks) may throw; skip silently.
+    }
+  }
+}
+
 export function Tile({
   page,
   width,
@@ -48,7 +66,7 @@ export function Tile({
   /** The wrapper <div> we mount the captured HTML into. We keep a ref to
    *  it so click/hover handlers can ignore events whose target IS the
    *  wrapper itself (rather than guessing via DOM-shape heuristics). */
-  const containerRef = useRef<HTMLDivElement | null>(null);
+  const containerRef = useRef<HTMLElement | null>(null);
 
   // Mount captured HTML/CSS into shadow DOM whenever the page changes
   useEffect(() => {
@@ -60,36 +78,55 @@ export function Tile({
 
     if (page.status === "error") return;
 
+    // Reset establishes the host's clean baseline + a default sizing for
+    // the synthesized html/body wrappers below. User CSS still wins via
+    // normal cascade order (it's appended after this).
     const reset = document.createElement("style");
     reset.textContent = `
       :host { all: initial; display: block; width: 100%; height: 100%; }
       :host * { box-sizing: border-box; }
+      html, body {
+        display: block;
+        width: 100%;
+        height: 100%;
+        margin: 0;
+        padding: 0;
+        overflow: auto;
+      }
     `;
     shadow.appendChild(reset);
 
     if (page.css) {
       const style = document.createElement("style");
-      style.textContent = page.css;
+      // Inside a shadow root, `:root` matches nothing (the document root
+      // is outside the shadow). Rewrite it to `:host` so CSS-variable
+      // declarations and theme rules continue to apply.
+      style.textContent = page.css.replace(/:root\b/g, ":host");
       shadow.appendChild(style);
     }
 
-    const container = document.createElement("div");
-    container.style.width = "100%";
-    container.style.height = "100%";
-    container.style.overflow = "auto";
-    container.innerHTML = page.html;
-    containerRef.current = container;
+    // Synthesize <html><body> inside the shadow so global selectors
+    // (`body { ... }`, `html { ... }`, `body.dark`, `html[lang="en"]`)
+    // match against real elements. Carry over the captured attributes so
+    // attribute-keyed theming continues to work.
+    const synthHtml = document.createElement("html");
+    applyAttrs(synthHtml, page.htmlAttrs);
+    const synthBody = document.createElement("body");
+    applyAttrs(synthBody, page.bodyAttrs);
+    synthBody.innerHTML = page.html;
+    containerRef.current = synthBody;
 
-    container.querySelectorAll("a[href]").forEach((a) => {
+    synthBody.querySelectorAll("a[href]").forEach((a) => {
       a.setAttribute("data-href", a.getAttribute("href") ?? "");
       a.removeAttribute("href");
       (a as HTMLElement).style.cursor = "default";
     });
-    container.querySelectorAll("form").forEach((f) => {
+    synthBody.querySelectorAll("form").forEach((f) => {
       f.addEventListener("submit", (e) => e.preventDefault());
     });
 
-    shadow.appendChild(container);
+    synthHtml.appendChild(synthBody);
+    shadow.appendChild(synthHtml);
   }, [page]);
 
   // Build the tree once mounted (and whenever the page/viewport changes)

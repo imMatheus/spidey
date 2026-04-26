@@ -69,6 +69,17 @@ export type SpideyPage = {
    * fits the component snugly instead of being a 1280×800 page.
    */
   containerSize?: { width: number; height: number };
+  /**
+   * Attributes from the captured page's <body> element. The viewer mounts
+   * captured HTML inside a shadow root and synthesizes a <body> wrapper
+   * so global selectors like `body { ... }` match — these attributes
+   * (class, lang, dir, data-*) are applied so theming-by-attribute
+   * selectors keep working. Event handlers (`on*`) are stripped at
+   * capture time.
+   */
+  bodyAttrs?: Record<string, string>;
+  /** Same as bodyAttrs, for the <html> element. */
+  htmlAttrs?: Record<string, string>;
 };
 
 export type SpideyDocument = {

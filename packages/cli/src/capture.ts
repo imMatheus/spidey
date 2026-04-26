@@ -70,7 +70,8 @@ export async function captureAll({
         // Tag DOM with React component owners + serialize their props,
         // then capture HTML + CSS in a single page.evaluate to keep state
         // consistent.
-        const { html, css, containerSize } = await page.evaluate(async () => {
+        const { html, css, containerSize, bodyAttrs, htmlAttrs } =
+          await page.evaluate(async () => {
           // ----- Component tagging via React fiber walking -----
           (function tagComponents() {
             function getFiber(el: any): any {
@@ -185,12 +186,29 @@ export async function captureAll({
           );
           if (previewRoot instanceof HTMLElement) {
             const r = previewRoot.getBoundingClientRect();
-            // Round up so we don't clip subpixel content.
             measuredSize = {
               width: Math.max(1, Math.ceil(r.width)),
               height: Math.max(1, Math.ceil(r.height)),
             };
           }
+
+          // ----- Capture <body> and <html> attributes -----
+          // The viewer mounts captured content inside a shadow root, where
+          // the real <body> / <html> elements don't exist. We synthesize
+          // them and apply these attributes so theming selectors like
+          // `body.dark` or `html[data-theme="dark"]` keep matching.
+          function safeAttrs(el: Element | null): Record<string, string> {
+            const out: Record<string, string> = {};
+            if (!el) return out;
+            for (const a of Array.from(el.attributes)) {
+              const name = a.name.toLowerCase();
+              if (name.startsWith("on")) continue;
+              out[a.name] = a.value;
+            }
+            return out;
+          }
+          const bodyAttrs = safeAttrs(document.body);
+          const htmlAttrs = safeAttrs(document.documentElement);
 
           // ----- CSS extraction -----
           const cssChunks: string[] = [];
@@ -245,12 +263,18 @@ export async function captureAll({
             html: clone?.innerHTML ?? "",
             css: cssChunks.join("\n"),
             containerSize: measuredSize,
+            bodyAttrs,
+            htmlAttrs,
           };
         });
 
         captured.html = html;
         captured.css = css;
         if (containerSize) captured.containerSize = containerSize;
+        if (bodyAttrs && Object.keys(bodyAttrs).length > 0)
+          captured.bodyAttrs = bodyAttrs;
+        if (htmlAttrs && Object.keys(htmlAttrs).length > 0)
+          captured.htmlAttrs = htmlAttrs;
       } catch (e: any) {
         captured.status = "error";
         captured.error = String(e?.message ?? e);
