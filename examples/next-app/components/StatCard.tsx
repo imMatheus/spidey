@@ -1,3 +1,5 @@
+"use client";
+
 type StatCardProps = {
   label: string;
   value: string;

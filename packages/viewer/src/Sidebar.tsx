@@ -1,5 +1,7 @@
 import { Bug } from "lucide-react";
-import type { SpideyDocument, SpideyPage } from "@spidey/shared";
+import type { SpideyDocument, SpideyNode, SpideyPage } from "@spidey/shared";
+import { LayersPanel } from "./LayersPanel";
+import type { EditAction } from "./editor/state";
 
 type Project = { id: string; name: string };
 
@@ -14,6 +16,14 @@ type Props = {
   activeProjectId: string | null;
   onSwitchProject: (id: string) => void;
   onSelect: (id: string) => void;
+
+  // ----- Layers panel inputs (active tile only) -----
+  activeTree: SpideyNode | null;
+  selectedNodeId: string | null;
+  rev: number;
+  onSelectNode: (id: string | null) => void;
+  onHoverNode: (id: string | null) => void;
+  dispatch: (action: EditAction) => void;
 };
 
 export function Sidebar({
@@ -27,11 +37,22 @@ export function Sidebar({
   activeProjectId,
   onSwitchProject,
   onSelect,
+  activeTree,
+  selectedNodeId,
+  rev,
+  onSelectNode,
+  onHoverNode,
+  dispatch,
 }: Props) {
   const allTiles = doc.tiles ?? doc.pages ?? [];
   const errCount = allTiles.filter((p) => p.status === "error").length;
   const routes = pages.filter((p) => (p.kind ?? "route") === "route");
   const components = pages.filter((p) => p.kind === "component");
+
+  // Layers section appears only when a tile is active. The two flex regions
+  // (tile list and layers) split the available height; without an active
+  // tile the list takes all of it.
+  const showLayers = activeId != null;
 
   return (
     <aside className="col-start-1 row-start-1 row-span-2 bg-panel border-r border-edge flex flex-col min-h-0">
@@ -64,7 +85,7 @@ export function Sidebar({
           className="w-full bg-panel-2 text-fg border border-edge rounded px-2 py-1.5 text-xs focus:outline-hidden focus:border-accent"
         />
       </div>
-      <div className="flex-1 overflow-y-auto py-1">
+      <div className="flex-1 min-h-0 overflow-y-auto py-1">
         <Section title="Routes" count={routes.length}>
           {routes.length === 0 && <Empty>No matching routes.</Empty>}
           {routes.map((p) => (
@@ -92,7 +113,26 @@ export function Sidebar({
           </Section>
         ) : null}
       </div>
-      <div className="px-3 py-2 border-t border-edge text-[11px] text-fg-dim">
+      {showLayers && activeId && (
+        <div
+          // Anchored bottom region with its own flex space; key=activeId
+          // forces internal row-state (open/closed, drop targets) to reset
+          // when the active tile changes.
+          key={activeId}
+          className="flex flex-col min-h-0 flex-1 border-t border-edge"
+        >
+          <LayersPanel
+            tileId={activeId}
+            tree={activeTree}
+            selectedId={selectedNodeId}
+            rev={rev}
+            onSelect={onSelectNode}
+            onHover={onHoverNode}
+            dispatch={dispatch}
+          />
+        </div>
+      )}
+      <div className="px-3 py-2 border-t border-edge text-[11px] text-fg-dim shrink-0">
         {allTiles.length} tiles
         {errCount > 0 ? ` · ${errCount} error${errCount === 1 ? "" : "s"}` : ""}
       </div>

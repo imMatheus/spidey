@@ -1,20 +1,15 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
-import { BrowserRouter, Routes, Route, Link, useParams } from "react-router-dom";
+import { BrowserRouter, Routes, Route, useParams } from "react-router-dom";
 import { Pill } from "./components/Pill";
 import { Avatar } from "./components/Avatar";
+import { Navbar } from "./components/Navbar";
 import "./styles.css";
 
 function Layout({ children }: { children: React.ReactNode }) {
   return (
     <div className="page">
-      <nav className="nav">
-        <Link to="/" className="brand">acme</Link>
-        <Link to="/about">About</Link>
-        <Link to="/products">Products</Link>
-        <Link to="/users/42">Profile</Link>
-        <Link to="/longread">Longread</Link>
-      </nav>
+      <Navbar />
       <main className="main">{children}</main>
       <footer className="footer">© Acme · vite + react-router</footer>
     </div>

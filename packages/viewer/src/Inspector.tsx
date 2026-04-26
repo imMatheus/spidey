@@ -1,39 +1,13 @@
-import {
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-  type ReactNode,
-} from "react";
-import {
-  ChevronRight,
-  Copy,
-  Scissors,
-  ClipboardPaste,
-  CopyPlus,
-  Trash2,
-  Link2,
-  Lock,
-  PenSquare,
-} from "lucide-react";
+import { useEffect, useState, type ReactNode } from "react";
+import { Lock, PenSquare } from "lucide-react";
 import type { SpideyNode } from "@spidey/shared";
-import {
-  buildTree,
-  findNode,
-  isDescendant,
-  type TreeNode,
-} from "./inspect/buildTree";
 import {
   buildStyleSections,
   summarizeElement,
-  type StyleSection,
   type ElementSummary,
+  type StyleSection,
 } from "./inspect/computeStyles";
-import {
-  findById,
-  findInstanceAncestor,
-  findParent as findSpideyParent,
-} from "./editor/tree";
+import { findById, findInstanceAncestor } from "./editor/tree";
 import type { EditAction } from "./editor/state";
 
 type Props = {
@@ -49,9 +23,6 @@ type Props = {
   tileBody: HTMLElement | null;
   scale: number;
   rev: number;
-  onSelectNode: (id: string | null) => void;
-  /** Hover a node from the layers tree → highlight in the canvas. */
-  onHoverNode: (id: string | null) => void;
   /** Activate the master tile for the given component name. */
   onEditMaster: (componentName: string) => void;
   dispatch: (action: EditAction) => void;
@@ -60,6 +31,14 @@ type Props = {
 const ASIDE =
   "col-start-3 row-start-1 row-span-2 bg-panel border-l border-edge flex flex-col min-h-0 overflow-hidden";
 
+/**
+ * Right-side properties panel. Shows the active tile's component metadata
+ * (when applicable), an instance-lock banner when the selected node lives
+ * inside a component instance in a route tile, and the editable style
+ * panels for the selected element.
+ *
+ * The layers tree + breadcrumb live in the left sidebar (LayersPanel).
+ */
 export function Inspector({
   tileId,
   componentInfo,
@@ -69,14 +48,10 @@ export function Inspector({
   tileBody,
   scale,
   rev,
-  onSelectNode,
-  onHoverNode,
   onEditMaster,
   dispatch,
 }: Props) {
-  const trees = useMemo(() => buildTree(tree), [tree, rev]);
-
-  if (!tileId || trees.length === 0) {
+  if (!tileId || !tree) {
     return (
       <aside className={ASIDE}>
         <div className="grid place-items-center h-full text-fg-dim text-center text-xs">
@@ -89,8 +64,7 @@ export function Inspector({
     );
   }
 
-  const selectedNode = selectedNodeId && tree ? findById(tree, selectedNodeId) : null;
-
+  const selectedNode = selectedNodeId ? findById(tree, selectedNodeId) : null;
   // The active tile is a master when componentInfo is set. Otherwise it's a
   // route, and any selection inside a component-instance subtree is locked.
   const isMasterTile = !!componentInfo;
@@ -102,23 +76,13 @@ export function Inspector({
   return (
     <aside className={ASIDE}>
       {componentInfo && <ComponentHeader info={componentInfo} />}
-      <BreadcrumbAndTree
-        key={tileId ?? "no-tile"}
-        trees={trees}
-        tree={tree}
-        selectedId={selectedNodeId}
-        onSelect={onSelectNode}
-        onHover={onHoverNode}
-        tileId={tileId}
-        dispatch={dispatch}
-      />
       {instanceLock && (
         <InstanceLockBanner
           componentName={instanceLock.componentName}
           onEditMaster={() => onEditMaster(instanceLock.componentName)}
         />
       )}
-      {selectedNodeId && selectedElement && tileBody && (
+      {selectedNodeId && selectedElement && tileBody ? (
         <StylePanels
           el={selectedElement}
           tileBody={tileBody}
@@ -126,12 +90,14 @@ export function Inspector({
           rev={rev}
           tileId={tileId}
           nodeId={selectedNodeId}
-          node={
-            selectedNode && selectedNode.kind === "el" ? selectedNode : null
-          }
+          node={selectedNode && selectedNode.kind === "el" ? selectedNode : null}
           locked={!!instanceLock}
           dispatch={dispatch}
         />
+      ) : (
+        <div className="p-4 text-fg-dim text-xs">
+          Select an element to inspect or edit its styles.
+        </div>
       )}
     </aside>
   );
@@ -179,8 +145,7 @@ function SelectedComponentPanel({
 }) {
   const entries = props
     ? Object.entries(props).filter(
-        ([, v]) =>
-          v !== "__spidey_noop__" && typeof v !== "function",
+        ([, v]) => v !== "__spidey_noop__" && typeof v !== "function",
       )
     : [];
   return (
@@ -250,399 +215,12 @@ function formatPropValue(v: unknown): string {
   if (v == null) return String(v);
   if (typeof v === "string") return JSON.stringify(v);
   if (typeof v === "number" || typeof v === "boolean") return String(v);
-  if (Array.isArray(v))
-    return `[${v.length} item${v.length === 1 ? "" : "s"}]`;
+  if (Array.isArray(v)) return `[${v.length} item${v.length === 1 ? "" : "s"}]`;
   if (typeof v === "object") {
     const keys = Object.keys(v as object);
     return `{ ${keys.slice(0, 3).join(", ")}${keys.length > 3 ? ", …" : ""} }`;
   }
   return String(v);
-}
-
-function BreadcrumbAndTree({
-  trees,
-  tree,
-  selectedId,
-  onSelect,
-  onHover,
-  tileId,
-  dispatch,
-}: {
-  trees: TreeNode[];
-  tree: SpideyNode | null;
-  selectedId: string | null;
-  onSelect: (id: string | null) => void;
-  onHover: (id: string | null) => void;
-  tileId: string;
-  dispatch: (a: EditAction) => void;
-}) {
-  const found = useMemo(
-    () => (selectedId ? findNode(trees, selectedId) : null),
-    [trees, selectedId],
-  );
-  const breadcrumb = found ? [...found.ancestors, found.node] : [];
-
-  const [menu, setMenu] = useState<{ id: string; x: number; y: number } | null>(
-    null,
-  );
-
-  useEffect(() => {
-    if (!menu) return;
-    const close = () => setMenu(null);
-    window.addEventListener("click", close);
-    window.addEventListener("scroll", close, true);
-    return () => {
-      window.removeEventListener("click", close);
-      window.removeEventListener("scroll", close, true);
-    };
-  }, [menu]);
-
-  return (
-    <>
-      {breadcrumb.length > 0 && (
-        <div className="px-3 py-2 border-b border-edge text-[11px] text-fg-dim whitespace-nowrap overflow-x-auto shrink-0">
-          {breadcrumb.map((n, i) => {
-            const isLast = i === breadcrumb.length - 1;
-            return (
-              <span key={n.id} className="inline-flex items-center">
-                {i > 0 && (
-                  <ChevronRight
-                    size={11}
-                    strokeWidth={2}
-                    className="mx-0.5 text-fg-faint shrink-0"
-                  />
-                )}
-                <button
-                  onClick={() => onSelect(n.id)}
-                  title={describeNode(n)}
-                  className={[
-                    "bg-transparent border-0 px-1 py-0.5 cursor-pointer rounded font-mono text-[11px] hover:bg-panel-2 hover:text-fg",
-                    isLast ? "text-accent font-semibold" : "text-fg-dim",
-                  ].join(" ")}
-                >
-                  {nodeChip(n)}
-                </button>
-              </span>
-            );
-          })}
-        </div>
-      )}
-      <div
-        className="flex flex-col min-h-[100px] max-h-[36%] shrink-0 border-b border-edge"
-        onMouseLeave={() => onHover(null)}
-      >
-        <SectionTitle>Layers</SectionTitle>
-        <div className="flex-1 overflow-y-auto pb-2 font-mono text-[11px]">
-          {trees.map((n) => (
-            <TreeRow
-              key={n.id}
-              node={n}
-              depth={0}
-              selectedId={selectedId}
-              onSelect={onSelect}
-              onHover={onHover}
-              defaultOpenDepth={2}
-              tileId={tileId}
-              dispatch={dispatch}
-              tree={tree}
-              onMenu={(id, x, y) => setMenu({ id, x, y })}
-            />
-          ))}
-        </div>
-      </div>
-      {menu && (
-        <ContextMenu
-          x={menu.x}
-          y={menu.y}
-          onCopy={() =>
-            dispatch({ type: "copyNode", tileId, nodeId: menu.id })
-          }
-          onCut={() => {
-            dispatch({ type: "cutNode", tileId, nodeId: menu.id });
-            onSelect(null);
-          }}
-          onPaste={() =>
-            dispatch({ type: "pasteAsChild", tileId, parentId: menu.id })
-          }
-          onDuplicate={() =>
-            dispatch({ type: "duplicateNode", tileId, nodeId: menu.id })
-          }
-          onDelete={() => {
-            dispatch({ type: "removeNode", tileId, nodeId: menu.id });
-            onSelect(null);
-          }}
-        />
-      )}
-    </>
-  );
-}
-
-function ContextMenu({
-  x,
-  y,
-  onCopy,
-  onCut,
-  onPaste,
-  onDuplicate,
-  onDelete,
-}: {
-  x: number;
-  y: number;
-  onCopy: () => void;
-  onCut: () => void;
-  onPaste: () => void;
-  onDuplicate: () => void;
-  onDelete: () => void;
-}) {
-  const Item = ({
-    label,
-    onClick,
-    Icon,
-    danger,
-  }: {
-    label: string;
-    onClick: () => void;
-    Icon: typeof Copy;
-    danger?: boolean;
-  }) => (
-    <button
-      onClick={onClick}
-      className={[
-        "w-full flex items-center gap-2 px-3 py-1.5 text-[11px] font-sans cursor-pointer hover:bg-panel-2 text-left",
-        danger ? "text-[#ff8a8a]" : "text-fg",
-      ].join(" ")}
-    >
-      <Icon size={13} strokeWidth={2} className="shrink-0" />
-      {label}
-    </button>
-  );
-  return (
-    <div
-      className="fixed z-50 bg-panel border border-edge rounded-md shadow-lg py-1 min-w-[160px]"
-      style={{ left: x, top: y }}
-      onClick={(e) => e.stopPropagation()}
-    >
-      <Item label="Duplicate" onClick={onDuplicate} Icon={CopyPlus} />
-      <Item label="Copy" onClick={onCopy} Icon={Copy} />
-      <Item label="Cut" onClick={onCut} Icon={Scissors} />
-      <Item label="Paste as child" onClick={onPaste} Icon={ClipboardPaste} />
-      <div className="h-px bg-edge my-1" />
-      <Item label="Delete" onClick={onDelete} Icon={Trash2} danger />
-    </div>
-  );
-}
-
-function TreeRow({
-  node,
-  depth,
-  selectedId,
-  onSelect,
-  onHover,
-  defaultOpenDepth,
-  tileId,
-  dispatch,
-  tree,
-  onMenu,
-}: {
-  node: TreeNode;
-  depth: number;
-  selectedId: string | null;
-  onSelect: (id: string | null) => void;
-  onHover: (id: string | null) => void;
-  defaultOpenDepth: number;
-  tileId: string;
-  dispatch: (a: EditAction) => void;
-  tree: SpideyNode | null;
-  onMenu: (id: string, x: number, y: number) => void;
-}) {
-  const [open, setOpen] = useState(depth < defaultOpenDepth);
-  const rowRef = useRef<HTMLDivElement>(null);
-  const isSelected = selectedId === node.id;
-  const hasChildren = node.children.length > 0;
-  const containsSelected =
-    !!selectedId && (isSelected || isDescendant(node, selectedId));
-
-  // Drop indicator state: 'before' | 'after' | 'inside' | null
-  const [dropZone, setDropZone] = useState<"before" | "after" | "inside" | null>(
-    null,
-  );
-
-  useEffect(() => {
-    if (containsSelected && !open) setOpen(true);
-  }, [containsSelected, open]);
-
-  useEffect(() => {
-    if (isSelected && rowRef.current) {
-      rowRef.current.scrollIntoView({ block: "nearest" });
-    }
-  }, [isSelected]);
-
-  const isComponent = !!node.componentName;
-
-  const onDragStart = (e: React.DragEvent) => {
-    e.stopPropagation();
-    e.dataTransfer.setData("application/x-spidey-node", node.id);
-    e.dataTransfer.effectAllowed = "move";
-  };
-  const onDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
-    const y = e.clientY - rect.top;
-    const h = rect.height;
-    if (y < h * 0.25) setDropZone("before");
-    else if (y > h * 0.75) setDropZone("after");
-    else setDropZone("inside");
-    e.dataTransfer.dropEffect = "move";
-  };
-  const onDragLeave = () => setDropZone(null);
-  const onDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    const draggedId = e.dataTransfer.getData("application/x-spidey-node");
-    const zone = dropZone;
-    setDropZone(null);
-    if (!draggedId || draggedId === node.id) return;
-    if (zone === "inside") {
-      // The reducer's moveNode is cycle-safe — if this would create a cycle
-      // (dropping a node into its own subtree) it returns the tree unchanged.
-      dispatch({
-        type: "moveNode",
-        tileId,
-        nodeId: draggedId,
-        newParentId: node.id,
-        newIndex: 1_000_000, // append
-      });
-      return;
-    }
-    // Sibling drop: locate this anchor's parent + index in the SpideyNode
-    // tree to compute the destination.
-    if (!tree) return;
-    const found = findSpideyParent(tree, node.id);
-    if (!found) return;
-    const offset = zone === "after" ? 1 : 0;
-    dispatch({
-      type: "moveNode",
-      tileId,
-      nodeId: draggedId,
-      newParentId: found.parent.id,
-      newIndex: found.index + offset,
-    });
-  };
-
-  return (
-    <div>
-      <div
-        ref={rowRef}
-        draggable
-        onDragStart={onDragStart}
-        onDragOver={onDragOver}
-        onDragLeave={onDragLeave}
-        onDrop={onDrop}
-        onClick={() => onSelect(node.id)}
-        onMouseEnter={(e) => {
-          // stopPropagation: parent rows would otherwise re-claim hover
-          // when the cursor enters one of their child rows.
-          e.stopPropagation();
-          onHover(node.id);
-        }}
-        onContextMenu={(e) => {
-          e.preventDefault();
-          onSelect(node.id);
-          onMenu(node.id, e.clientX, e.clientY);
-        }}
-        className={[
-          "relative flex items-center gap-1 py-0.5 cursor-pointer whitespace-nowrap",
-          isSelected
-            ? "bg-accent-soft text-accent"
-            : "hover:bg-panel-2",
-        ].join(" ")}
-        style={{ paddingLeft: depth * 12 + 8 }}
-      >
-        {dropZone === "before" && (
-          <div className="absolute top-0 left-0 right-0 h-px bg-accent pointer-events-none" />
-        )}
-        {dropZone === "after" && (
-          <div className="absolute bottom-0 left-0 right-0 h-px bg-accent pointer-events-none" />
-        )}
-        {dropZone === "inside" && (
-          <div className="absolute inset-0 ring-1 ring-accent ring-inset pointer-events-none" />
-        )}
-        <span
-          onClick={(e) => {
-            e.stopPropagation();
-            if (hasChildren) setOpen((v) => !v);
-          }}
-          className={[
-            "inline-grid place-items-center w-3 h-3 shrink-0 text-fg-faint transition-transform",
-            hasChildren ? "cursor-pointer" : "opacity-0",
-            open ? "rotate-90" : "",
-          ].join(" ")}
-        >
-          <ChevronRight size={10} strokeWidth={2.5} />
-        </span>
-        {isComponent ? (
-          <>
-            <Link2
-              size={11}
-              strokeWidth={2.5}
-              className="text-accent shrink-0"
-            />
-            <span className="font-semibold tracking-wide text-[12px] text-accent">
-              {node.componentName}
-            </span>
-            <span className="text-fg-faint text-[10px]">
-              · {node.tag}
-              {node.classes.length > 0 ? `.${node.classes[0]}` : ""}
-            </span>
-          </>
-        ) : (
-          <>
-            <span className={isSelected ? "text-accent" : "text-fg"}>
-              {node.tag}
-            </span>
-            {node.domId && <span className="text-amberish">#{node.domId}</span>}
-            {node.classes.length > 0 && (
-              <span className="text-fg-dim">.{node.classes[0]}</span>
-            )}
-            {node.textPreview && (
-              <span className="text-fg-faint text-[10px] italic">
-                "{node.textPreview}"
-              </span>
-            )}
-          </>
-        )}
-      </div>
-      {open &&
-        node.children.map((c) => (
-          <TreeRow
-            key={c.id}
-            node={c}
-            depth={depth + 1}
-            selectedId={selectedId}
-            onSelect={onSelect}
-            onHover={onHover}
-            defaultOpenDepth={defaultOpenDepth}
-            tileId={tileId}
-            dispatch={dispatch}
-            tree={tree}
-            onMenu={onMenu}
-          />
-        ))}
-    </div>
-  );
-}
-
-function describeNode(n: TreeNode): string {
-  let s = n.tag;
-  if (n.domId) s += `#${n.domId}`;
-  if (n.classes.length) s += "." + n.classes.join(".");
-  return s;
-}
-
-function nodeChip(n: TreeNode): string {
-  if (n.domId) return `${n.tag}#${n.domId}`;
-  if (n.classes.length) return `${n.tag}.${n.classes[0]}`;
-  return n.tag;
 }
 
 function SectionTitle({ children }: { children: ReactNode }) {
@@ -704,8 +282,15 @@ function StylePanels({
   const setStyle = (prop: string, value: string | null) =>
     dispatch({ type: "setStyle", tileId, nodeId, prop, value });
 
+  // Spacing renders pinned to the bottom of the inspector (outside the
+  // scrollable region) so the box-model diagram is always visible no matter
+  // how long the rest of the panel gets.
+  const spacingSection = sections.find((s) => s.title === "Spacing") ?? null;
+  const otherSections = sections.filter((s) => s.title !== "Spacing");
+
   return (
-    <div className="flex-1 overflow-y-auto pb-4">
+    <>
+      <div className="flex-1 min-h-0 overflow-y-auto pb-4">
       {componentName && (
         <SelectedComponentPanel name={componentName} props={runtimeProps} />
       )}
@@ -741,9 +326,7 @@ function StylePanels({
             title="Background"
             inline={inlineStyle}
             setStyle={setStyle}
-            fields={[
-              { prop: "background", label: "color", kind: "color" },
-            ]}
+            fields={[{ prop: "background", label: "color", kind: "color" }]}
           />
           <EditableStyle
             title="Typography"
@@ -753,7 +336,12 @@ function StylePanels({
               { prop: "color", label: "color", kind: "color" },
               { prop: "font-size", label: "size", kind: "text", placeholder: "16px" },
               { prop: "font-weight", label: "weight", kind: "text", placeholder: "400" },
-              { prop: "text-align", label: "align", kind: "select", options: ["", "left", "center", "right", "justify"] },
+              {
+                prop: "text-align",
+                label: "align",
+                kind: "select",
+                options: ["", "left", "center", "right", "justify"],
+              },
             ]}
           />
           <EditableStyle
@@ -779,14 +367,16 @@ function StylePanels({
         </>
       )}
 
-      {sections.map((s) =>
-        s.title === "Spacing" ? (
-          <BoxModelSection key={s.title} section={s} />
-        ) : (
-          <SectionBlock key={s.title} section={s} />
-        ),
+      {otherSections.map((s) => (
+        <SectionBlock key={s.title} section={s} />
+      ))}
+      </div>
+      {spacingSection && (
+        <div className="shrink-0 border-t border-edge bg-panel">
+          <BoxModelSection section={spacingSection} />
+        </div>
       )}
-    </div>
+    </>
   );
 }
 
@@ -811,7 +401,12 @@ function EditableStyle({
       <SectionTitle>{title}</SectionTitle>
       <div className="grid grid-cols-[80px_1fr] gap-x-2 gap-y-1.5 px-3 pb-3 text-[11px] items-center">
         {fields.map((f) => (
-          <FieldRow key={f.prop} field={f} value={inline[f.prop] ?? ""} setStyle={setStyle} />
+          <FieldRow
+            key={f.prop}
+            field={f}
+            value={inline[f.prop] ?? ""}
+            setStyle={setStyle}
+          />
         ))}
       </div>
     </div>
@@ -925,7 +520,8 @@ function toHex(value: string): string {
   const m = s.match(/rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/i);
   if (m) {
     const [, r, g, b] = m;
-    const toH = (n: number) => Math.max(0, Math.min(255, n)).toString(16).padStart(2, "0");
+    const toH = (n: number) =>
+      Math.max(0, Math.min(255, n)).toString(16).padStart(2, "0");
     return "#" + toH(+r) + toH(+g) + toH(+b);
   }
   return "#000000";

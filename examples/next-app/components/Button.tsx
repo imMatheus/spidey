@@ -1,3 +1,5 @@
+"use client";
+
 type ButtonProps = {
   label: string;
   variant?: "primary" | "ghost" | "danger";

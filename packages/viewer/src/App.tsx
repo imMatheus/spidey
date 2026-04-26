@@ -373,6 +373,12 @@ export function App() {
           setFocusId(id);
           setActiveTileId(id);
         }}
+        activeTree={activeTree}
+        selectedNodeId={selectedNodeId}
+        rev={editor.rev}
+        onSelectNode={setSelectedNodeId}
+        onHoverNode={setHoveredNodeId}
+        dispatch={dispatch}
       />
       <Toolbar
         doc={doc}
@@ -411,8 +417,6 @@ export function App() {
         tileBody={activeTileBody}
         scale={scale}
         rev={editor.rev}
-        onSelectNode={setSelectedNodeId}
-        onHoverNode={setHoveredNodeId}
         onEditMaster={(componentName) => {
           const master = docTiles.find(
             (t) => t.kind === "component" && t.component?.name === componentName,

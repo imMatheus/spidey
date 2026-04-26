@@ -85,11 +85,30 @@ export async function captureAll({
               if (typeof type === "function") {
                 const n = type.displayName || type.name;
                 if (n && /^[A-Z]/.test(n)) return n;
+                return null;
               }
               if (typeof type === "object") {
-                if (type.displayName) return type.displayName;
-                const inner = nameOfType(type.render ?? type.type);
+                if (type.displayName && /^[A-Z]/.test(type.displayName))
+                  return type.displayName;
+                // memo: type.type is the inner component; forwardRef: type.render
+                // is the inner render. Try both, plus $$id (RSC client refs)
+                // last-segment as a fallback so server→client boundaries
+                // surface as a name.
+                const inner =
+                  nameOfType(type.type) ??
+                  nameOfType(type.render);
                 if (inner) return inner;
+                if (typeof type.$$id === "string") {
+                  const id: string = type.$$id;
+                  // "/path/Button.js#default" → "Button"; "...#Button" → "Button"
+                  const hash = id.lastIndexOf("#");
+                  const fileBit = hash >= 0 ? id.slice(0, hash) : id;
+                  const exportBit = hash >= 0 ? id.slice(hash + 1) : "";
+                  if (exportBit && exportBit !== "default" && /^[A-Z]/.test(exportBit))
+                    return exportBit;
+                  const base = (fileBit.split("/").pop() || "").replace(/\.[a-z]+$/i, "");
+                  if (base && /^[A-Z]/.test(base)) return base;
+                }
               }
               return null;
             }
