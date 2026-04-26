@@ -7,18 +7,20 @@ const HELP = `
 spidey — turn a local Vite or Next.js app into a Figma-style canvas of every screen
 
 USAGE
-  spidey generate <path> [--output spidey.json]
-  spidey view <spidey.json> [--port 4321] [--no-open]
+  spidey generate <path> [--output spidey.json] [--no-components]
+  spidey view <spidey.json> [<spidey.json>...] [--port 4321] [--no-open]
 
 COMMANDS
-  generate    Discover routes, capture rendered HTML+CSS, write spidey.json
+  generate    Discover routes + components, capture rendered HTML+CSS,
+              write spidey.json
   view        Serve the canvas viewer pointed at a spidey.json
 
 OPTIONS
-  --output, -o   Output path for generate (default: spidey.json)
-  --port, -p     Port for view (default: 4321)
-  --no-open      Don't auto-open the browser when starting the viewer
-  --help, -h     Show this help
+  --output, -o    Output path for generate (default: spidey.json)
+  --no-components Skip the components pipeline (faster; routes only)
+  --port, -p      Port for view (default: 4321)
+  --no-open       Don't auto-open the browser when starting the viewer
+  --help, -h      Show this help
 
 EXAMPLES
   spidey generate ./my-app
@@ -96,14 +98,19 @@ async function main() {
           (flags.output as string) ??
           (flags.o as string) ??
           path.resolve("spidey.json");
-        await runGenerate({ projectPath, outputPath: output });
+        const components = flags.components !== false;
+        await runGenerate({
+          projectPath,
+          outputPath: output,
+          components,
+        });
         break;
       }
       case "view": {
-        const jsonPath = positional[0] ?? "spidey.json";
+        const jsonPaths = positional.length > 0 ? positional : ["spidey.json"];
         const port = Number(flags.port ?? flags.p ?? 4321);
         const open = flags.open !== false;
-        await runView({ jsonPath, port, open });
+        await runView({ jsonPaths, port, open });
         break;
       }
       default:

@@ -1,6 +1,8 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import { BrowserRouter, Routes, Route, Link, useParams } from "react-router-dom";
+import { Pill } from "./components/Pill";
+import { Avatar } from "./components/Avatar";
 import "./styles.css";
 
 function Layout({ children }: { children: React.ReactNode }) {
@@ -59,21 +61,22 @@ function About() {
 
 function Products() {
   const items = [
-    { id: 1, name: "Widget", price: "$10" },
-    { id: 2, name: "Gizmo", price: "$25" },
-    { id: 3, name: "Doohickey", price: "$8" },
+    { id: 1, name: "Widget", price: "$10", tone: "ok" as const },
+    { id: 2, name: "Gizmo", price: "$25", tone: "warn" as const },
+    { id: 3, name: "Doohickey", price: "$8", tone: "info" as const },
   ];
   return (
     <Layout>
       <h1>Products</h1>
       <table className="tbl">
         <thead>
-          <tr><th>Name</th><th>Price</th></tr>
+          <tr><th>Name</th><th>Status</th><th>Price</th></tr>
         </thead>
         <tbody>
           {items.map((it) => (
             <tr key={it.id}>
               <td>{it.name}</td>
+              <td><Pill label={it.tone} tone={it.tone} /></td>
               <td>{it.price}</td>
             </tr>
           ))}
@@ -89,10 +92,12 @@ function User() {
     <Layout>
       <h1>User #{id}</h1>
       <div className="profile">
-        <div className="avatar">{(id ?? "?").slice(0, 1).toUpperCase()}</div>
+        <Avatar name={`User ${id}`} size={64} />
         <div>
           <h2>User {id}</h2>
-          <p className="dim">Joined recently · Active member</p>
+          <p className="dim">
+            Joined recently · <Pill label="Active member" tone="ok" />
+          </p>
         </div>
       </div>
     </Layout>

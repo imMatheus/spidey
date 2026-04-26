@@ -208,14 +208,27 @@ export function Tile({
         className="bg-panel-2 text-fg px-3 py-2 text-xs font-medium flex justify-between items-center gap-2"
         style={{ height: headerHeight }}
       >
-        <span className="font-mono whitespace-nowrap overflow-hidden text-ellipsis">
-          {page.route}
-        </span>
-        {isErr && (
-          <span className="text-[10px] px-1.5 py-0.5 rounded-sm bg-danger/20 text-[#ff8a8a] uppercase tracking-[0.5px]">
-            error
+        {page.kind === "component" ? (
+          <span className="font-mono text-accent whitespace-nowrap overflow-hidden text-ellipsis">
+            {`<${page.component?.name ?? "Component"}>`}
+          </span>
+        ) : (
+          <span className="font-mono whitespace-nowrap overflow-hidden text-ellipsis">
+            {page.route}
           </span>
         )}
+        <div className="flex items-center gap-1.5 shrink-0">
+          {page.kind === "component" && (
+            <span className="text-[10px] px-1.5 py-0.5 rounded-sm bg-accent-soft text-accent uppercase tracking-[0.5px]">
+              component
+            </span>
+          )}
+          {isErr && (
+            <span className="text-[10px] px-1.5 py-0.5 rounded-sm bg-danger/20 text-[#ff8a8a] uppercase tracking-[0.5px]">
+              error
+            </span>
+          )}
+        </div>
       </div>
       <div
         ref={bodyRef}

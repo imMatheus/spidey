@@ -1,7 +1,7 @@
 import { startViewer } from "../viewServer.js";
 
 export type ViewOptions = {
-  jsonPath: string;
+  jsonPaths: string[];
   port: number;
   open: boolean;
 };

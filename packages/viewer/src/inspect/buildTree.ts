@@ -4,6 +4,9 @@ export type TreeNode = {
   tag: string;
   classes: string[];
   domId?: string;
+  /** Set when this element is the root of a captured React component
+   *  instance (data-spidey-component attribute). */
+  componentName?: string;
   children: TreeNode[];
 };
 
@@ -39,6 +42,7 @@ function walk(el: HTMLElement, path: string): TreeNode | null {
     tag: el.tagName.toLowerCase(),
     classes: Array.from(el.classList),
     domId: el.id || undefined,
+    componentName: el.getAttribute("data-spidey-component") ?? undefined,
     children,
   };
 }

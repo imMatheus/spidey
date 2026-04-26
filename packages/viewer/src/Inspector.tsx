@@ -13,6 +13,12 @@ type Props = {
    *  tree subtree when switching tiles, so per-row open/closed state can't
    *  bleed across tiles via shared path-keys like "0.1.2". */
   tileId: string | null;
+  /** Component metadata for the active tile, when it is a component tile. */
+  componentInfo: {
+    name: string;
+    file: string;
+    propsUsed: Record<string, unknown>;
+  } | null;
   trees: TreeNode[] | null;
   selected: HTMLElement | null;
   tileBody: HTMLElement | null;
@@ -26,6 +32,7 @@ const ASIDE =
 
 export function Inspector({
   tileId,
+  componentInfo,
   trees,
   selected,
   tileBody,
@@ -48,6 +55,7 @@ export function Inspector({
 
   return (
     <aside className={ASIDE}>
+      {componentInfo && <ComponentHeader info={componentInfo} />}
       <BreadcrumbAndTree
         key={tileId ?? "no-tile"}
         trees={trees}
@@ -64,6 +72,105 @@ export function Inspector({
       )}
     </aside>
   );
+}
+
+/**
+ * Inline panel rendered inside StylePanels when the selected element is the
+ * root of a React component instance captured during a route screenshot.
+ * Surfaces the component name + the props snapshot (sans functions).
+ */
+function SelectedComponentPanel({
+  name,
+  props,
+}: {
+  name: string;
+  props: Record<string, unknown> | null;
+}) {
+  const entries = props
+    ? Object.entries(props).filter(
+        ([, v]) =>
+          v !== "__spidey_noop__" && typeof v !== "function",
+      )
+    : [];
+  return (
+    <div className="border-b border-edge p-3 bg-bg/30">
+      <div className="font-mono text-accent text-[14px] font-semibold">
+        {`<${name}>`}
+      </div>
+      {entries.length > 0 ? (
+        <div className="mt-2 grid grid-cols-[max-content_1fr] gap-x-2 gap-y-1 text-[11px]">
+          {entries.map(([k, v]) => (
+            <PropRow key={k} name={k} value={v} />
+          ))}
+        </div>
+      ) : (
+        <div className="mt-2 text-[11px] text-fg-faint italic">
+          {props ? "no data props" : "no captured props"}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ComponentHeader({
+  info,
+}: {
+  info: { name: string; file: string; propsUsed: Record<string, unknown> };
+}) {
+  // Functions don't read meaningfully in a side panel — surface only data
+  // props (strings, numbers, booleans, arrays, objects).
+  const props = Object.entries(info.propsUsed).filter(
+    ([, v]) => v !== "__spidey_noop__",
+  );
+  return (
+    <div className="border-b border-edge p-3 bg-bg/30 shrink-0">
+      <div className="flex items-baseline gap-2">
+        <span className="font-mono text-accent text-[14px] font-semibold">
+          {`<${info.name}>`}
+        </span>
+        <span
+          className="text-[10px] text-fg-faint truncate"
+          title={info.file}
+        >
+          {info.file}
+        </span>
+      </div>
+      {props.length > 0 ? (
+        <div className="mt-2 grid grid-cols-[max-content_1fr] gap-x-2 gap-y-1 text-[11px]">
+          {props.map(([k, v]) => (
+            <PropRow key={k} name={k} value={v} />
+          ))}
+        </div>
+      ) : (
+        <div className="mt-2 text-[11px] text-fg-faint italic">no props</div>
+      )}
+    </div>
+  );
+}
+
+function PropRow({ name, value }: { name: string; value: unknown }) {
+  return (
+    <>
+      <span className="text-fg-dim font-mono">{name}</span>
+      <span className="text-fg font-mono break-words min-w-0">
+        {formatPropValue(value)}
+      </span>
+    </>
+  );
+}
+
+function formatPropValue(v: unknown): string {
+  if (v === "__spidey_noop__") return "ƒ noop";
+  if (v == null) return String(v);
+  if (typeof v === "string") return JSON.stringify(v);
+  if (typeof v === "number" || typeof v === "boolean") return String(v);
+  if (Array.isArray(v))
+    return `[${v.length} item${v.length === 1 ? "" : "s"}]`;
+  if (typeof v === "object") {
+    const keys = Object.keys(v as object);
+    return `{ ${keys.slice(0, 3).join(", ")}${keys.length > 3 ? ", …" : ""} }`;
+  }
+  return String(v);
 }
 
 function BreadcrumbAndTree({
@@ -160,6 +267,7 @@ function TreeRow({
     }
   }, [isSelected]);
 
+  const isComponent = !!node.componentName;
   return (
     <div>
       <div
@@ -167,7 +275,11 @@ function TreeRow({
         onClick={() => onSelect(node.ref)}
         className={[
           "flex items-center gap-1 py-0.5 cursor-pointer whitespace-nowrap",
-          isSelected ? "bg-accent-soft text-accent" : "hover:bg-panel-2",
+          isSelected
+            ? "bg-accent-soft text-accent"
+            : isComponent
+              ? "hover:bg-panel-2"
+              : "hover:bg-panel-2",
         ].join(" ")}
         style={{ paddingLeft: depth * 12 + 8 }}
       >
@@ -184,12 +296,33 @@ function TreeRow({
         >
           ▶
         </span>
-        <span className={isSelected ? "text-accent" : "text-fg"}>
-          {node.tag}
-        </span>
-        {node.domId && <span className="text-amberish">#{node.domId}</span>}
-        {node.classes.length > 0 && (
-          <span className="text-fg-dim">.{node.classes[0]}</span>
+        {isComponent ? (
+          <>
+            <span
+              className={[
+                "font-semibold tracking-wide text-[12px]",
+                isSelected ? "text-accent" : "text-accent",
+              ].join(" ")}
+            >
+              {node.componentName}
+            </span>
+            <span className="text-fg-faint text-[10px]">
+              · {node.tag}
+              {node.classes.length > 0 ? `.${node.classes[0]}` : ""}
+            </span>
+          </>
+        ) : (
+          <>
+            <span className={isSelected ? "text-accent" : "text-fg"}>
+              {node.tag}
+            </span>
+            {node.domId && (
+              <span className="text-amberish">#{node.domId}</span>
+            )}
+            {node.classes.length > 0 && (
+              <span className="text-fg-dim">.{node.classes[0]}</span>
+            )}
+          </>
         )}
       </div>
       {open &&
@@ -253,8 +386,27 @@ function StylePanels({
   if (!data) return null;
   const { summary, sections } = data;
 
+  // If the selected element is the root of a captured React component
+  // instance, surface that information above the styles.
+  const componentName = el.getAttribute("data-spidey-component");
+  const propsAttr = el.getAttribute("data-spidey-props");
+  let runtimeProps: Record<string, unknown> | null = null;
+  if (propsAttr) {
+    try {
+      runtimeProps = JSON.parse(propsAttr) as Record<string, unknown>;
+    } catch {
+      runtimeProps = null;
+    }
+  }
+
   return (
     <div className="flex-1 overflow-y-auto pb-4">
+      {componentName && (
+        <SelectedComponentPanel
+          name={componentName}
+          props={runtimeProps}
+        />
+      )}
       <div className="p-3 border-b border-edge">
         <div className="font-mono text-[13px] text-fg mb-1.5">
           &lt;{summary.tag}&gt;

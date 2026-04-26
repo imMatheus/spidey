@@ -11,8 +11,12 @@ type LoadState =
   | { status: "error"; message: string }
   | { status: "ready"; doc: SpideyDocument };
 
+type ProjectsManifest = { id: string; name: string }[];
+
 export function App() {
   const [state, setState] = useState<LoadState>({ status: "loading" });
+  const [projects, setProjects] = useState<ProjectsManifest>([]);
+  const [activeProjectId, setActiveProjectId] = useState<string | null>(null);
   const [viewport, setViewport] = useState<ViewportPreset>("desktop");
   const [focusId, setFocusId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
@@ -28,15 +32,49 @@ export function App() {
   const tileBodiesRef = useRef<Map<string, HTMLElement>>(new Map());
   const [treesVersion, setTreesVersion] = useState(0);
 
+  // First, fetch the manifest of available projects. Falls back to a
+  // single-project mode (the legacy /spidey.json endpoint) when the
+  // manifest endpoint isn't present (e.g. an older view server).
   useEffect(() => {
-    fetch("/spidey.json")
+    fetch("/spidey-projects.json")
+      .then((r) =>
+        r.ok ? (r.json() as Promise<ProjectsManifest>) : Promise.resolve([]),
+      )
+      .then((list) => {
+        setProjects(list);
+        setActiveProjectId(list[0]?.id ?? null);
+      })
+      .catch(() => {
+        setProjects([]);
+        setActiveProjectId(null);
+      });
+  }, []);
+
+  // Whenever the active project changes, re-fetch its document.
+  useEffect(() => {
+    setState({ status: "loading" });
+    setFocusId(null);
+    setActiveTileId(null);
+    setSelectedElement(null);
+    const url =
+      activeProjectId != null
+        ? `/spidey-projects/${activeProjectId}.json`
+        : "/spidey.json";
+    fetch(url)
       .then((r) => {
         if (!r.ok) throw new Error(`spidey.json HTTP ${r.status}`);
         return r.json();
       })
-      .then((doc: SpideyDocument) => setState({ status: "ready", doc }))
-      .catch((e) => setState({ status: "error", message: String(e?.message ?? e) }));
-  }, []);
+      .then((doc: SpideyDocument) => {
+        treesRef.current.clear();
+        tileBodiesRef.current.clear();
+        setActiveTileBody(null);
+        setState({ status: "ready", doc });
+      })
+      .catch((e) =>
+        setState({ status: "error", message: String(e?.message ?? e) }),
+      );
+  }, [activeProjectId]);
 
   // Centralized selection reset — call this whenever the user's selection
   // context becomes invalid (different tile, different viewport, Esc, etc).
@@ -92,11 +130,15 @@ export function App() {
     if (state.status !== "ready") return [];
     const q = search.trim().toLowerCase();
     if (!q) return state.doc.pages;
-    return state.doc.pages.filter(
-      (p) =>
-        p.route.toLowerCase().includes(q) ||
-        (p.title ?? "").toLowerCase().includes(q),
-    );
+    return state.doc.pages.filter((p) => {
+      const haystacks = [
+        p.route,
+        p.title,
+        p.component?.name,
+        p.component?.file,
+      ].filter((s): s is string => typeof s === "string");
+      return haystacks.some((s) => s.toLowerCase().includes(q));
+    });
   }, [state, search]);
 
   const handleActivateTile = useCallback((id: string | null) => {
@@ -155,6 +197,12 @@ export function App() {
   const dims = VIEWPORTS[viewport];
   const activeTrees =
     activeTileId != null ? treesRef.current.get(activeTileId) ?? null : null;
+  const activeTile =
+    activeTileId != null
+      ? (doc.pages.find((p) => p.id === activeTileId) ?? null)
+      : null;
+  const componentInfo =
+    activeTile?.kind === "component" ? (activeTile.component ?? null) : null;
 
   return (
     <div className="grid grid-cols-[260px_1fr_340px] grid-rows-[44px_1fr] h-full">
@@ -165,6 +213,9 @@ export function App() {
         onSearch={setSearch}
         focusId={focusId}
         activeId={activeTileId}
+        projects={projects}
+        activeProjectId={activeProjectId}
+        onSwitchProject={setActiveProjectId}
         onSelect={(id) => {
           setFocusId(id);
           setActiveTileId(id);
@@ -196,6 +247,7 @@ export function App() {
       />
       <Inspector
         tileId={activeTileId}
+        componentInfo={componentInfo}
         trees={activeTrees}
         selected={selectedElement}
         tileBody={activeTileBody}

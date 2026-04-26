@@ -26,7 +26,6 @@ const MIME: Record<string, string> = {
 };
 
 function findViewerDist(): string | null {
-  // packages/cli/src → ../../viewer/dist
   const candidates = [
     path.resolve(__dirname, "../../viewer/dist"),
     path.resolve(__dirname, "../viewer/dist"),
@@ -35,19 +34,44 @@ function findViewerDist(): string | null {
   return null;
 }
 
+type Project = { id: string; name: string; absPath: string };
+
+function deriveProjects(jsonPaths: string[]): Project[] {
+  const used = new Set<string>();
+  return jsonPaths.map((p, idx) => {
+    const abs = path.resolve(p);
+    if (!fileExists(abs)) {
+      throw new Error(`spidey.json not found: ${abs}`);
+    }
+    // Use the parent directory name when the file is the canonical
+    // "spidey.json", otherwise fall back to the filename. Disambiguate on
+    // collision by appending a counter.
+    const base = path.basename(abs);
+    const parent = path.basename(path.dirname(abs));
+    let name =
+      base === "spidey.json" ? parent : base.replace(/\.spidey\.json$/, "").replace(/\.json$/, "");
+    if (!name) name = `project-${idx + 1}`;
+    let id = name;
+    let n = 2;
+    while (used.has(id)) id = `${name}-${n++}`;
+    used.add(id);
+    return { id, name: id, absPath: abs };
+  });
+}
+
 export async function startViewer({
-  jsonPath,
+  jsonPaths,
   port,
   open,
 }: {
-  jsonPath: string;
+  jsonPaths: string[];
   port: number;
   open: boolean;
 }): Promise<void> {
-  const absJson = path.resolve(jsonPath);
-  if (!fileExists(absJson)) {
-    throw new Error(`spidey.json not found: ${absJson}`);
+  if (jsonPaths.length === 0) {
+    throw new Error("spidey view: at least one spidey.json path is required");
   }
+  const projects = deriveProjects(jsonPaths);
 
   const dist = findViewerDist();
   if (!dist) {
@@ -55,20 +79,54 @@ export async function startViewer({
       "Viewer bundle not found. Run `bun run build` from the spidey monorepo root first.",
     );
   }
-
   const indexHtml = path.join(dist, "index.html");
   if (!fileExists(indexHtml)) {
     throw new Error(`Viewer dist exists at ${dist} but index.html is missing.`);
   }
 
+  const projectsManifest = projects.map((p) => ({
+    id: p.id,
+    name: p.name,
+  }));
+
   const server = http.createServer((req, res) => {
     const url = new URL(req.url ?? "/", "http://localhost");
     let pathname = decodeURIComponent(url.pathname);
 
+    // Manifest of all projects available in this session.
+    if (pathname === "/spidey-projects.json") {
+      res.setHeader("content-type", MIME[".json"]);
+      res.setHeader("cache-control", "no-store");
+      res.end(JSON.stringify(projectsManifest));
+      return;
+    }
+
+    // Per-project JSON, e.g. /spidey-projects/next-app.json
+    const m = pathname.match(/^\/spidey-projects\/([^/]+)\.json$/);
+    if (m) {
+      const id = m[1];
+      const project = projects.find((p) => p.id === id);
+      if (!project) {
+        res.statusCode = 404;
+        res.end("project not found");
+        return;
+      }
+      res.setHeader("content-type", MIME[".json"]);
+      res.setHeader("cache-control", "no-store");
+      fs.createReadStream(project.absPath)
+        .on("error", (e) => {
+          res.statusCode = 500;
+          res.end(String(e));
+        })
+        .pipe(res);
+      return;
+    }
+
+    // Backwards-compat: serve the first project at /spidey.json
     if (pathname === "/spidey.json") {
       res.setHeader("content-type", MIME[".json"]);
       res.setHeader("cache-control", "no-store");
-      fs.createReadStream(absJson)
+      fs.createReadStream(projects[0].absPath)
         .on("error", (e) => {
           res.statusCode = 500;
           res.end(String(e));
@@ -78,19 +136,13 @@ export async function startViewer({
     }
 
     if (pathname === "/") pathname = "/index.html";
-
     let filePath = path.join(dist, pathname);
-    // Block traversal
     if (!filePath.startsWith(dist)) {
       res.statusCode = 403;
       res.end("forbidden");
       return;
     }
-
-    if (!fileExists(filePath)) {
-      // SPA fallback to index.html
-      filePath = indexHtml;
-    }
+    if (!fileExists(filePath)) filePath = indexHtml;
 
     const ext = path.extname(filePath).toLowerCase();
     res.setHeader("content-type", MIME[ext] ?? "application/octet-stream");
@@ -109,11 +161,15 @@ export async function startViewer({
 
   const viewerUrl = `http://localhost:${port}`;
   log.ok(`spidey viewer running at ${viewerUrl}`);
-  log.dim(`serving ${absJson}`);
+  if (projects.length === 1) {
+    log.dim(`serving ${projects[0].absPath}`);
+  } else {
+    log.dim(`serving ${projects.length} projects:`);
+    for (const p of projects) log.dim(`  ${p.id} → ${p.absPath}`);
+  }
 
   if (open) openBrowser(viewerUrl);
 
-  // Handle shutdown
   const shutdown = () => {
     server.close(() => process.exit(0));
     setTimeout(() => process.exit(0), 500).unref();
@@ -121,7 +177,6 @@ export async function startViewer({
   process.on("SIGINT", shutdown);
   process.on("SIGTERM", shutdown);
 
-  // Keep process alive
   await new Promise(() => {});
 }
 

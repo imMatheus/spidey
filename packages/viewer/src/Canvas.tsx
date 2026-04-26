@@ -79,27 +79,58 @@ export function Canvas({
     setRecomputeKey((k) => k + 1);
   }, [viewport]);
 
-  // tile positions
+  // Tile positions: routes laid out in a grid on the left, components
+  // stacked vertically in their own column on the right at their captured
+  // natural sizes. Indexed by page id for O(1) lookup at render time.
   const positions = useMemo(() => {
     const tileW = viewport.width;
     const tileH = viewport.height + HEADER_HEIGHT;
-    return pages.map((_p, i) => {
+    const map = new Map<
+      string,
+      { x: number; y: number; w: number; h: number }
+    >();
+
+    const routes = pages.filter((p) => (p.kind ?? "route") === "route");
+    const components = pages.filter((p) => p.kind === "component");
+
+    let routesMaxY = 0;
+    routes.forEach((p, i) => {
       const col = i % TILES_PER_ROW;
       const row = Math.floor(i / TILES_PER_ROW);
-      return {
-        x: col * (tileW + GAP),
-        y: row * (tileH + GAP),
-        w: tileW,
-        h: viewport.height,
-      };
+      const x = col * (tileW + GAP);
+      const y = row * (tileH + GAP);
+      map.set(p.id, { x, y, w: tileW, h: viewport.height });
+      routesMaxY = Math.max(routesMaxY, y + tileH);
     });
+
+    const routesRightEdge =
+      routes.length > 0
+        ? Math.min(routes.length, TILES_PER_ROW) * (tileW + GAP)
+        : 0;
+    const compColumnX = routesRightEdge + GAP;
+    let compY = 0;
+    for (const p of components) {
+      const w = p.containerSize?.width ?? 320;
+      const h = p.containerSize?.height ?? 200;
+      map.set(p.id, { x: compColumnX, y: compY, w, h });
+      compY += h + HEADER_HEIGHT + GAP;
+    }
+
+    return map;
   }, [pages, viewport]);
+
+  const positionsList = useMemo(
+    () => Array.from(positions.values()),
+    [positions],
+  );
 
   // initial fit when viewport or pages change
   useEffect(() => {
-    if (!size.w || !size.h || positions.length === 0) return;
-    const maxX = Math.max(...positions.map((p) => p.x + p.w));
-    const maxY = Math.max(...positions.map((p) => p.y + p.h + HEADER_HEIGHT));
+    if (!size.w || !size.h || positionsList.length === 0) return;
+    const maxX = Math.max(...positionsList.map((p) => p.x + p.w));
+    const maxY = Math.max(
+      ...positionsList.map((p) => p.y + p.h + HEADER_HEIGHT),
+    );
     const k = Math.min((size.w - 80) / maxX, (size.h - 80) / maxY, 1);
     const clamped = Math.max(MIN_K, Math.min(MAX_K, k));
     setT({
@@ -113,9 +144,7 @@ export function Canvas({
   // focus animation
   useEffect(() => {
     if (!focusId || !size.w || !size.h) return;
-    const idx = pages.findIndex((p) => p.id === focusId);
-    if (idx < 0) return;
-    const pos = positions[idx];
+    const pos = positions.get(focusId);
     if (!pos) return;
     const targetK = Math.min(
       (size.w - 80) / pos.w,
@@ -126,7 +155,7 @@ export function Canvas({
     const cx = pos.x + pos.w / 2;
     const cy = pos.y + (pos.h + HEADER_HEIGHT) / 2;
     setT({ x: size.w / 2 - cx * k, y: size.h / 2 - cy * k, k });
-  }, [focusId, pages, positions, size.w, size.h]);
+  }, [focusId, positions, size.w, size.h]);
 
   // wheel zoom / pan
   useEffect(() => {
@@ -232,9 +261,11 @@ export function Canvas({
   };
 
   const fitAll = () => {
-    if (positions.length === 0) return;
-    const maxX = Math.max(...positions.map((p) => p.x + p.w));
-    const maxY = Math.max(...positions.map((p) => p.y + p.h + HEADER_HEIGHT));
+    if (positionsList.length === 0) return;
+    const maxX = Math.max(...positionsList.map((p) => p.x + p.w));
+    const maxY = Math.max(
+      ...positionsList.map((p) => p.y + p.h + HEADER_HEIGHT),
+    );
     const k = Math.min((size.w - 80) / maxX, (size.h - 80) / maxY, 1);
     const clamped = Math.max(MIN_K, Math.min(MAX_K, k));
     setT({
@@ -264,8 +295,9 @@ export function Canvas({
         className="absolute top-0 left-0 origin-top-left will-change-transform"
         style={{ transform: `translate(${t.x}px, ${t.y}px) scale(${t.k})` }}
       >
-        {pages.map((page, i) => {
-          const pos = positions[i];
+        {pages.map((page) => {
+          const pos = positions.get(page.id);
+          if (!pos) return null;
           const active = activeTileId === page.id;
           return (
             <Tile

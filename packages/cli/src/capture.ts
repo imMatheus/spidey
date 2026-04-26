@@ -1,18 +1,29 @@
 import { chromium, type Browser } from "playwright";
 import type { SpideyPage } from "@spidey/shared";
-import type { DiscoveredRoute } from "./routes/next.js";
 import { log } from "./util.js";
 
 const VIEWPORT = { width: 1280, height: 800 };
 
+export type CaptureTarget = {
+  /** Stable id for the resulting tile */
+  id: string;
+  /** URL relative to the dev server, including a leading slash */
+  url: string;
+  /** Human-friendly label printed in logs */
+  label: string;
+  /** Extra fields merged onto the SpideyPage; lets the caller tag a tile as
+   *  a route or component without capture having to know the schema. */
+  meta: Partial<SpideyPage>;
+};
+
 export type CaptureOptions = {
   baseUrl: string;
-  routes: DiscoveredRoute[];
+  targets: CaptureTarget[];
 };
 
 export async function captureAll({
   baseUrl,
-  routes,
+  targets,
 }: CaptureOptions): Promise<{ pages: SpideyPage[]; viewport: typeof VIEWPORT }> {
   let browser: Browser | null = null;
   try {
@@ -26,21 +37,20 @@ export async function captureAll({
   const out: SpideyPage[] = [];
 
   try {
-    for (let i = 0; i < routes.length; i++) {
-      const r = routes[i];
-      const url = baseUrl.replace(/\/$/, "") + r.url;
-      log.step(`capturing [${i + 1}/${routes.length}] ${r.pattern} → ${url}`);
+    for (let i = 0; i < targets.length; i++) {
+      const t = targets[i];
+      const url = baseUrl.replace(/\/$/, "") + t.url;
+      log.step(`capturing [${i + 1}/${targets.length}] ${t.label} → ${url}`);
 
       const page = await ctx.newPage();
       const captured: SpideyPage = {
-        id: makeId(r.pattern),
-        route: r.pattern,
-        url: r.url,
+        id: t.id,
         status: "ok",
         html: "",
         css: "",
         capturedAt: new Date().toISOString(),
         viewport: VIEWPORT,
+        ...t.meta,
       };
 
       try {
@@ -53,12 +63,136 @@ export async function captureAll({
           throw new Error(`HTTP ${response.status()} ${response.statusText()}`);
         }
 
-        // settle
         await page.waitForTimeout(500);
 
         captured.title = await page.title();
 
-        const { html, css } = await page.evaluate(async () => {
+        // Tag DOM with React component owners + serialize their props,
+        // then capture HTML + CSS in a single page.evaluate to keep state
+        // consistent.
+        const { html, css, containerSize } = await page.evaluate(async () => {
+          // ----- Component tagging via React fiber walking -----
+          (function tagComponents() {
+            function getFiber(el: any): any {
+              for (const k of Object.keys(el)) {
+                if (k.startsWith("__reactFiber$")) return el[k];
+              }
+              return null;
+            }
+            function nameOfType(type: any): string | null {
+              if (!type) return null;
+              if (typeof type === "function") {
+                const n = type.displayName || type.name;
+                if (n && /^[A-Z]/.test(n)) return n;
+              }
+              if (typeof type === "object") {
+                if (type.displayName) return type.displayName;
+                const inner = nameOfType(type.render ?? type.type);
+                if (inner) return inner;
+              }
+              return null;
+            }
+            function nearestComponentFiber(fiber: any): any {
+              let f = fiber;
+              while (f) {
+                const n = nameOfType(f.type);
+                if (n) return f;
+                f = f.return;
+              }
+              return null;
+            }
+            function firstHostDescendant(fiber: any): any {
+              let f = fiber.child;
+              while (f) {
+                if (f.stateNode instanceof Element) return f;
+                if (f.child) {
+                  f = f.child;
+                  continue;
+                }
+                if (f.sibling) {
+                  f = f.sibling;
+                  continue;
+                }
+                while (f && !f.sibling) f = f.return;
+                if (!f || f === fiber) return null;
+                f = f.sibling;
+              }
+              return null;
+            }
+            // Best-effort serialization of runtime props for the props
+            // panel in the viewer. Functions, JSX elements, and big
+            // collections are dropped — we only want lightweight
+            // primitives and small object/array shapes for display.
+            function serializeProps(props: any, depth = 0): any {
+              if (props === null || props === undefined) return null;
+              if (depth > 3) return undefined;
+              const type = typeof props;
+              if (type === "string" || type === "number" || type === "boolean")
+                return props;
+              if (type === "function") return undefined;
+              if (Array.isArray(props)) {
+                const out: any[] = [];
+                for (let i = 0; i < Math.min(props.length, 10); i++) {
+                  const v = serializeProps(props[i], depth + 1);
+                  if (v !== undefined) out.push(v);
+                }
+                return out;
+              }
+              if (type === "object") {
+                // React elements have $$typeof Symbol — skip them
+                if (props.$$typeof) return undefined;
+                const out: Record<string, any> = {};
+                for (const key of Object.keys(props)) {
+                  if (key === "children") continue;
+                  const v = serializeProps(props[key], depth + 1);
+                  if (v !== undefined) out[key] = v;
+                }
+                return out;
+              }
+              return undefined;
+            }
+            const seen = new Set<any>();
+            const all = document.body?.querySelectorAll("*") ?? [];
+            for (const el of Array.from(all) as Element[]) {
+              const fiber = getFiber(el);
+              if (!fiber) continue;
+              const compFiber = nearestComponentFiber(fiber);
+              if (!compFiber || seen.has(compFiber)) continue;
+              seen.add(compFiber);
+              const host = firstHostDescendant(compFiber);
+              const name = nameOfType(compFiber.type);
+              if (host?.stateNode instanceof Element && name) {
+                host.stateNode.setAttribute("data-spidey-component", name);
+                const propsSnap = serializeProps(compFiber.memoizedProps);
+                if (propsSnap && Object.keys(propsSnap).length > 0) {
+                  try {
+                    host.stateNode.setAttribute(
+                      "data-spidey-props",
+                      JSON.stringify(propsSnap),
+                    );
+                  } catch {
+                    // ignore unserializable
+                  }
+                }
+              }
+            }
+          })();
+
+          // ----- Natural-size measurement for component previews -----
+          let measuredSize: { width: number; height: number } | undefined;
+          const previewRoot = document.querySelector(
+            "[data-spidey-component-root]",
+          );
+          if (previewRoot instanceof HTMLElement) {
+            const r = previewRoot.getBoundingClientRect();
+            // Round up so we don't clip subpixel content.
+            measuredSize = {
+              width: Math.max(1, Math.ceil(r.width)),
+              height: Math.max(1, Math.ceil(r.height)),
+            };
+          }
+
+          // ----- CSS extraction -----
           const cssChunks: string[] = [];
           for (const sheet of Array.from(document.styleSheets)) {
             try {
@@ -68,7 +202,6 @@ export async function captureAll({
                 cssChunks.push(rules[i].cssText);
               }
             } catch {
-              // cross-origin: try fetching
               const href = (sheet as CSSStyleSheet).href;
               if (href) {
                 try {
@@ -81,11 +214,7 @@ export async function captureAll({
             }
           }
 
-          // Sanitize the body for shadow-DOM mounting:
-          //  - drop <script>, <style>, <link>, <meta>, <noscript> (CSS already
-          //    captured separately above; scripts must not run; meta is moot)
-          //  - drop inline event handlers (on*) and javascript: URLs so a stray
-          //    click in the viewer can't trigger captured page logic
+          // ----- HTML sanitization -----
           const clone = document.body?.cloneNode(true) as HTMLElement | null;
           if (clone) {
             const dropSelectors = "script, style, link, meta, noscript";
@@ -115,11 +244,13 @@ export async function captureAll({
           return {
             html: clone?.innerHTML ?? "",
             css: cssChunks.join("\n"),
+            containerSize: measuredSize,
           };
         });
 
         captured.html = html;
         captured.css = css;
+        if (containerSize) captured.containerSize = containerSize;
       } catch (e: any) {
         captured.status = "error";
         captured.error = String(e?.message ?? e);
@@ -136,12 +267,4 @@ export async function captureAll({
   }
 
   return { pages: out, viewport: VIEWPORT };
-}
-
-function makeId(pattern: string): string {
-  const s = pattern
-    .replace(/^\/+/, "")
-    .replace(/\W+/g, "_")
-    .replace(/^_+|_+$/g, "");
-  return s || "root";
 }

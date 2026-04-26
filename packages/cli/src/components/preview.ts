@@ -1,0 +1,264 @@
+import fs from "node:fs";
+import path from "node:path";
+import crypto from "node:crypto";
+import type { Framework, ComponentSpec } from "@spidey/shared";
+import { NOOP_FN_SENTINEL } from "@spidey/shared";
+import { dirExists } from "../util.js";
+
+export type ComponentPreview = {
+  /** Slug used in the URL path */
+  slug: string;
+  /** Captured route pattern, e.g. "/spidey_previews/Button-abcdef" */
+  url: string;
+  component: ComponentSpec;
+  propsUsed: Record<string, unknown>;
+};
+
+/**
+ * Write preview entry files into the user's project so the dev server can
+ * serve a one-off page per component. Returns the URL path to capture for
+ * each, plus a cleanup function that removes everything we wrote.
+ */
+export function writePreviews(
+  root: string,
+  framework: Framework,
+  components: ComponentSpec[],
+  propsByComponent: Map<string, Record<string, unknown>>,
+): { previews: ComponentPreview[]; cleanup: () => void } {
+  const previews: ComponentPreview[] = [];
+  const cleanups: Array<() => void> = [];
+
+  if (framework === "next") {
+    const appDir = dirExists(path.join(root, "app"))
+      ? path.join(root, "app")
+      : path.join(root, "src/app");
+    const previewRoot = path.join(appDir, "spidey_previews");
+    fs.mkdirSync(previewRoot, { recursive: true });
+    cleanups.push(() => rmrf(previewRoot));
+
+    // Note: we intentionally do NOT write a nested layout.tsx. In Next App
+    // Router, child layouts are wrapped by parent layouts — adding our own
+    // `<html><body>` would nest inside the user's root layout and break
+    // compilation. Previews therefore inherit the user's root layout.
+
+    for (const component of components) {
+      const props = propsByComponent.get(slugKey(component)) ?? {};
+      const slug = makeSlug(component);
+      const dir = path.join(previewRoot, slug);
+      fs.mkdirSync(dir, { recursive: true });
+      const importPath = relativeImport(dir, component.file);
+      fs.writeFileSync(
+        path.join(dir, "page.tsx"),
+        nextPageSource(component, importPath, props),
+      );
+      previews.push({
+        slug,
+        url: `/spidey_previews/${slug}`,
+        component,
+        propsUsed: props,
+      });
+    }
+  } else {
+    // Vite: write top-level HTML + TSX entry pairs. Vite's dev server serves
+    // bare HTML files at the project root via its built-in HTML handler.
+    for (const component of components) {
+      const props = propsByComponent.get(slugKey(component)) ?? {};
+      const slug = makeSlug(component);
+      const baseName = `__spidey_preview-${slug}`;
+      const htmlFile = path.join(root, `${baseName}.html`);
+      const tsxFile = path.join(root, `${baseName}.tsx`);
+      const importPath = relativeImport(root, component.file);
+      fs.writeFileSync(htmlFile, viteHtmlSource(baseName));
+      fs.writeFileSync(
+        tsxFile,
+        viteEntrySource(component, importPath, props),
+      );
+      cleanups.push(() => safeUnlink(htmlFile));
+      cleanups.push(() => safeUnlink(tsxFile));
+      previews.push({
+        slug,
+        url: `/${baseName}.html`,
+        component,
+        propsUsed: props,
+      });
+    }
+  }
+
+  return {
+    previews,
+    cleanup: () => {
+      // Run all in LIFO order; never let one failure short-circuit the rest.
+      for (const fn of cleanups.reverse()) {
+        try {
+          fn();
+        } catch {
+          // ignore
+        }
+      }
+    },
+  };
+}
+
+export function slugKey(c: ComponentSpec): string {
+  return `${c.file}::${c.name}`;
+}
+
+function makeSlug(c: ComponentSpec): string {
+  const hash = crypto
+    .createHash("sha1")
+    .update(c.file)
+    .digest("hex")
+    .slice(0, 6);
+  return `${c.name}-${hash}`;
+}
+
+function relativeImport(fromDir: string, targetFile: string): string {
+  let rel = path.relative(fromDir, targetFile).replace(/\\/g, "/");
+  // Strip extension (.tsx / .ts) — bundlers are happier without it.
+  rel = rel.replace(/\.(tsx?|jsx?)$/i, "");
+  if (!rel.startsWith(".") && !rel.startsWith("/")) rel = "./" + rel;
+  return rel;
+}
+
+/** Encode props with NOOP_FN_SENTINEL kept as a tagged string so the harness
+ *  can rehydrate them as actual no-op functions before passing to the
+ *  component. We just JSON-stringify; the harness does the substitution. */
+function encodeProps(props: Record<string, unknown>): string {
+  return JSON.stringify(props);
+}
+
+function importBinding(component: ComponentSpec, alias: string): string {
+  if (component.exportKind === "default") {
+    return `import ${alias} from "${"@@PATH@@"}";`;
+  }
+  return `import { ${component.name} as ${alias} } from "${"@@PATH@@"}";`;
+}
+
+function nextPageSource(
+  component: ComponentSpec,
+  importPath: string,
+  props: Record<string, unknown>,
+): string {
+  const alias = "Spidey_Component";
+  const importLine = importBinding(component, alias).replace(
+    "@@PATH@@",
+    importPath,
+  );
+  return `"use client";
+// Auto-generated by Spidey. Do not edit; this file is removed
+// after generation completes.
+${importLine}
+
+const RAW_PROPS = ${encodeProps(props)} as Record<string, unknown>;
+
+function rehydrate(value: unknown): unknown {
+  if (value === ${JSON.stringify(NOOP_FN_SENTINEL)}) return () => {};
+  if (Array.isArray(value)) return value.map(rehydrate);
+  if (value && typeof value === "object") {
+    const out: Record<string, unknown> = {};
+    for (const [k, v] of Object.entries(value as Record<string, unknown>)) {
+      out[k] = rehydrate(v);
+    }
+    return out;
+  }
+  return value;
+}
+
+export default function Page() {
+  const props = rehydrate(RAW_PROPS) as Record<string, unknown>;
+  return (
+    <div
+      style={{
+        // Wrapper used by the capture step to measure the natural size of
+        // the component preview. Its inline-block ensures the box hugs the
+        // component instead of stretching to viewport width/height.
+        display: "inline-block",
+        padding: 16,
+        background: "white",
+      }}
+      data-spidey-component-root="true"
+    >
+      {/* @ts-expect-error generated harness - any props */}
+      <${alias} {...props} />
+    </div>
+  );
+}
+`;
+}
+
+function viteHtmlSource(baseName: string): string {
+  return `<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Spidey preview</title>
+    <style>html,body{margin:0;padding:0;background:white;}</style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/${baseName}.tsx"></script>
+  </body>
+</html>
+`;
+}
+
+function viteEntrySource(
+  component: ComponentSpec,
+  importPath: string,
+  props: Record<string, unknown>,
+): string {
+  const alias = "Spidey_Component";
+  const importLine = importBinding(component, alias).replace(
+    "@@PATH@@",
+    importPath,
+  );
+  return `// Auto-generated by Spidey. Do not edit; this file is removed
+// after generation completes.
+import React from "react";
+import ReactDOM from "react-dom/client";
+${importLine}
+
+const RAW_PROPS = ${encodeProps(props)};
+
+function rehydrate(value) {
+  if (value === ${JSON.stringify(NOOP_FN_SENTINEL)}) return () => {};
+  if (Array.isArray(value)) return value.map(rehydrate);
+  if (value && typeof value === "object") {
+    const out = {};
+    for (const [k, v] of Object.entries(value)) out[k] = rehydrate(v);
+    return out;
+  }
+  return value;
+}
+
+const props = rehydrate(RAW_PROPS);
+
+ReactDOM.createRoot(document.getElementById("root")).render(
+  React.createElement(
+    "div",
+    {
+      style: {
+        display: "inline-block",
+        padding: 16,
+        background: "white",
+      },
+      "data-spidey-component-root": "true",
+    },
+    React.createElement(${alias}, props),
+  ),
+);
+`;
+}
+
+function rmrf(p: string): void {
+  fs.rmSync(p, { recursive: true, force: true });
+}
+
+function safeUnlink(p: string): void {
+  try {
+    fs.unlinkSync(p);
+  } catch {
+    // ignore
+  }
+}

@@ -1,9 +1,12 @@
+import { Button } from "../../components/Button";
+import { StatCard } from "../../components/StatCard";
+
 export default function Dashboard() {
   const stats = [
-    { num: "12.4k", label: "Active users" },
-    { num: "$8,210", label: "Revenue" },
-    { num: "98.2%", label: "Uptime" },
-    { num: "23", label: "Open tickets" },
+    { label: "Active users", value: "12.4k", delta: 8 },
+    { label: "Revenue", value: "$8,210", delta: 4 },
+    { label: "Uptime", value: "98.2%", delta: -1 },
+    { label: "Open tickets", value: "23", delta: -12 },
   ];
   return (
     <div>
@@ -11,11 +14,18 @@ export default function Dashboard() {
       <p>The thing your boss looks at before standup.</p>
       <div className="stat-grid">
         {stats.map((s) => (
-          <div key={s.label} className="stat">
-            <div className="num">{s.num}</div>
-            <div className="label">{s.label}</div>
-          </div>
+          <StatCard
+            key={s.label}
+            label={s.label}
+            value={s.value}
+            delta={s.delta}
+          />
         ))}
+      </div>
+      <div style={{ display: "flex", gap: 8, marginTop: 24 }}>
+        <Button label="Refresh" variant="primary" />
+        <Button label="Export" variant="ghost" />
+        <Button label="Reset" variant="danger" />
       </div>
     </div>
   );
