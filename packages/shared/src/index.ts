@@ -33,11 +33,32 @@ export type ComponentSpec = {
   props: Record<string, PropSpec>;
 };
 
-export type SpideyPage = {
+/**
+ * v3 introduces a node-based representation of each captured tile so the
+ * viewer can edit it. Each element node carries id, tag, attrs and a parsed
+ * inline-style record. Text nodes are leaves. The captured CSS still travels
+ * as a string per tile (class-based selectors keep working).
+ *
+ * IDs are stable per tile: capture emits `t{tileIdx}-n{counter}`; the editor
+ * uses a `u-` prefix for inserts so it's clear at a glance which nodes
+ * existed at capture time vs. were drawn by the user.
+ */
+export type SpideyNode =
+  | {
+      id: string;
+      kind: "el";
+      tag: string;
+      attrs: Record<string, string>;
+      style: Record<string, string>;
+      children: SpideyNode[];
+    }
+  | { id: string; kind: "text"; value: string };
+
+export type SpideyTile = {
   id: string;
   /**
    * Discriminates between captured route screens and standalone component
-   * previews. Optional for v1 backwards compat — absent means "route".
+   * previews. Optional for legacy v1 docs — absent means "route".
    */
   kind?: "route" | "component";
 
@@ -56,8 +77,16 @@ export type SpideyPage = {
 
   status: "ok" | "error";
   error?: string;
-  /** innerHTML of <body> after sanitization */
-  html: string;
+
+  /**
+   * The captured DOM as a structured node tree. v3 docs always populate this
+   * (or null when status==="error"); legacy v1/v2 docs use `html` instead and
+   * the viewer translates them at load time.
+   */
+  tree?: SpideyNode | null;
+  /** Legacy: innerHTML of <body> after sanitization. v1/v2 only. */
+  html?: string;
+
   /** Concatenated CSS from all stylesheets, inline + external */
   css: string;
   capturedAt: string;
@@ -82,10 +111,21 @@ export type SpideyPage = {
   htmlAttrs?: Record<string, string>;
 };
 
+/**
+ * Backwards-compat alias. Existing viewer code reads `SpideyPage` everywhere;
+ * keep the name as a re-export of the new `SpideyTile` type so callers don't
+ * break, while the canonical name moves to `SpideyTile` to match the
+ * `tiles[]` field on the document.
+ */
+export type SpideyPage = SpideyTile;
+
 export type SpideyDocument = {
-  /** v1 = routes only; v2 adds the components pipeline */
-  version: 1 | 2;
+  /** v1 = routes only; v2 added components; v3 added editable node trees. */
+  version: 1 | 2 | 3;
   generatedAt: string;
+  /** Set by the viewer's autosave on every PUT — used by the CLI to warn
+   *  before clobbering edits on regenerate. */
+  editedAt?: string;
   project: {
     name: string;
     framework: Framework;
@@ -95,7 +135,13 @@ export type SpideyDocument = {
     viewport: { width: number; height: number };
     devServerUrl: string;
   };
-  pages: SpideyPage[];
+  /**
+   * v3 uses `tiles`. v1/v2 docs use `pages`. The viewer reads whichever is
+   * present; the CLI only writes `tiles` (and v3) going forward.
+   */
+  tiles?: SpideyTile[];
+  /** Legacy v1/v2 field. */
+  pages?: SpideyTile[];
   /** Catalog of discovered components, regardless of capture success */
   components?: ComponentSpec[];
 };

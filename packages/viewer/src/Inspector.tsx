@@ -1,30 +1,60 @@
-import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
-import type { TreeNode } from "./inspect/buildTree";
-import { findNode } from "./inspect/buildTree";
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode,
+} from "react";
+import {
+  ChevronRight,
+  Copy,
+  Scissors,
+  ClipboardPaste,
+  CopyPlus,
+  Trash2,
+  Link2,
+  Lock,
+  PenSquare,
+} from "lucide-react";
+import type { SpideyNode } from "@spidey/shared";
+import {
+  buildTree,
+  findNode,
+  isDescendant,
+  type TreeNode,
+} from "./inspect/buildTree";
 import {
   buildStyleSections,
   summarizeElement,
   type StyleSection,
   type ElementSummary,
 } from "./inspect/computeStyles";
+import {
+  findById,
+  findInstanceAncestor,
+  findParent as findSpideyParent,
+} from "./editor/tree";
+import type { EditAction } from "./editor/state";
 
 type Props = {
-  /** Identifies which tile's tree we're showing — used to fully remount the
-   *  tree subtree when switching tiles, so per-row open/closed state can't
-   *  bleed across tiles via shared path-keys like "0.1.2". */
   tileId: string | null;
-  /** Component metadata for the active tile, when it is a component tile. */
   componentInfo: {
     name: string;
     file: string;
     propsUsed: Record<string, unknown>;
   } | null;
-  trees: TreeNode[] | null;
-  selected: HTMLElement | null;
+  tree: SpideyNode | null;
+  selectedNodeId: string | null;
+  selectedElement: HTMLElement | null;
   tileBody: HTMLElement | null;
   scale: number;
-  onSelect: (el: HTMLElement) => void;
-  recomputeKey: number;
+  rev: number;
+  onSelectNode: (id: string | null) => void;
+  /** Hover a node from the layers tree → highlight in the canvas. */
+  onHoverNode: (id: string | null) => void;
+  /** Activate the master tile for the given component name. */
+  onEditMaster: (componentName: string) => void;
+  dispatch: (action: EditAction) => void;
 };
 
 const ASIDE =
@@ -33,14 +63,20 @@ const ASIDE =
 export function Inspector({
   tileId,
   componentInfo,
-  trees,
-  selected,
+  tree,
+  selectedNodeId,
+  selectedElement,
   tileBody,
   scale,
-  onSelect,
-  recomputeKey,
+  rev,
+  onSelectNode,
+  onHoverNode,
+  onEditMaster,
+  dispatch,
 }: Props) {
-  if (!trees) {
+  const trees = useMemo(() => buildTree(tree), [tree, rev]);
+
+  if (!tileId || trees.length === 0) {
     return (
       <aside className={ASIDE}>
         <div className="grid place-items-center h-full text-fg-dim text-center text-xs">
@@ -53,32 +89,87 @@ export function Inspector({
     );
   }
 
+  const selectedNode = selectedNodeId && tree ? findById(tree, selectedNodeId) : null;
+
+  // The active tile is a master when componentInfo is set. Otherwise it's a
+  // route, and any selection inside a component-instance subtree is locked.
+  const isMasterTile = !!componentInfo;
+  const instanceLock =
+    !isMasterTile && selectedNodeId
+      ? findInstanceAncestor(tree, selectedNodeId)
+      : null;
+
   return (
     <aside className={ASIDE}>
       {componentInfo && <ComponentHeader info={componentInfo} />}
       <BreadcrumbAndTree
         key={tileId ?? "no-tile"}
         trees={trees}
-        selected={selected}
-        onSelect={onSelect}
+        tree={tree}
+        selectedId={selectedNodeId}
+        onSelect={onSelectNode}
+        onHover={onHoverNode}
+        tileId={tileId}
+        dispatch={dispatch}
       />
-      {selected && tileBody && (
+      {instanceLock && (
+        <InstanceLockBanner
+          componentName={instanceLock.componentName}
+          onEditMaster={() => onEditMaster(instanceLock.componentName)}
+        />
+      )}
+      {selectedNodeId && selectedElement && tileBody && (
         <StylePanels
-          el={selected}
+          el={selectedElement}
           tileBody={tileBody}
           scale={scale}
-          recomputeKey={recomputeKey}
+          rev={rev}
+          tileId={tileId}
+          nodeId={selectedNodeId}
+          node={
+            selectedNode && selectedNode.kind === "el" ? selectedNode : null
+          }
+          locked={!!instanceLock}
+          dispatch={dispatch}
         />
       )}
     </aside>
   );
 }
 
-/**
- * Inline panel rendered inside StylePanels when the selected element is the
- * root of a React component instance captured during a route screenshot.
- * Surfaces the component name + the props snapshot (sans functions).
- */
+function InstanceLockBanner({
+  componentName,
+  onEditMaster,
+}: {
+  componentName: string;
+  onEditMaster: () => void;
+}) {
+  return (
+    <div className="border-b border-edge bg-accent-soft/40 px-3 py-2 flex items-center gap-2">
+      <Lock size={13} strokeWidth={2} className="text-accent shrink-0" />
+      <div className="flex-1 min-w-0">
+        <div className="text-[11px] text-fg flex items-center gap-1.5">
+          <span>Instance of</span>
+          <span className="font-mono text-accent font-semibold">
+            {`<${componentName}>`}
+          </span>
+        </div>
+        <div className="text-[10px] text-fg-dim">
+          Style edits go on the master.
+        </div>
+      </div>
+      <button
+        onClick={onEditMaster}
+        title={`Open the <${componentName}> master tile`}
+        className="text-[11px] inline-flex items-center gap-1 bg-accent text-white px-2 py-1 rounded cursor-pointer hover:bg-accent/90 shrink-0"
+      >
+        <PenSquare size={11} strokeWidth={2} />
+        Edit master
+      </button>
+    </div>
+  );
+}
+
 function SelectedComponentPanel({
   name,
   props,
@@ -117,8 +208,6 @@ function ComponentHeader({
 }: {
   info: { name: string; file: string; propsUsed: Record<string, unknown> };
 }) {
-  // Functions don't read meaningfully in a side panel — surface only data
-  // props (strings, numbers, booleans, arrays, objects).
   const props = Object.entries(info.propsUsed).filter(
     ([, v]) => v !== "__spidey_noop__",
   );
@@ -128,10 +217,7 @@ function ComponentHeader({
         <span className="font-mono text-accent text-[14px] font-semibold">
           {`<${info.name}>`}
         </span>
-        <span
-          className="text-[10px] text-fg-faint truncate"
-          title={info.file}
-        >
+        <span className="text-[10px] text-fg-faint truncate" title={info.file}>
           {info.file}
         </span>
       </div>
@@ -175,18 +261,41 @@ function formatPropValue(v: unknown): string {
 
 function BreadcrumbAndTree({
   trees,
-  selected,
+  tree,
+  selectedId,
   onSelect,
+  onHover,
+  tileId,
+  dispatch,
 }: {
   trees: TreeNode[];
-  selected: HTMLElement | null;
-  onSelect: (el: HTMLElement) => void;
+  tree: SpideyNode | null;
+  selectedId: string | null;
+  onSelect: (id: string | null) => void;
+  onHover: (id: string | null) => void;
+  tileId: string;
+  dispatch: (a: EditAction) => void;
 }) {
   const found = useMemo(
-    () => (selected ? findNode(trees, selected) : null),
-    [trees, selected],
+    () => (selectedId ? findNode(trees, selectedId) : null),
+    [trees, selectedId],
   );
   const breadcrumb = found ? [...found.ancestors, found.node] : [];
+
+  const [menu, setMenu] = useState<{ id: string; x: number; y: number } | null>(
+    null,
+  );
+
+  useEffect(() => {
+    if (!menu) return;
+    const close = () => setMenu(null);
+    window.addEventListener("click", close);
+    window.addEventListener("scroll", close, true);
+    return () => {
+      window.removeEventListener("click", close);
+      window.removeEventListener("scroll", close, true);
+    };
+  }, [menu]);
 
   return (
     <>
@@ -195,18 +304,20 @@ function BreadcrumbAndTree({
           {breadcrumb.map((n, i) => {
             const isLast = i === breadcrumb.length - 1;
             return (
-              <span key={n.id}>
+              <span key={n.id} className="inline-flex items-center">
                 {i > 0 && (
-                  <span className="mx-0.5 text-fg-faint">›</span>
+                  <ChevronRight
+                    size={11}
+                    strokeWidth={2}
+                    className="mx-0.5 text-fg-faint shrink-0"
+                  />
                 )}
                 <button
-                  onClick={() => onSelect(n.ref)}
+                  onClick={() => onSelect(n.id)}
                   title={describeNode(n)}
                   className={[
                     "bg-transparent border-0 px-1 py-0.5 cursor-pointer rounded font-mono text-[11px] hover:bg-panel-2 hover:text-fg",
-                    isLast
-                      ? "text-accent font-semibold"
-                      : "text-fg-dim",
+                    isLast ? "text-accent font-semibold" : "text-fg-dim",
                   ].join(" ")}
                 >
                   {nodeChip(n)}
@@ -216,7 +327,10 @@ function BreadcrumbAndTree({
           })}
         </div>
       )}
-      <div className="flex flex-col min-h-[100px] max-h-[36%] shrink-0 border-b border-edge">
+      <div
+        className="flex flex-col min-h-[100px] max-h-[36%] shrink-0 border-b border-edge"
+        onMouseLeave={() => onHover(null)}
+      >
         <SectionTitle>Layers</SectionTitle>
         <div className="flex-1 overflow-y-auto pb-2 font-mono text-[11px]">
           {trees.map((n) => (
@@ -224,38 +338,134 @@ function BreadcrumbAndTree({
               key={n.id}
               node={n}
               depth={0}
-              selectedRef={selected}
+              selectedId={selectedId}
               onSelect={onSelect}
+              onHover={onHover}
               defaultOpenDepth={2}
+              tileId={tileId}
+              dispatch={dispatch}
+              tree={tree}
+              onMenu={(id, x, y) => setMenu({ id, x, y })}
             />
           ))}
         </div>
       </div>
+      {menu && (
+        <ContextMenu
+          x={menu.x}
+          y={menu.y}
+          onCopy={() =>
+            dispatch({ type: "copyNode", tileId, nodeId: menu.id })
+          }
+          onCut={() => {
+            dispatch({ type: "cutNode", tileId, nodeId: menu.id });
+            onSelect(null);
+          }}
+          onPaste={() =>
+            dispatch({ type: "pasteAsChild", tileId, parentId: menu.id })
+          }
+          onDuplicate={() =>
+            dispatch({ type: "duplicateNode", tileId, nodeId: menu.id })
+          }
+          onDelete={() => {
+            dispatch({ type: "removeNode", tileId, nodeId: menu.id });
+            onSelect(null);
+          }}
+        />
+      )}
     </>
+  );
+}
+
+function ContextMenu({
+  x,
+  y,
+  onCopy,
+  onCut,
+  onPaste,
+  onDuplicate,
+  onDelete,
+}: {
+  x: number;
+  y: number;
+  onCopy: () => void;
+  onCut: () => void;
+  onPaste: () => void;
+  onDuplicate: () => void;
+  onDelete: () => void;
+}) {
+  const Item = ({
+    label,
+    onClick,
+    Icon,
+    danger,
+  }: {
+    label: string;
+    onClick: () => void;
+    Icon: typeof Copy;
+    danger?: boolean;
+  }) => (
+    <button
+      onClick={onClick}
+      className={[
+        "w-full flex items-center gap-2 px-3 py-1.5 text-[11px] font-sans cursor-pointer hover:bg-panel-2 text-left",
+        danger ? "text-[#ff8a8a]" : "text-fg",
+      ].join(" ")}
+    >
+      <Icon size={13} strokeWidth={2} className="shrink-0" />
+      {label}
+    </button>
+  );
+  return (
+    <div
+      className="fixed z-50 bg-panel border border-edge rounded-md shadow-lg py-1 min-w-[160px]"
+      style={{ left: x, top: y }}
+      onClick={(e) => e.stopPropagation()}
+    >
+      <Item label="Duplicate" onClick={onDuplicate} Icon={CopyPlus} />
+      <Item label="Copy" onClick={onCopy} Icon={Copy} />
+      <Item label="Cut" onClick={onCut} Icon={Scissors} />
+      <Item label="Paste as child" onClick={onPaste} Icon={ClipboardPaste} />
+      <div className="h-px bg-edge my-1" />
+      <Item label="Delete" onClick={onDelete} Icon={Trash2} danger />
+    </div>
   );
 }
 
 function TreeRow({
   node,
   depth,
-  selectedRef,
+  selectedId,
   onSelect,
+  onHover,
   defaultOpenDepth,
+  tileId,
+  dispatch,
+  tree,
+  onMenu,
 }: {
   node: TreeNode;
   depth: number;
-  selectedRef: HTMLElement | null;
-  onSelect: (el: HTMLElement) => void;
+  selectedId: string | null;
+  onSelect: (id: string | null) => void;
+  onHover: (id: string | null) => void;
   defaultOpenDepth: number;
+  tileId: string;
+  dispatch: (a: EditAction) => void;
+  tree: SpideyNode | null;
+  onMenu: (id: string, x: number, y: number) => void;
 }) {
   const [open, setOpen] = useState(depth < defaultOpenDepth);
   const rowRef = useRef<HTMLDivElement>(null);
-  const isSelected = selectedRef === node.ref;
+  const isSelected = selectedId === node.id;
   const hasChildren = node.children.length > 0;
-  // DOM `contains` is O(depth) and short-circuits — much cheaper than
-  // recursing through the cloned tree on every TreeRow render.
   const containsSelected =
-    !!selectedRef && node.ref.contains(selectedRef);
+    !!selectedId && (isSelected || isDescendant(node, selectedId));
+
+  // Drop indicator state: 'before' | 'after' | 'inside' | null
+  const [dropZone, setDropZone] = useState<"before" | "after" | "inside" | null>(
+    null,
+  );
 
   useEffect(() => {
     if (containsSelected && !open) setOpen(true);
@@ -268,42 +478,116 @@ function TreeRow({
   }, [isSelected]);
 
   const isComponent = !!node.componentName;
+
+  const onDragStart = (e: React.DragEvent) => {
+    e.stopPropagation();
+    e.dataTransfer.setData("application/x-spidey-node", node.id);
+    e.dataTransfer.effectAllowed = "move";
+  };
+  const onDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    const rect = (e.currentTarget as HTMLElement).getBoundingClientRect();
+    const y = e.clientY - rect.top;
+    const h = rect.height;
+    if (y < h * 0.25) setDropZone("before");
+    else if (y > h * 0.75) setDropZone("after");
+    else setDropZone("inside");
+    e.dataTransfer.dropEffect = "move";
+  };
+  const onDragLeave = () => setDropZone(null);
+  const onDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    const draggedId = e.dataTransfer.getData("application/x-spidey-node");
+    const zone = dropZone;
+    setDropZone(null);
+    if (!draggedId || draggedId === node.id) return;
+    if (zone === "inside") {
+      // The reducer's moveNode is cycle-safe — if this would create a cycle
+      // (dropping a node into its own subtree) it returns the tree unchanged.
+      dispatch({
+        type: "moveNode",
+        tileId,
+        nodeId: draggedId,
+        newParentId: node.id,
+        newIndex: 1_000_000, // append
+      });
+      return;
+    }
+    // Sibling drop: locate this anchor's parent + index in the SpideyNode
+    // tree to compute the destination.
+    if (!tree) return;
+    const found = findSpideyParent(tree, node.id);
+    if (!found) return;
+    const offset = zone === "after" ? 1 : 0;
+    dispatch({
+      type: "moveNode",
+      tileId,
+      nodeId: draggedId,
+      newParentId: found.parent.id,
+      newIndex: found.index + offset,
+    });
+  };
+
   return (
     <div>
       <div
         ref={rowRef}
-        onClick={() => onSelect(node.ref)}
+        draggable
+        onDragStart={onDragStart}
+        onDragOver={onDragOver}
+        onDragLeave={onDragLeave}
+        onDrop={onDrop}
+        onClick={() => onSelect(node.id)}
+        onMouseEnter={(e) => {
+          // stopPropagation: parent rows would otherwise re-claim hover
+          // when the cursor enters one of their child rows.
+          e.stopPropagation();
+          onHover(node.id);
+        }}
+        onContextMenu={(e) => {
+          e.preventDefault();
+          onSelect(node.id);
+          onMenu(node.id, e.clientX, e.clientY);
+        }}
         className={[
-          "flex items-center gap-1 py-0.5 cursor-pointer whitespace-nowrap",
+          "relative flex items-center gap-1 py-0.5 cursor-pointer whitespace-nowrap",
           isSelected
             ? "bg-accent-soft text-accent"
-            : isComponent
-              ? "hover:bg-panel-2"
-              : "hover:bg-panel-2",
+            : "hover:bg-panel-2",
         ].join(" ")}
         style={{ paddingLeft: depth * 12 + 8 }}
       >
+        {dropZone === "before" && (
+          <div className="absolute top-0 left-0 right-0 h-px bg-accent pointer-events-none" />
+        )}
+        {dropZone === "after" && (
+          <div className="absolute bottom-0 left-0 right-0 h-px bg-accent pointer-events-none" />
+        )}
+        {dropZone === "inside" && (
+          <div className="absolute inset-0 ring-1 ring-accent ring-inset pointer-events-none" />
+        )}
         <span
           onClick={(e) => {
             e.stopPropagation();
             if (hasChildren) setOpen((v) => !v);
           }}
           className={[
-            "inline-grid place-items-center w-3 h-3 shrink-0 text-[8px] text-fg-faint transition-transform",
+            "inline-grid place-items-center w-3 h-3 shrink-0 text-fg-faint transition-transform",
             hasChildren ? "cursor-pointer" : "opacity-0",
             open ? "rotate-90" : "",
           ].join(" ")}
         >
-          ▶
+          <ChevronRight size={10} strokeWidth={2.5} />
         </span>
         {isComponent ? (
           <>
-            <span
-              className={[
-                "font-semibold tracking-wide text-[12px]",
-                isSelected ? "text-accent" : "text-accent",
-              ].join(" ")}
-            >
+            <Link2
+              size={11}
+              strokeWidth={2.5}
+              className="text-accent shrink-0"
+            />
+            <span className="font-semibold tracking-wide text-[12px] text-accent">
               {node.componentName}
             </span>
             <span className="text-fg-faint text-[10px]">
@@ -316,11 +600,14 @@ function TreeRow({
             <span className={isSelected ? "text-accent" : "text-fg"}>
               {node.tag}
             </span>
-            {node.domId && (
-              <span className="text-amberish">#{node.domId}</span>
-            )}
+            {node.domId && <span className="text-amberish">#{node.domId}</span>}
             {node.classes.length > 0 && (
               <span className="text-fg-dim">.{node.classes[0]}</span>
+            )}
+            {node.textPreview && (
+              <span className="text-fg-faint text-[10px] italic">
+                "{node.textPreview}"
+              </span>
             )}
           </>
         )}
@@ -331,9 +618,14 @@ function TreeRow({
             key={c.id}
             node={c}
             depth={depth + 1}
-            selectedRef={selectedRef}
+            selectedId={selectedId}
             onSelect={onSelect}
+            onHover={onHover}
             defaultOpenDepth={defaultOpenDepth}
+            tileId={tileId}
+            dispatch={dispatch}
+            tree={tree}
+            onMenu={onMenu}
           />
         ))}
     </div>
@@ -365,12 +657,22 @@ function StylePanels({
   el,
   tileBody,
   scale,
-  recomputeKey,
+  rev,
+  tileId,
+  nodeId,
+  node,
+  locked,
+  dispatch,
 }: {
   el: HTMLElement;
   tileBody: HTMLElement;
   scale: number;
-  recomputeKey: number;
+  rev: number;
+  tileId: string;
+  nodeId: string;
+  node: (SpideyNode & { kind: "el" }) | null;
+  locked: boolean;
+  dispatch: (a: EditAction) => void;
 }) {
   const [data, setData] = useState<{
     summary: ElementSummary;
@@ -381,13 +683,12 @@ function StylePanels({
     const summary = summarizeElement(el, tileBody, scale);
     const sections = buildStyleSections(el, summary.rect);
     setData({ summary, sections });
-  }, [el, tileBody, scale, recomputeKey]);
+  }, [el, tileBody, scale, rev]);
 
   if (!data) return null;
   const { summary, sections } = data;
 
-  // If the selected element is the root of a captured React component
-  // instance, surface that information above the styles.
+  // Component-instance panel: surface name + props
   const componentName = el.getAttribute("data-spidey-component");
   const propsAttr = el.getAttribute("data-spidey-props");
   let runtimeProps: Record<string, unknown> | null = null;
@@ -399,13 +700,14 @@ function StylePanels({
     }
   }
 
+  const inlineStyle = node?.style ?? {};
+  const setStyle = (prop: string, value: string | null) =>
+    dispatch({ type: "setStyle", tileId, nodeId, prop, value });
+
   return (
     <div className="flex-1 overflow-y-auto pb-4">
       {componentName && (
-        <SelectedComponentPanel
-          name={componentName}
-          props={runtimeProps}
-        />
+        <SelectedComponentPanel name={componentName} props={runtimeProps} />
       )}
       <div className="p-3 border-b border-edge">
         <div className="font-mono text-[13px] text-fg mb-1.5">
@@ -432,6 +734,51 @@ function StylePanels({
           </div>
         )}
       </div>
+
+      {!locked && (
+        <>
+          <EditableStyle
+            title="Background"
+            inline={inlineStyle}
+            setStyle={setStyle}
+            fields={[
+              { prop: "background", label: "color", kind: "color" },
+            ]}
+          />
+          <EditableStyle
+            title="Typography"
+            inline={inlineStyle}
+            setStyle={setStyle}
+            fields={[
+              { prop: "color", label: "color", kind: "color" },
+              { prop: "font-size", label: "size", kind: "text", placeholder: "16px" },
+              { prop: "font-weight", label: "weight", kind: "text", placeholder: "400" },
+              { prop: "text-align", label: "align", kind: "select", options: ["", "left", "center", "right", "justify"] },
+            ]}
+          />
+          <EditableStyle
+            title="Layout"
+            inline={inlineStyle}
+            setStyle={setStyle}
+            fields={[
+              { prop: "width", label: "width", kind: "text", placeholder: "auto" },
+              { prop: "height", label: "height", kind: "text", placeholder: "auto" },
+              { prop: "padding", label: "padding", kind: "text", placeholder: "0" },
+              { prop: "margin", label: "margin", kind: "text", placeholder: "0" },
+            ]}
+          />
+          <EditableStyle
+            title="Border"
+            inline={inlineStyle}
+            setStyle={setStyle}
+            fields={[
+              { prop: "border-radius", label: "radius", kind: "text", placeholder: "0" },
+              { prop: "border", label: "border", kind: "text", placeholder: "none" },
+            ]}
+          />
+        </>
+      )}
+
       {sections.map((s) =>
         s.title === "Spacing" ? (
           <BoxModelSection key={s.title} section={s} />
@@ -441,6 +788,147 @@ function StylePanels({
       )}
     </div>
   );
+}
+
+type EditableField =
+  | { prop: string; label: string; kind: "text"; placeholder?: string }
+  | { prop: string; label: string; kind: "color" }
+  | { prop: string; label: string; kind: "select"; options: string[] };
+
+function EditableStyle({
+  title,
+  fields,
+  inline,
+  setStyle,
+}: {
+  title: string;
+  fields: EditableField[];
+  inline: Record<string, string>;
+  setStyle: (prop: string, value: string | null) => void;
+}) {
+  return (
+    <div className="border-b border-edge">
+      <SectionTitle>{title}</SectionTitle>
+      <div className="grid grid-cols-[80px_1fr] gap-x-2 gap-y-1.5 px-3 pb-3 text-[11px] items-center">
+        {fields.map((f) => (
+          <FieldRow key={f.prop} field={f} value={inline[f.prop] ?? ""} setStyle={setStyle} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function FieldRow({
+  field,
+  value,
+  setStyle,
+}: {
+  field: EditableField;
+  value: string;
+  setStyle: (prop: string, value: string | null) => void;
+}) {
+  const [draft, setDraft] = useState(value);
+  // Mirror external value changes (undo, redo, programmatic edits).
+  useEffect(() => {
+    setDraft(value);
+  }, [value]);
+
+  const commit = (next: string) => {
+    if (next === value) return;
+    setStyle(field.prop, next === "" ? null : next);
+  };
+
+  if (field.kind === "color") {
+    const hex = toHex(value);
+    return (
+      <>
+        <span className="text-fg-faint font-mono">{field.label}</span>
+        <span className="flex items-center gap-1.5">
+          <input
+            type="color"
+            value={hex}
+            onChange={(e) => commit(e.target.value)}
+            className="w-5 h-5 bg-transparent border border-edge rounded cursor-pointer p-0"
+          />
+          <input
+            type="text"
+            value={draft}
+            placeholder="—"
+            onChange={(e) => setDraft(e.target.value)}
+            onBlur={(e) => commit(e.target.value.trim())}
+            className="flex-1 min-w-0 bg-panel-2 border border-edge rounded px-1.5 py-1 text-[11px] font-mono text-fg focus:outline-none focus:border-accent"
+          />
+        </span>
+      </>
+    );
+  }
+  if (field.kind === "select") {
+    return (
+      <>
+        <span className="text-fg-faint font-mono">{field.label}</span>
+        <select
+          value={draft}
+          onChange={(e) => {
+            setDraft(e.target.value);
+            commit(e.target.value);
+          }}
+          className="bg-panel-2 border border-edge rounded px-1.5 py-1 text-[11px] font-mono text-fg focus:outline-none focus:border-accent"
+        >
+          {field.options.map((o) => (
+            <option key={o} value={o}>
+              {o || "—"}
+            </option>
+          ))}
+        </select>
+      </>
+    );
+  }
+  return (
+    <>
+      <span className="text-fg-faint font-mono">{field.label}</span>
+      <input
+        type="text"
+        value={draft}
+        placeholder={field.placeholder}
+        onChange={(e) => setDraft(e.target.value)}
+        onBlur={(e) => commit(e.target.value.trim())}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") (e.target as HTMLInputElement).blur();
+          if (e.key === "Escape") {
+            setDraft(value);
+            (e.target as HTMLInputElement).blur();
+          }
+        }}
+        className="bg-panel-2 border border-edge rounded px-1.5 py-1 text-[11px] font-mono text-fg focus:outline-none focus:border-accent"
+      />
+    </>
+  );
+}
+
+function toHex(value: string): string {
+  if (!value) return "#000000";
+  const s = value.trim();
+  if (s.startsWith("#") && (s.length === 7 || s.length === 4)) {
+    if (s.length === 4) {
+      return (
+        "#" +
+        s
+          .slice(1)
+          .split("")
+          .map((c) => c + c)
+          .join("")
+      );
+    }
+    return s;
+  }
+  // Try rgb(...) → #rrggbb. Color picker doesn't accept named colors.
+  const m = s.match(/rgba?\(\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)/i);
+  if (m) {
+    const [, r, g, b] = m;
+    const toH = (n: number) => Math.max(0, Math.min(255, n)).toString(16).padStart(2, "0");
+    return "#" + toH(+r) + toH(+g) + toH(+b);
+  }
+  return "#000000";
 }
 
 function SectionBlock({ section }: { section: StyleSection }) {
@@ -466,13 +954,7 @@ function SectionBlock({ section }: { section: StyleSection }) {
   );
 }
 
-function Row({
-  label,
-  children,
-}: {
-  label: string;
-  children: ReactNode;
-}) {
+function Row({ label, children }: { label: string; children: ReactNode }) {
   return (
     <>
       <span className="text-fg-faint font-mono">{label}</span>
@@ -534,9 +1016,7 @@ function BoxEdge({
     right: "right-1 top-1/2 -translate-y-1/2",
   } as const;
   return (
-    <span
-      className={`absolute text-[11px] text-fg font-mono ${map[pos]}`}
-    >
+    <span className={`absolute text-[11px] text-fg font-mono ${map[pos]}`}>
       {children}
     </span>
   );

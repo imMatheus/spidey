@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
-import type { SpideyDocument, SpideyPage } from "@spidey/shared";
+import readline from "node:readline/promises";
+import type { SpideyDocument, SpideyTile } from "@spidey/shared";
 import { detectProject } from "../detect.js";
 import { discoverNextRoutes } from "../routes/next.js";
 import { discoverViteRoutes } from "../routes/vite.js";
@@ -18,11 +19,35 @@ export type GenerateOptions = {
   projectPath: string;
   outputPath: string;
   components: boolean;
+  /** Skip the prompt that warns when overwriting a doc with viewer edits. */
+  force?: boolean;
 };
 
 export async function runGenerate(opts: GenerateOptions): Promise<void> {
   const project = detectProject(opts.projectPath);
   log.info(`${project.name} (${project.framework}) at ${project.root}`);
+
+  // ----- Clobber check -----
+  // If an existing v3 doc has been edited in the viewer, prompt before
+  // overwriting. --force skips the prompt for scripted/CI use.
+  const outPathAbs = path.resolve(opts.outputPath);
+  if (!opts.force && fs.existsSync(outPathAbs)) {
+    try {
+      const raw = fs.readFileSync(outPathAbs, "utf8");
+      const existing = JSON.parse(raw) as SpideyDocument;
+      if (existing.version === 3 && existing.editedAt) {
+        const ok = await promptYesNo(
+          `Existing ${path.basename(outPathAbs)} has unsaved viewer edits from ${existing.editedAt}. Overwrite? [y/N] `,
+        );
+        if (!ok) {
+          log.warn("aborted (use --force to skip this prompt)");
+          return;
+        }
+      }
+    } catch {
+      // not JSON or unreadable — fall through and overwrite
+    }
+  }
 
   // ----- Routes -----
   log.step("discovering routes");
@@ -121,13 +146,13 @@ export async function runGenerate(opts: GenerateOptions): Promise<void> {
       },
     }));
 
-    const { pages, viewport } = await captureAll({
+    const { tiles, viewport } = await captureAll({
       baseUrl: dev.url,
       targets: [...routeTargets, ...previewTargets],
     });
 
     const doc: SpideyDocument = {
-      version: opts.components && componentSpecs.length > 0 ? 2 : 1,
+      version: 3,
       generatedAt: new Date().toISOString(),
       project: {
         name: project.name,
@@ -138,25 +163,26 @@ export async function runGenerate(opts: GenerateOptions): Promise<void> {
         viewport,
         devServerUrl: dev.url,
       },
-      pages,
+      tiles,
       components: componentSpecs.length > 0 ? componentSpecs : undefined,
     };
 
-    const outPath = path.resolve(opts.outputPath);
-    fs.mkdirSync(path.dirname(outPath), { recursive: true });
-    fs.writeFileSync(outPath, JSON.stringify(doc, null, 2));
+    fs.mkdirSync(path.dirname(outPathAbs), { recursive: true });
+    fs.writeFileSync(outPathAbs, JSON.stringify(doc, null, 2));
 
-    const summarize = (kind: SpideyPage["kind"]) => {
-      const subset = pages.filter((p) => (p.kind ?? "route") === kind);
+    const summarize = (kind: SpideyTile["kind"]) => {
+      const subset = tiles.filter((p) => (p.kind ?? "route") === kind);
       const ok = subset.filter((p) => p.status === "ok").length;
       const err = subset.length - ok;
       return `${subset.length} ${kind}${subset.length === 1 ? "" : "s"} (${ok} ok${err ? `, ${err} errors` : ""})`;
     };
     log.ok(
-      `wrote ${outPath} — ${summarize("route")}` +
+      `wrote ${outPathAbs} — ${summarize("route")}` +
         (componentSpecs.length > 0 ? `, ${summarize("component")}` : ""),
     );
-    log.dim(`run \`spidey view ${path.relative(process.cwd(), outPath)}\` to open`);
+    log.dim(
+      `run \`spidey view ${path.relative(process.cwd(), outPathAbs)}\` to open`,
+    );
   } finally {
     if (exitHandler) {
       process.off("SIGINT", exitHandler);
@@ -187,4 +213,19 @@ function makeRouteId(pattern: string): string {
     .replace(/\W+/g, "_")
     .replace(/^_+|_+$/g, "");
   return s || "root";
+}
+
+async function promptYesNo(question: string): Promise<boolean> {
+  // No TTY (piped/CI) → default to "no" so we never silently clobber edits.
+  if (!process.stdin.isTTY) return false;
+  const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stderr,
+  });
+  try {
+    const answer = (await rl.question(question)).trim().toLowerCase();
+    return answer === "y" || answer === "yes";
+  } finally {
+    rl.close();
+  }
 }

@@ -7,7 +7,7 @@ const HELP = `
 spidey — turn a local Vite or Next.js app into a Figma-style canvas of every screen
 
 USAGE
-  spidey generate <path> [--output spidey.json] [--no-components]
+  spidey generate <path> [--output spidey.json] [--no-components] [--force]
   spidey view <spidey.json> [<spidey.json>...] [--port 4321] [--no-open]
 
 COMMANDS
@@ -18,6 +18,8 @@ COMMANDS
 OPTIONS
   --output, -o    Output path for generate (default: spidey.json)
   --no-components Skip the components pipeline (faster; routes only)
+  --force, -f     Skip the prompt that warns when overwriting a doc with
+                  unsaved viewer edits
   --port, -p      Port for view (default: 4321)
   --no-open       Don't auto-open the browser when starting the viewer
   --help, -h      Show this help
@@ -99,10 +101,12 @@ async function main() {
           (flags.o as string) ??
           path.resolve("spidey.json");
         const components = flags.components !== false;
+        const force = flags.force === true || flags.f === true;
         await runGenerate({
           projectPath,
           outputPath: output,
           components,
+          force,
         });
         break;
       }

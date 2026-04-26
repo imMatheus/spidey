@@ -6,24 +6,29 @@ import {
   useState,
   type ReactNode,
 } from "react";
-import type { SpideyPage } from "@spidey/shared";
+import { Maximize2, ZoomIn, ZoomOut } from "lucide-react";
+import type { SpideyNode, SpideyTile } from "@spidey/shared";
 import { Tile } from "./Tile";
-import type { TreeNode } from "./inspect/buildTree";
+import type { EditAction, Tool } from "./editor/state";
 
 type Props = {
-  pages: SpideyPage[];
+  tiles: SpideyTile[];
+  tileTrees: Record<string, SpideyNode | null>;
   viewport: { width: number; height: number };
   focusId: string | null;
   onClearFocus: () => void;
   activeTileId: string | null;
-  selectedElement: HTMLElement | null;
-  hoveredElement: HTMLElement | null;
+  selectedNodeId: string | null;
+  hoveredNodeId: string | null;
   altPressed: boolean;
+  tool: Tool;
+  rev: number;
   onActivateTile: (id: string | null) => void;
-  onSelectElement: (el: HTMLElement | null, tileBody: HTMLElement | null) => void;
-  onHoverElement: (el: HTMLElement | null) => void;
-  onTreeReady: (id: string, trees: TreeNode[], tileBody: HTMLElement) => void;
+  onSelectNode: (id: string | null) => void;
+  onHoverNode: (id: string | null) => void;
+  onBodyReady: (tileId: string, body: HTMLElement) => void;
   onScaleChange: (scale: number) => void;
+  dispatch: (action: EditAction) => void;
 };
 
 type Transform = { x: number; y: number; k: number };
@@ -36,24 +41,31 @@ const MAX_K = 2;
 const CLICK_DIST_PX = 5;
 
 export function Canvas({
-  pages,
+  tiles,
+  tileTrees,
   viewport,
   focusId,
   onClearFocus,
   activeTileId,
-  selectedElement,
-  hoveredElement,
+  selectedNodeId,
+  hoveredNodeId,
   altPressed,
+  tool,
+  rev,
   onActivateTile,
-  onSelectElement,
-  onHoverElement,
-  onTreeReady,
+  onSelectNode,
+  onHoverNode,
+  onBodyReady,
   onScaleChange,
+  dispatch,
 }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [size, setSize] = useState({ w: 0, h: 0 });
   const [t, setT] = useState<Transform>({ x: 0, y: 0, k: 0.4 });
-  const [recomputeKey, setRecomputeKey] = useState(0);
+  // Pan is allowed in select + hand tools; text/rect/image tools need the
+  // canvas-background drag to be free for primitive drawing.
+  const panToolRef = useRef(tool);
+  panToolRef.current = tool;
 
   // measure container
   useLayoutEffect(() => {
@@ -67,47 +79,40 @@ export function Canvas({
     return () => ro.disconnect();
   }, []);
 
-  // expose current scale to parent so Inspector can convert coords
   useEffect(() => {
     onScaleChange(t.k);
   }, [t.k, onScaleChange]);
 
-  // Bump recompute key when the captured layout could have changed.
-  // Pan/zoom does NOT belong here — overlays render in tile-local coords
-  // inside the already-transformed canvas, so they follow naturally.
-  useEffect(() => {
-    setRecomputeKey((k) => k + 1);
-  }, [viewport]);
-
-  // Tile positions: routes laid out in a grid on the left, components
-  // stacked vertically in their own column on the right at their captured
-  // natural sizes. Indexed by page id for O(1) lookup at render time.
   const positions = useMemo(() => {
     const tileW = viewport.width;
-    const tileH = viewport.height + HEADER_HEIGHT;
     const map = new Map<
       string,
       { x: number; y: number; w: number; h: number }
     >();
 
-    const routes = pages.filter((p) => (p.kind ?? "route") === "route");
-    const components = pages.filter((p) => p.kind === "component");
+    const routes = tiles.filter((p) => (p.kind ?? "route") === "route");
+    const components = tiles.filter((p) => p.kind === "component");
 
-    let routesMaxY = 0;
-    routes.forEach((p, i) => {
-      const col = i % TILES_PER_ROW;
-      const row = Math.floor(i / TILES_PER_ROW);
+    // Column-packed layout for routes: each tile drops into the shortest
+    // column. Heights come from containerSize (full document height,
+    // measured at capture time) so a long blog post sits in one column
+    // without stretching the rest of the row.
+    const colY: number[] = new Array(TILES_PER_ROW).fill(0);
+    for (const p of routes) {
+      let col = 0;
+      for (let i = 1; i < TILES_PER_ROW; i++) {
+        if (colY[i] < colY[col]) col = i;
+      }
+      const h = p.containerSize?.height ?? viewport.height;
       const x = col * (tileW + GAP);
-      const y = row * (tileH + GAP);
-      map.set(p.id, { x, y, w: tileW, h: viewport.height });
-      routesMaxY = Math.max(routesMaxY, y + tileH);
-    });
+      const y = colY[col];
+      map.set(p.id, { x, y, w: tileW, h });
+      colY[col] += h + HEADER_HEIGHT + GAP;
+    }
 
-    const routesRightEdge =
-      routes.length > 0
-        ? Math.min(routes.length, TILES_PER_ROW) * (tileW + GAP)
-        : 0;
-    const compColumnX = routesRightEdge + GAP;
+    // Components live in their own column to the right of the routes
+    // columns, stacked at their captured natural sizes.
+    const compColumnX = TILES_PER_ROW * (tileW + GAP) + GAP;
     let compY = 0;
     for (const p of components) {
       const w = p.containerSize?.width ?? 320;
@@ -117,14 +122,14 @@ export function Canvas({
     }
 
     return map;
-  }, [pages, viewport]);
+  }, [tiles, viewport]);
 
   const positionsList = useMemo(
     () => Array.from(positions.values()),
     [positions],
   );
 
-  // initial fit when viewport or pages change
+  // initial fit when viewport or tiles change
   useEffect(() => {
     if (!size.w || !size.h || positionsList.length === 0) return;
     const maxX = Math.max(...positionsList.map((p) => p.x + p.w));
@@ -139,7 +144,7 @@ export function Canvas({
       k: clamped,
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [viewport, pages.length, size.w, size.h]);
+  }, [viewport, tiles.length, size.w, size.h]);
 
   // focus animation
   useEffect(() => {
@@ -157,7 +162,11 @@ export function Canvas({
     setT({ x: size.w / 2 - cx * k, y: size.h / 2 - cy * k, k });
   }, [focusId, positions, size.w, size.h]);
 
-  // wheel zoom / pan
+  // wheel zoom / pan — Figma-style sensitivity. Trackpad pinch fires wheel
+  // events with ctrlKey:true and small per-frame deltaY; mouse wheel ticks
+  // come in much bigger chunks. Use one multiplier per source so trackpad
+  // pinches feel smooth without making mouse-wheel zoom violent. Each delta
+  // is also clamped so a fast flick can't blow past MIN/MAX_K in one event.
   useEffect(() => {
     const el = containerRef.current;
     if (!el) return;
@@ -168,8 +177,17 @@ export function Canvas({
       const my = e.clientY - rect.top;
       setT((prev) => {
         if (e.ctrlKey || e.metaKey) {
-          const delta = -e.deltaY * 0.0015;
-          const newK = Math.max(MIN_K, Math.min(MAX_K, prev.k * Math.exp(delta)));
+          const isMouseWheel =
+            e.deltaMode !== 0 || Math.abs(e.deltaY) >= 50;
+          const factor = isMouseWheel ? 0.002 : 0.01;
+          const raw = -e.deltaY * factor;
+          // Cap per-event log change so a single fast tick can't slam from
+          // min to max zoom — keeps the gesture incremental.
+          const delta = Math.max(-0.5, Math.min(0.5, raw));
+          const newK = Math.max(
+            MIN_K,
+            Math.min(MAX_K, prev.k * Math.exp(delta)),
+          );
           const ratio = newK / prev.k;
           return {
             k: newK,
@@ -196,6 +214,18 @@ export function Canvas({
       panning: boolean;
     } | null = null;
 
+    const canPan = (onTile: boolean) => {
+      const t = panToolRef.current;
+      if (t === "hand") return true;
+      // Tile-internal drags belong to the Tile (selection/insertion). Pan
+      // only when starting from empty canvas.
+      if (onTile) return false;
+      // In primitive tools, the canvas background should also stay still so
+      // the user can only ever interact with tiles.
+      if (t === "text" || t === "rect" || t === "image") return false;
+      return true;
+    };
+
     const onDown = (e: MouseEvent) => {
       if (e.button !== 0) return;
       const target = e.target as HTMLElement | null;
@@ -214,6 +244,11 @@ export function Canvas({
       const dy = e.clientY - down.y;
       if (!down.panning) {
         if (Math.sqrt(dx * dx + dy * dy) < CLICK_DIST_PX) return;
+        if (!canPan(!!down.onTile)) {
+          // Stop tracking — the gesture belongs to a tile or is forbidden.
+          down = null;
+          return;
+        }
         down.panning = true;
         el.style.cursor = "grabbing";
       }
@@ -221,7 +256,7 @@ export function Canvas({
       down.y = e.clientY;
       setT((prev) => ({ ...prev, x: prev.x + dx, y: prev.y + dy }));
     };
-    const onUp = (e: MouseEvent) => {
+    const onUp = (_e: MouseEvent) => {
       if (!down) return;
       const wasClick = !down.panning;
       const onTile = down.onTile;
@@ -230,12 +265,10 @@ export function Canvas({
       down = null;
 
       if (wasClick && !startedOnTile) {
-        // empty-canvas click → deselect & deactivate
         onActivateTile(null);
-        onSelectElement(null, null);
+        onSelectNode(null);
         onClearFocus();
       }
-      // Inside-tile clicks are handled by Tile itself via shadow listeners.
     };
 
     el.addEventListener("mousedown", onDown);
@@ -246,7 +279,7 @@ export function Canvas({
       window.removeEventListener("mousemove", onMove);
       window.removeEventListener("mouseup", onUp);
     };
-  }, [onActivateTile, onClearFocus, onSelectElement]);
+  }, [onActivateTile, onClearFocus, onSelectNode]);
 
   const zoomTo = (factor: number) => {
     setT((prev) => {
@@ -281,12 +314,12 @@ export function Canvas({
       className="col-start-2 row-start-2 relative overflow-hidden canvas-grid-bg"
       ref={containerRef}
     >
-      {pages.length === 0 && (
+      {tiles.length === 0 && (
         <div className="absolute inset-0 grid place-items-center text-center text-fg-dim">
           <div>
             <div className="text-lg mb-1.5 text-fg">Nothing to show</div>
             <div className="text-xs">
-              This spidey.json has no pages.
+              This spidey.json has no tiles.
             </div>
           </div>
         </div>
@@ -295,46 +328,48 @@ export function Canvas({
         className="absolute top-0 left-0 origin-top-left will-change-transform"
         style={{ transform: `translate(${t.x}px, ${t.y}px) scale(${t.k})` }}
       >
-        {pages.map((page) => {
-          const pos = positions.get(page.id);
+        {tiles.map((tile) => {
+          const pos = positions.get(tile.id);
           if (!pos) return null;
-          const active = activeTileId === page.id;
+          const active = activeTileId === tile.id;
+          const tree = tileTrees[tile.id] ?? tile.tree ?? null;
           return (
             <Tile
-              key={page.id}
-              page={page}
+              key={tile.id}
+              page={tile}
+              tree={tree}
               x={pos.x}
               y={pos.y}
               width={pos.w}
               height={pos.h}
               active={active}
               scale={t.k}
-              selectedElement={active ? selectedElement : null}
-              hoveredElement={active ? hoveredElement : null}
+              selectedNodeId={active ? selectedNodeId : null}
+              hoveredNodeId={active ? hoveredNodeId : null}
               altPressed={altPressed}
-              recomputeKey={recomputeKey}
-              onActivate={() => onActivateTile(page.id)}
-              onSelectElement={(el, body) => onSelectElement(el, body)}
-              onHoverElement={onHoverElement}
-              onTreeReady={(trees, body) =>
-                onTreeReady(page.id, trees, body)
-              }
+              tool={tool}
+              rev={rev}
+              onActivate={() => onActivateTile(tile.id)}
+              onSelectNode={onSelectNode}
+              onHoverNode={onHoverNode}
+              onBodyReady={onBodyReady}
+              dispatch={dispatch}
             />
           );
         })}
       </div>
-      <div className="absolute bottom-4 right-4 flex flex-col gap-1 bg-panel border border-edge rounded-md p-1">
+      <div className="absolute bottom-4 right-4 flex flex-col gap-1 bg-panel border border-edge rounded-md p-1 z-20">
         <ZoomBtn onClick={() => zoomTo(1.25)} title="Zoom in">
-          +
+          <ZoomIn size={14} strokeWidth={2} />
         </ZoomBtn>
         <div className="text-[11px] text-fg-dim text-center py-1">
           {Math.round(t.k * 100)}%
         </div>
         <ZoomBtn onClick={() => zoomTo(0.8)} title="Zoom out">
-          −
+          <ZoomOut size={14} strokeWidth={2} />
         </ZoomBtn>
-        <ZoomBtn onClick={fitAll} title="Fit all" small>
-          fit
+        <ZoomBtn onClick={fitAll} title="Fit all">
+          <Maximize2 size={13} strokeWidth={2} />
         </ZoomBtn>
       </div>
     </div>
@@ -345,21 +380,16 @@ function ZoomBtn({
   onClick,
   title,
   children,
-  small,
 }: {
   onClick: () => void;
   title: string;
   children: ReactNode;
-  small?: boolean;
 }) {
   return (
     <button
       onClick={onClick}
       title={title}
-      className={[
-        "w-7 h-7 grid place-items-center rounded border border-edge bg-panel-2 text-fg cursor-pointer hover:bg-[#353535]",
-        small ? "text-[11px]" : "text-sm",
-      ].join(" ")}
+      className="w-7 h-7 grid place-items-center rounded border border-edge bg-panel-2 text-fg cursor-pointer hover:bg-[#353535]"
     >
       {children}
     </button>

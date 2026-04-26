@@ -56,7 +56,7 @@ export function Toolbar({
       </div>
       <div className={dividerCls} />
       <span className={metaCls}>
-        {doc.project.name} · {doc.project.framework} · {doc.pages.length} pages
+        {doc.project.name} · {doc.project.framework} · {(doc.tiles ?? doc.pages ?? []).length} tiles
       </span>
       <div className="flex-1" />
       <span className="font-mono text-[11px] text-fg">

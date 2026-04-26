@@ -111,6 +111,54 @@ export async function startViewer({
         res.end("project not found");
         return;
       }
+
+      // PUT: viewer is autosaving an edited document. We accept the full
+      // doc, validate it parses + is v3, and overwrite the project's file.
+      // Localhost-only by design; no auth.
+      if (req.method === "PUT") {
+        const chunks: Buffer[] = [];
+        let total = 0;
+        const MAX = 50 * 1024 * 1024; // 50 MB hard cap
+        req.on("data", (c) => {
+          total += c.length;
+          if (total > MAX) {
+            res.statusCode = 413;
+            res.end("body too large");
+            req.destroy();
+            return;
+          }
+          chunks.push(c);
+        });
+        req.on("end", () => {
+          try {
+            const body = Buffer.concat(chunks).toString("utf8");
+            const parsed = JSON.parse(body);
+            if (
+              !parsed ||
+              typeof parsed !== "object" ||
+              parsed.version !== 3 ||
+              !Array.isArray(parsed.tiles)
+            ) {
+              res.statusCode = 400;
+              res.end("expected a v3 SpideyDocument with tiles[]");
+              return;
+            }
+            // Pretty-print to keep the on-disk file diffable.
+            fs.writeFileSync(project.absPath, JSON.stringify(parsed, null, 2));
+            res.statusCode = 204;
+            res.end();
+          } catch (e: any) {
+            res.statusCode = 400;
+            res.end(`bad request: ${e?.message ?? e}`);
+          }
+        });
+        req.on("error", (e) => {
+          res.statusCode = 500;
+          res.end(String(e));
+        });
+        return;
+      }
+
       res.setHeader("content-type", MIME[".json"]);
       res.setHeader("cache-control", "no-store");
       fs.createReadStream(project.absPath)

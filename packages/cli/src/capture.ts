@@ -1,5 +1,5 @@
 import { chromium, type Browser } from "playwright";
-import type { SpideyPage } from "@spidey/shared";
+import type { SpideyTile, SpideyNode } from "@spidey/shared";
 import { log } from "./util.js";
 
 const VIEWPORT = { width: 1280, height: 800 };
@@ -11,9 +11,9 @@ export type CaptureTarget = {
   url: string;
   /** Human-friendly label printed in logs */
   label: string;
-  /** Extra fields merged onto the SpideyPage; lets the caller tag a tile as
+  /** Extra fields merged onto the SpideyTile; lets the caller tag a tile as
    *  a route or component without capture having to know the schema. */
-  meta: Partial<SpideyPage>;
+  meta: Partial<SpideyTile>;
 };
 
 export type CaptureOptions = {
@@ -24,7 +24,7 @@ export type CaptureOptions = {
 export async function captureAll({
   baseUrl,
   targets,
-}: CaptureOptions): Promise<{ pages: SpideyPage[]; viewport: typeof VIEWPORT }> {
+}: CaptureOptions): Promise<{ tiles: SpideyTile[]; viewport: typeof VIEWPORT }> {
   let browser: Browser | null = null;
   try {
     browser = await chromium.launch({ headless: true });
@@ -34,7 +34,7 @@ export async function captureAll({
     );
   }
   const ctx = await browser.newContext({ viewport: VIEWPORT });
-  const out: SpideyPage[] = [];
+  const out: SpideyTile[] = [];
 
   try {
     for (let i = 0; i < targets.length; i++) {
@@ -43,10 +43,10 @@ export async function captureAll({
       log.step(`capturing [${i + 1}/${targets.length}] ${t.label} → ${url}`);
 
       const page = await ctx.newPage();
-      const captured: SpideyPage = {
+      const captured: SpideyTile = {
         id: t.id,
         status: "ok",
-        html: "",
+        tree: null,
         css: "",
         capturedAt: new Date().toISOString(),
         viewport: VIEWPORT,
@@ -68,10 +68,10 @@ export async function captureAll({
         captured.title = await page.title();
 
         // Tag DOM with React component owners + serialize their props,
-        // then capture HTML + CSS in a single page.evaluate to keep state
-        // consistent.
-        const { html, css, containerSize, bodyAttrs, htmlAttrs } =
-          await page.evaluate(async () => {
+        // then walk the live DOM into a SpideyNode tree in one
+        // page.evaluate so state stays consistent.
+        const { tree, css, containerSize, bodyAttrs, htmlAttrs } =
+          await page.evaluate(async (tileIdx) => {
           // ----- Component tagging via React fiber walking -----
           (function tagComponents() {
             function getFiber(el: any): any {
@@ -179,7 +179,11 @@ export async function captureAll({
             }
           })();
 
-          // ----- Natural-size measurement for component previews -----
+          // ----- Natural-size measurement -----
+          // For component previews: dimensions of the wrapper div so the
+          // tile fits the component snugly. For routes: documentElement's
+          // scrollHeight so long pages get a tile tall enough to show all
+          // of their content (no clipping at viewport.height).
           let measuredSize: { width: number; height: number } | undefined;
           const previewRoot = document.querySelector(
             "[data-spidey-component-root]",
@@ -189,6 +193,19 @@ export async function captureAll({
             measuredSize = {
               width: Math.max(1, Math.ceil(r.width)),
               height: Math.max(1, Math.ceil(r.height)),
+            };
+          } else if (document.documentElement) {
+            const docH = Math.max(
+              document.documentElement.scrollHeight,
+              document.body?.scrollHeight ?? 0,
+            );
+            const docW = Math.max(
+              document.documentElement.scrollWidth,
+              document.body?.scrollWidth ?? 0,
+            );
+            measuredSize = {
+              width: Math.max(1, Math.ceil(docW)),
+              height: Math.max(1, Math.ceil(docH)),
             };
           }
 
@@ -232,43 +249,145 @@ export async function captureAll({
             }
           }
 
-          // ----- HTML sanitization -----
-          const clone = document.body?.cloneNode(true) as HTMLElement | null;
-          if (clone) {
-            const dropSelectors = "script, style, link, meta, noscript";
-            clone.querySelectorAll(dropSelectors).forEach((n) => n.remove());
-            const walker = document.createTreeWalker(
-              clone,
-              NodeFilter.SHOW_ELEMENT,
+          // ----- DOM → SpideyNode tree -----
+          const SKIP = new Set([
+            "script",
+            "style",
+            "link",
+            "meta",
+            "noscript",
+            "template",
+          ]);
+          let counter = 0;
+          const nextId = () => `t${tileIdx}-n${counter++}`;
+
+          // Capture viewport — used as the basis for vh/vw → px rewriting
+          // below. We freeze the captured page at this viewport (1280×800)
+          // so pages with `100vh` heroes etc. don't blow up to the user's
+          // browser-window height in the viewer.
+          const VW = 1280;
+          const VH = 800;
+
+          function rewriteViewportUnits(s: string): string {
+            if (!s) return s;
+            return s.replace(
+              /(-?\d+(?:\.\d+)?)(vh|svh|lvh|dvh|vw|svw|lvw|dvw|vmin|vmax)\b/gi,
+              (_m, num, unit) => {
+                const n = parseFloat(num);
+                const u = unit.toLowerCase();
+                let basis: number;
+                if (u.endsWith("vh")) basis = VH;
+                else if (u.endsWith("vw")) basis = VW;
+                else if (u === "vmin") basis = Math.min(VW, VH);
+                else if (u === "vmax") basis = Math.max(VW, VH);
+                else basis = VH;
+                return `${(n * basis) / 100}px`;
+              },
             );
-            let cur: Node | null = walker.currentNode;
-            while (cur) {
-              if (cur instanceof Element) {
-                for (const attr of Array.from(cur.attributes)) {
-                  const name = attr.name.toLowerCase();
-                  if (name.startsWith("on")) cur.removeAttribute(attr.name);
-                  else if (
-                    (name === "href" || name === "src" || name === "action") &&
-                    /^\s*javascript:/i.test(attr.value)
-                  ) {
-                    cur.removeAttribute(attr.name);
-                  }
-                }
+          }
+
+          function parseInlineStyle(s: string): Record<string, string> {
+            const out: Record<string, string> = {};
+            if (!s) return out;
+            for (const decl of s.split(";")) {
+              const colon = decl.indexOf(":");
+              if (colon < 0) continue;
+              const k = decl.slice(0, colon).trim();
+              const v = decl.slice(colon + 1).trim();
+              if (k) out[k] = rewriteViewportUnits(v);
+            }
+            return out;
+          }
+
+          function buildNode(el: Element): any {
+            const tag = el.tagName.toLowerCase();
+            if (SKIP.has(tag)) return null;
+
+            const attrs: Record<string, string> = {};
+            let style: Record<string, string> = {};
+            for (const a of Array.from(el.attributes)) {
+              const name = a.name.toLowerCase();
+              if (name.startsWith("on")) continue;
+              if (
+                (name === "href" || name === "src" || name === "action") &&
+                /^\s*javascript:/i.test(a.value)
+              ) {
+                continue;
               }
-              cur = walker.nextNode();
+              if (name === "style") {
+                style = parseInlineStyle(a.value);
+                continue;
+              }
+              attrs[a.name] = a.value;
+            }
+
+            const children: any[] = [];
+            for (const child of Array.from(el.childNodes)) {
+              if (child.nodeType === 3) {
+                // text node
+                const text = (child.textContent ?? "");
+                // Preserve whitespace inside <pre>/<code>; for everything
+                // else, drop pure-whitespace text nodes.
+                const isPre = tag === "pre" || tag === "code";
+                if (isPre ? text.length > 0 : text.trim()) {
+                  children.push({
+                    id: nextId(),
+                    kind: "text",
+                    value: text,
+                  });
+                }
+              } else if (child.nodeType === 1) {
+                const n = buildNode(child as Element);
+                if (n) children.push(n);
+              }
+            }
+
+            return {
+              id: nextId(),
+              kind: "el",
+              tag,
+              attrs,
+              style,
+              children,
+            };
+          }
+
+          // For component previews we drop everything outside the
+          // `[data-spidey-component-root]` wrapper — Next's root layout
+          // (and any global chrome) lives in the captured body but isn't
+          // part of the component, and we don't want it bleeding into
+          // the standalone component tile. The wrapper carries its own
+          // padding/background so the component still has a sandbox.
+          const isPreview =
+            previewRoot instanceof Element &&
+            document.body?.contains(previewRoot);
+          let tree: any = null;
+          if (document.body) {
+            if (isPreview) {
+              const wrapper = buildNode(previewRoot as Element);
+              tree = {
+                id: nextId(),
+                kind: "el",
+                tag: "body",
+                attrs: {},
+                style: {},
+                children: wrapper ? [wrapper] : [],
+              };
+            } else {
+              tree = buildNode(document.body);
             }
           }
 
           return {
-            html: clone?.innerHTML ?? "",
-            css: cssChunks.join("\n"),
+            tree,
+            css: rewriteViewportUnits(cssChunks.join("\n")),
             containerSize: measuredSize,
             bodyAttrs,
             htmlAttrs,
           };
-        });
+        }, i);
 
-        captured.html = html;
+        captured.tree = tree as SpideyNode | null;
         captured.css = css;
         if (containerSize) captured.containerSize = containerSize;
         if (bodyAttrs && Object.keys(bodyAttrs).length > 0)
@@ -278,6 +397,7 @@ export async function captureAll({
       } catch (e: any) {
         captured.status = "error";
         captured.error = String(e?.message ?? e);
+        captured.tree = null;
         log.warn(`  failed: ${captured.error}`);
       } finally {
         await page.close();
@@ -290,5 +410,5 @@ export async function captureAll({
     await browser.close();
   }
 
-  return { pages: out, viewport: VIEWPORT };
+  return { tiles: out, viewport: VIEWPORT };
 }

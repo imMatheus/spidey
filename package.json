@@ -8,6 +8,7 @@
   ],
   "scripts": {
     "build": "cd packages/viewer && bun run build",
+    "dev": "bun scripts/dev.ts",
     "spidey": "bun packages/cli/src/index.ts",
     "example:vite": "cd examples/vite-app && bun run dev",
     "example:next": "cd examples/next-app && bun run dev"

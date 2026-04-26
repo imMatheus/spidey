@@ -1,3 +1,4 @@
+import { Bug } from "lucide-react";
 import type { SpideyDocument, SpideyPage } from "@spidey/shared";
 
 type Project = { id: string; name: string };
@@ -27,7 +28,8 @@ export function Sidebar({
   onSwitchProject,
   onSelect,
 }: Props) {
-  const errCount = doc.pages.filter((p) => p.status === "error").length;
+  const allTiles = doc.tiles ?? doc.pages ?? [];
+  const errCount = allTiles.filter((p) => p.status === "error").length;
   const routes = pages.filter((p) => (p.kind ?? "route") === "route");
   const components = pages.filter((p) => p.kind === "component");
 
@@ -35,8 +37,9 @@ export function Sidebar({
     <aside className="col-start-1 row-start-1 row-span-2 bg-panel border-r border-edge flex flex-col min-h-0">
       <div className="p-3 border-b border-edge">
         <div className="flex items-center justify-between mb-2 gap-2">
-          <h1 className="m-0 text-sm font-semibold tracking-wide whitespace-nowrap">
-            🕷 Spidey
+          <h1 className="m-0 text-sm font-semibold tracking-wide whitespace-nowrap inline-flex items-center gap-1.5">
+            <Bug size={14} strokeWidth={2} className="text-accent" />
+            Spidey
           </h1>
           {projects.length > 1 && (
             <select
@@ -90,7 +93,7 @@ export function Sidebar({
         ) : null}
       </div>
       <div className="px-3 py-2 border-t border-edge text-[11px] text-fg-dim">
-        {doc.pages.length} tiles
+        {allTiles.length} tiles
         {errCount > 0 ? ` · ${errCount} error${errCount === 1 ? "" : "s"}` : ""}
       </div>
     </aside>

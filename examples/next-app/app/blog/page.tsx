@@ -1,6 +1,7 @@
 import Link from "next/link";
 
 const posts = [
+  { slug: "longread", title: "The unreasonable effectiveness of small services", excerpt: "Three years of migration retros, the unglamorous parts." },
   { slug: "hello-world", title: "Hello, world", excerpt: "An obligatory first post." },
   { slug: "shipping-fast", title: "Shipping fast", excerpt: "How we cut deploys to 4 minutes." },
   { slug: "design-systems", title: "On design systems", excerpt: "Why we maintain ours by hand." },
