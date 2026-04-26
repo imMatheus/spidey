@@ -73,8 +73,9 @@ export function discoverViteRoutes(root: string): DiscoveredRoute[] {
         )
           return;
         const arg = p.node.arguments[0];
-        if (!t.isArrayExpression(arg)) return;
-        collectFromArray(arg, [], patterns);
+        const arr = resolveArrayExpression(arg, p);
+        if (!arr) return;
+        collectFromArray(arr, [], patterns);
       },
     });
   }
@@ -104,6 +105,26 @@ function readJsxPathAttr(opening: t.JSXOpeningElement): string | null {
     return null;
   }
   // <Route index /> → no path
+  return null;
+}
+
+/**
+ * If the call argument is an array literal, return it. If it's an identifier
+ * bound to an array literal in scope (single-binding lookup), return that.
+ * Anything else returns null — we don't try to follow re-assignments or
+ * arbitrary expressions for v0.
+ */
+function resolveArrayExpression(
+  node: t.Node | undefined,
+  callPath: any,
+): t.ArrayExpression | null {
+  if (!node) return null;
+  if (t.isArrayExpression(node)) return node;
+  if (!t.isIdentifier(node)) return null;
+  const binding = callPath.scope.getBinding(node.name);
+  if (!binding) return null;
+  const init = (binding.path.node as any).init;
+  if (init && t.isArrayExpression(init)) return init;
   return null;
 }
 

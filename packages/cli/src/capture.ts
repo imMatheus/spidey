@@ -80,8 +80,40 @@ export async function captureAll({
               }
             }
           }
+
+          // Sanitize the body for shadow-DOM mounting:
+          //  - drop <script>, <style>, <link>, <meta>, <noscript> (CSS already
+          //    captured separately above; scripts must not run; meta is moot)
+          //  - drop inline event handlers (on*) and javascript: URLs so a stray
+          //    click in the viewer can't trigger captured page logic
+          const clone = document.body?.cloneNode(true) as HTMLElement | null;
+          if (clone) {
+            const dropSelectors = "script, style, link, meta, noscript";
+            clone.querySelectorAll(dropSelectors).forEach((n) => n.remove());
+            const walker = document.createTreeWalker(
+              clone,
+              NodeFilter.SHOW_ELEMENT,
+            );
+            let cur: Node | null = walker.currentNode;
+            while (cur) {
+              if (cur instanceof Element) {
+                for (const attr of Array.from(cur.attributes)) {
+                  const name = attr.name.toLowerCase();
+                  if (name.startsWith("on")) cur.removeAttribute(attr.name);
+                  else if (
+                    (name === "href" || name === "src" || name === "action") &&
+                    /^\s*javascript:/i.test(attr.value)
+                  ) {
+                    cur.removeAttribute(attr.name);
+                  }
+                }
+              }
+              cur = walker.nextNode();
+            }
+          }
+
           return {
-            html: document.body?.innerHTML ?? "",
+            html: clone?.innerHTML ?? "",
             css: cssChunks.join("\n"),
           };
         });

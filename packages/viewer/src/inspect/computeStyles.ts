@@ -49,10 +49,10 @@ export function buildStyleSections(
   const cs = getComputedStyle(el);
   const sections: StyleSection[] = [];
 
-  // Layout
+  // Layout — "offset" is from the tile's top-left, not viewport / document.
   const layout: StyleProp[] = [
     { label: "size", value: `${round(rect.width)} × ${round(rect.height)}` },
-    { label: "position", value: `${round(rect.x)}, ${round(rect.y)}` },
+    { label: "offset", value: `${round(rect.x)}, ${round(rect.y)}` },
     { label: "display", value: cs.display },
   ];
   if (cs.display.includes("flex")) {
@@ -71,7 +71,7 @@ export function buildStyleSections(
     );
   }
   if (cs.position && cs.position !== "static") {
-    layout.push({ label: "position-mode", value: cs.position });
+    layout.push({ label: "position", value: cs.position });
   }
   sections.push({ title: "Layout", props: filterTrivial(layout) });
 

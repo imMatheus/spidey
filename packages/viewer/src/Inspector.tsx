@@ -9,6 +9,10 @@ import {
 } from "./inspect/computeStyles";
 
 type Props = {
+  /** Identifies which tile's tree we're showing — used to fully remount the
+   *  tree subtree when switching tiles, so per-row open/closed state can't
+   *  bleed across tiles via shared path-keys like "0.1.2". */
+  tileId: string | null;
   trees: TreeNode[] | null;
   selected: HTMLElement | null;
   tileBody: HTMLElement | null;
@@ -21,6 +25,7 @@ const ASIDE =
   "col-start-3 row-start-1 row-span-2 bg-panel border-l border-edge flex flex-col min-h-0 overflow-hidden";
 
 export function Inspector({
+  tileId,
   trees,
   selected,
   tileBody,
@@ -44,6 +49,7 @@ export function Inspector({
   return (
     <aside className={ASIDE}>
       <BreadcrumbAndTree
+        key={tileId ?? "no-tile"}
         trees={trees}
         selected={selected}
         onSelect={onSelect}
@@ -139,7 +145,10 @@ function TreeRow({
   const rowRef = useRef<HTMLDivElement>(null);
   const isSelected = selectedRef === node.ref;
   const hasChildren = node.children.length > 0;
-  const containsSelected = !!selectedRef && containsRef(node, selectedRef);
+  // DOM `contains` is O(depth) and short-circuits — much cheaper than
+  // recursing through the cloned tree on every TreeRow render.
+  const containsSelected =
+    !!selectedRef && node.ref.contains(selectedRef);
 
   useEffect(() => {
     if (containsSelected && !open) setOpen(true);
@@ -196,11 +205,6 @@ function TreeRow({
         ))}
     </div>
   );
-}
-
-function containsRef(node: TreeNode, ref: HTMLElement): boolean {
-  if (node.ref === ref) return true;
-  return node.children.some((c) => containsRef(c, ref));
 }
 
 function describeNode(n: TreeNode): string {

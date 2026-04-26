@@ -10,6 +10,8 @@ type Props = {
   x: number;
   y: number;
   active: boolean;
+  /** Current canvas scale; used to keep the active ring visible at low zoom */
+  scale: number;
   selectedElement: HTMLElement | null;
   hoveredElement: HTMLElement | null;
   altPressed: boolean;
@@ -30,6 +32,7 @@ export function Tile({
   x,
   y,
   active,
+  scale,
   selectedElement,
   hoveredElement,
   altPressed,
@@ -42,6 +45,10 @@ export function Tile({
   const hostRef = useRef<HTMLDivElement>(null);
   const bodyRef = useRef<HTMLDivElement>(null);
   const downRef = useRef<{ x: number; y: number; t: number } | null>(null);
+  /** The wrapper <div> we mount the captured HTML into. We keep a ref to
+   *  it so click/hover handlers can ignore events whose target IS the
+   *  wrapper itself (rather than guessing via DOM-shape heuristics). */
+  const containerRef = useRef<HTMLDivElement | null>(null);
 
   // Mount captured HTML/CSS into shadow DOM whenever the page changes
   useEffect(() => {
@@ -71,6 +78,7 @@ export function Tile({
     container.style.height = "100%";
     container.style.overflow = "auto";
     container.innerHTML = page.html;
+    containerRef.current = container;
 
     container.querySelectorAll("a[href]").forEach((a) => {
       a.setAttribute("data-href", a.getAttribute("href") ?? "");
@@ -91,12 +99,16 @@ export function Tile({
     const host = hostRef.current;
     if (!host?.shadowRoot) return;
 
-    // Wait one frame for layout to settle
+    // Wait one frame for layout to settle. Build from the captured-content
+    // wrapper rather than the shadow root, so the inspector shows the page's
+    // real top-level elements without our synthetic wrapper as a layer.
     let cancelled = false;
     requestAnimationFrame(() => {
       if (cancelled) return;
-      if (!bodyRef.current || !host.shadowRoot) return;
-      const trees = buildTree(host.shadowRoot);
+      if (!bodyRef.current) return;
+      const root = containerRef.current ?? host.shadowRoot;
+      if (!root) return;
+      const trees = buildTree(root);
       onTreeReady(trees, bodyRef.current);
     });
     return () => {
@@ -112,8 +124,7 @@ export function Tile({
 
     const isInside = (target: EventTarget | null): HTMLElement | null => {
       if (!(target instanceof HTMLElement)) return null;
-      // Skip the synthetic "container" wrapper we added — its parent is the root
-      if (!target.parentElement && target.parentNode === root) return null;
+      if (target === containerRef.current) return null;
       return target;
     };
 
@@ -173,20 +184,24 @@ export function Tile({
 
   const isErr = page.status === "error";
 
+  // Ring width is in canvas-local pixels; the canvas is then CSS-scaled.
+  // Compensate so the ring always reads ~2 viewport px regardless of zoom.
+  const ringPx = Math.max(1, 2 / Math.max(scale, 0.05));
   return (
     <div
       className={[
         "absolute rounded-md overflow-hidden border transition-shadow transition-colors duration-150",
         isErr ? "bg-[#2c1f1f]" : "bg-white",
-        active
-          ? "border-accent shadow-[0_4px_24px_rgba(0,0,0,0.4),0_0_0_2px_rgba(91,140,255,0.18)]"
-          : "border-edge shadow-[0_4px_24px_rgba(0,0,0,0.4)]",
+        active ? "border-accent" : "border-edge",
       ].join(" ")}
       style={{
         left: x,
         top: y,
         width,
         height: height + headerHeight,
+        boxShadow: active
+          ? `0 4px 24px rgba(0,0,0,0.4), 0 0 0 ${ringPx}px rgba(91,140,255,0.45)`
+          : "0 4px 24px rgba(0,0,0,0.4)",
       }}
     >
       <div

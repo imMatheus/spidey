@@ -38,13 +38,25 @@ export function App() {
       .catch((e) => setState({ status: "error", message: String(e?.message ?? e) }));
   }, []);
 
-  // Alt key tracking
+  // Centralized selection reset — call this whenever the user's selection
+  // context becomes invalid (different tile, different viewport, Esc, etc).
+  const resetSelection = useCallback(() => {
+    setSelectedElement(null);
+    setHoveredElement(null);
+  }, []);
+
+  // Keyboard: Alt for distance overlays, Esc to "walk up" the selection
+  // (selected element → active tile → nothing).
   useEffect(() => {
     const onDown = (e: KeyboardEvent) => {
       if (e.key === "Alt") setAltPressed(true);
       if (e.key === "Escape") {
-        setSelectedElement(null);
-        setActiveTileId(null);
+        if (selectedElement) {
+          setSelectedElement(null);
+          setHoveredElement(null);
+        } else if (activeTileId) {
+          setActiveTileId(null);
+        }
       }
     };
     const onUp = (e: KeyboardEvent) => {
@@ -59,22 +71,21 @@ export function App() {
       window.removeEventListener("keyup", onUp);
       window.removeEventListener("blur", onBlur);
     };
-  }, []);
+  }, [selectedElement, activeTileId]);
 
-  // Reset selection when active tile or viewport changes
+  // Reset selection when the active tile or the viewport changes.
   useEffect(() => {
-    setSelectedElement(null);
-    setHoveredElement(null);
-  }, [activeTileId, viewport]);
+    resetSelection();
+  }, [activeTileId, viewport, resetSelection]);
 
-  // Update active tile body whenever activeTileId changes
+  // Active tile body is owned by the tile that registers it via onTreeReady;
+  // App just reflects whichever body matches activeTileId.
   useEffect(() => {
     if (activeTileId == null) {
       setActiveTileBody(null);
       return;
     }
-    const body = tileBodiesRef.current.get(activeTileId) ?? null;
-    setActiveTileBody(body);
+    setActiveTileBody(tileBodiesRef.current.get(activeTileId) ?? null);
   }, [activeTileId, treesVersion]);
 
   const filteredPages = useMemo(() => {
@@ -93,9 +104,10 @@ export function App() {
   }, []);
 
   const handleSelectElement = useCallback(
-    (el: HTMLElement | null, body: HTMLElement | null) => {
+    (el: HTMLElement | null, _body: HTMLElement | null) => {
+      // body is registered via onTreeReady and resolved in the activeTileId
+      // effect — no need to write it here.
       setSelectedElement(el);
-      if (body) setActiveTileBody(body);
     },
     [],
   );
@@ -183,6 +195,7 @@ export function App() {
         onScaleChange={setScale}
       />
       <Inspector
+        tileId={activeTileId}
         trees={activeTrees}
         selected={selectedElement}
         tileBody={activeTileBody}

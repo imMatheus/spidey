@@ -72,10 +72,12 @@ export function Canvas({
     onScaleChange(t.k);
   }, [t.k, onScaleChange]);
 
-  // bump recompute key on any transform change so overlays follow
+  // Bump recompute key when the captured layout could have changed.
+  // Pan/zoom does NOT belong here — overlays render in tile-local coords
+  // inside the already-transformed canvas, so they follow naturally.
   useEffect(() => {
     setRecomputeKey((k) => k + 1);
-  }, [t.x, t.y, t.k, viewport]);
+  }, [viewport]);
 
   // tile positions
   const positions = useMemo(() => {
@@ -248,6 +250,16 @@ export function Canvas({
       className="col-start-2 row-start-2 relative overflow-hidden canvas-grid-bg"
       ref={containerRef}
     >
+      {pages.length === 0 && (
+        <div className="absolute inset-0 grid place-items-center text-center text-fg-dim">
+          <div>
+            <div className="text-lg mb-1.5 text-fg">Nothing to show</div>
+            <div className="text-xs">
+              This spidey.json has no pages.
+            </div>
+          </div>
+        </div>
+      )}
       <div
         className="absolute top-0 left-0 origin-top-left will-change-transform"
         style={{ transform: `translate(${t.x}px, ${t.y}px) scale(${t.k})` }}
@@ -264,6 +276,7 @@ export function Canvas({
               width={pos.w}
               height={pos.h}
               active={active}
+              scale={t.k}
               selectedElement={active ? selectedElement : null}
               hoveredElement={active ? hoveredElement : null}
               altPressed={altPressed}

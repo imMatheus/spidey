@@ -79,14 +79,27 @@ export async function startDevServer(root: string): Promise<RunningDevServer> {
 }
 
 function parseUrl(buf: string): { url: string; port: number } | null {
-  // Strip ANSI just in case
   const clean = buf.replace(/\x1b\[[0-9;]*m/g, "");
-  const m =
-    clean.match(/https?:\/\/(?:localhost|127\.0\.0\.1):(\d+)\/?/) ??
-    clean.match(/https?:\/\/0\.0\.0\.0:(\d+)\/?/);
+  // Prefer URLs printed on a "Local" / "Ready" / "ready in" line — frameworks
+  // sometimes log unrelated localhost URLs (docs, debugger) before the dev
+  // server's actual address.
+  const lines = clean.split(/\r?\n/);
+  const hostRe =
+    /https?:\/\/(?:localhost|127\.0\.0\.1|0\.0\.0\.0):(\d+)/i;
+  const contextRe = /\b(local|ready|listening|server)\b/i;
+
+  for (const line of lines) {
+    if (!contextRe.test(line)) continue;
+    const m = line.match(hostRe);
+    if (m) {
+      const port = Number(m[1]);
+      return { url: `http://localhost:${port}`, port };
+    }
+  }
+  // Fallback: any localhost URL anywhere in the buffer.
+  const m = clean.match(hostRe);
   if (!m) return null;
-  const port = Number(m[1]);
-  return { url: `http://localhost:${port}`, port };
+  return { url: `http://localhost:${m[1]}`, port: Number(m[1]) };
 }
 
 async function waitUntilHttpReady(url: string, timeoutMs: number): Promise<void> {

@@ -49,20 +49,6 @@ function parseRgb(s: string): { r: number; g: number; b: number; a: number } | n
   return { r, g, b, a };
 }
 
-export function isMeaningfulColor(c: ParsedColor): boolean {
-  return c.a > 0;
-}
-
-export function toCss({ r, g, b, a }: ParsedColor): string {
-  return `rgba(${r}, ${g}, ${b}, ${a})`;
-}
-
-export function toHex({ r, g, b, a }: ParsedColor): string {
-  const hex = (n: number) => Math.round(n).toString(16).padStart(2, "0");
-  if (a < 1) return `#${hex(r)}${hex(g)}${hex(b)}${hex(Math.round(a * 255))}`;
-  return `#${hex(r)}${hex(g)}${hex(b)}`.toUpperCase();
-}
-
 function clamp(n: number, min: number, max: number): number {
   return Math.max(min, Math.min(max, n));
 }
