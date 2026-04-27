@@ -10,6 +10,7 @@ import { Maximize2, ZoomIn, ZoomOut } from "lucide-react";
 import type { SpideyNode, SpideyTile } from "@spidey/shared";
 import { Tile } from "./Tile";
 import type { EditAction, Tool } from "./editor/state";
+import { Button } from "@/components/ui/button";
 
 type Props = {
   tiles: SpideyTile[];
@@ -315,9 +316,9 @@ export function Canvas({
       ref={containerRef}
     >
       {tiles.length === 0 && (
-        <div className="absolute inset-0 grid place-items-center text-center text-fg-dim">
+        <div className="absolute inset-0 grid place-items-center text-center text-muted-foreground">
           <div>
-            <div className="text-lg mb-1.5 text-fg">Nothing to show</div>
+            <div className="text-lg mb-1.5 text-foreground">Nothing to show</div>
             <div className="text-xs">
               This spidey.json has no tiles.
             </div>
@@ -358,11 +359,11 @@ export function Canvas({
           );
         })}
       </div>
-      <div className="absolute bottom-4 right-4 flex flex-col gap-1 bg-panel border border-edge rounded-md p-1 z-20">
+      <div className="absolute bottom-4 right-4 flex flex-col gap-1 bg-card border border-border rounded-md p-1 z-20">
         <ZoomBtn onClick={() => zoomTo(1.25)} title="Zoom in">
           <ZoomIn size={14} strokeWidth={2} />
         </ZoomBtn>
-        <div className="text-[11px] text-fg-dim text-center py-1">
+        <div className="text-[11px] text-muted-foreground text-center py-1">
           {Math.round(t.k * 100)}%
         </div>
         <ZoomBtn onClick={() => zoomTo(0.8)} title="Zoom out">
@@ -386,12 +387,13 @@ function ZoomBtn({
   children: ReactNode;
 }) {
   return (
-    <button
+    <Button
       onClick={onClick}
       title={title}
-      className="w-7 h-7 grid place-items-center rounded border border-edge bg-panel-2 text-fg cursor-pointer hover:bg-[#353535]"
+      variant="outline"
+      size="icon-sm"
     >
       {children}
-    </button>
+    </Button>
   );
 }

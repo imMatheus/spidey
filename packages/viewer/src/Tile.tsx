@@ -382,7 +382,7 @@ export function Tile({
       className={[
         "tile absolute rounded-md overflow-hidden border transition-shadow transition-colors duration-150",
         isErr ? "bg-[#2c1f1f]" : "bg-white",
-        active ? "border-accent" : "border-edge",
+        active ? "border-primary" : "border-border",
       ].join(" ")}
       style={{
         left: x,
@@ -395,11 +395,11 @@ export function Tile({
       }}
     >
       <div
-        className="bg-panel-2 text-fg px-3 py-2 text-xs font-medium flex justify-between items-center gap-2"
+        className="bg-muted text-foreground px-3 py-2 text-xs font-medium flex justify-between items-center gap-2"
         style={{ height: headerHeight }}
       >
         {page.kind === "component" ? (
-          <span className="font-mono text-accent whitespace-nowrap overflow-hidden text-ellipsis">
+          <span className="font-mono text-primary whitespace-nowrap overflow-hidden text-ellipsis">
             {`<${page.component?.name ?? "Component"}>`}
           </span>
         ) : (
@@ -409,12 +409,12 @@ export function Tile({
         )}
         <div className="flex items-center gap-1.5 shrink-0">
           {page.kind === "component" && (
-            <span className="text-[10px] px-1.5 py-0.5 rounded-xs bg-accent-soft text-accent uppercase tracking-[0.5px]">
+            <span className="text-[10px] px-1.5 py-0.5 rounded-xs bg-primary/15 text-primary uppercase tracking-[0.5px]">
               component
             </span>
           )}
           {isErr && (
-            <span className="text-[10px] px-1.5 py-0.5 rounded-xs bg-danger/20 text-[#ff8a8a] uppercase tracking-[0.5px]">
+            <span className="text-[10px] px-1.5 py-0.5 rounded-xs bg-destructive/20 text-destructive uppercase tracking-[0.5px]">
               error
             </span>
           )}
@@ -426,7 +426,7 @@ export function Tile({
         style={{ width, height }}
       >
         {isErr ? (
-          <div className="p-4 font-mono text-[11px] text-[#ff8a8a] bg-[#2c1f1f] whitespace-pre-wrap break-words">
+          <div className="p-4 font-mono text-[11px] text-destructive bg-[#2c1f1f] whitespace-pre-wrap break-words">
             {page.error ?? "capture failed"}
           </div>
         ) : (

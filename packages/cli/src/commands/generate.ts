@@ -168,7 +168,17 @@ export async function runGenerate(opts: GenerateOptions): Promise<void> {
     };
 
     fs.mkdirSync(path.dirname(outPathAbs), { recursive: true });
-    fs.writeFileSync(outPathAbs, JSON.stringify(doc, null, 2));
+    const docJson = JSON.stringify(doc, null, 2);
+    fs.writeFileSync(outPathAbs, docJson);
+
+    // Baseline sidecar: a frozen copy of the doc as captured. The viewer
+    // diffs the editable trees against this to compute the changeset for
+    // the coding-agent handoff. Lives next to spidey.json so it travels
+    // with the project.
+    const baselineDir = path.join(path.dirname(outPathAbs), ".spidey");
+    const baselinePath = path.join(baselineDir, "baseline.json");
+    fs.mkdirSync(baselineDir, { recursive: true });
+    fs.writeFileSync(baselinePath, docJson);
 
     const summarize = (kind: SpideyTile["kind"]) => {
       const subset = tiles.filter((p) => (p.kind ?? "route") === kind);
@@ -183,6 +193,7 @@ export async function runGenerate(opts: GenerateOptions): Promise<void> {
     log.dim(
       `run \`spidey view ${path.relative(process.cwd(), outPathAbs)}\` to open`,
     );
+    log.dim("tip: add `.spidey/` to .gitignore");
   } finally {
     if (exitHandler) {
       process.off("SIGINT", exitHandler);

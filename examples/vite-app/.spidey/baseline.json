@@ -1,0 +1,3666 @@
+{
+  "version": 3,
+  "generatedAt": "2026-04-27T00:50:30.385Z",
+  "project": {
+    "name": "spidey-example-vite",
+    "framework": "vite",
+    "root": "/Users/matheus/Desktop/spidey-claude/examples/vite-app"
+  },
+  "capture": {
+    "viewport": {
+      "width": 1280,
+      "height": 800
+    },
+    "devServerUrl": "http://localhost:5400"
+  },
+  "tiles": [
+    {
+      "id": "route:root",
+      "status": "ok",
+      "tree": {
+        "id": "t0-n36",
+        "kind": "el",
+        "tag": "body",
+        "attrs": {},
+        "style": {},
+        "children": [
+          {
+            "id": "t0-n35",
+            "kind": "el",
+            "tag": "div",
+            "attrs": {
+              "id": "root"
+            },
+            "style": {},
+            "children": [
+              {
+                "id": "t0-n34",
+                "kind": "el",
+                "tag": "div",
+                "attrs": {
+                  "class": "page",
+                  "data-spidey-component": "Layout"
+                },
+                "style": {},
+                "children": [
+                  {
+                    "id": "t0-n10",
+                    "kind": "el",
+                    "tag": "nav",
+                    "attrs": {
+                      "class": "nav",
+                      "data-spidey-component": "Navbar"
+                    },
+                    "style": {},
+                    "children": [
+                      {
+                        "id": "t0-n1",
+                        "kind": "el",
+                        "tag": "a",
+                        "attrs": {
+                          "class": "brand",
+                          "href": "/",
+                          "data-spidey-component": "Link",
+                          "data-spidey-props": "{\"to\":\"/\",\"className\":\"brand\"}"
+                        },
+                        "style": {},
+                        "children": [
+                          {
+                            "id": "t0-n0",
+                            "kind": "text",
+                            "value": "acme"
+                          }
+                        ]
+                      },
+                      {
+                        "id": "t0-n3",
+                        "kind": "el",
+                        "tag": "a",
+                        "attrs": {
+                          "href": "/about",
+                          "data-spidey-component": "Link",
+                          "data-spidey-props": "{\"to\":\"/about\"}"
+                        },
+                        "style": {},
+                        "children": [
+                          {
+                            "id": "t0-n2",
+                            "kind": "text",
+                            "value": "About"
+                          }
+                        ]
+                      },
+                      {
+                        "id": "t0-n5",
+                        "kind": "el",
+                        "tag": "a",
+                        "attrs": {
+                          "href": "/products",
+                          "data-spidey-component": "Link",
+                          "data-spidey-props": "{\"to\":\"/products\"}"
+                        },
+                        "style": {},
+                        "children": [
+                          {
+                            "id": "t0-n4",
+                            "kind": "text",
+                            "value": "Products"
+                          }
+                        ]
+                      },
+                      {
+                        "id": "t0-n7",
+                        "kind": "el",
+                        "tag": "a",
+                        "attrs": {
+                          "href": "/users/42",
+                          "data-spidey-component": "Link",
+                          "data-spidey-props": "{\"to\":\"/users/42\"}"
+                        },
+                        "style": {},
+                        "children": [
+                          {
+                            "id": "t0-n6",
+                            "kind": "text",
+                            "value": "Profile"
+                          }
+                        ]
+                      },
+                      {
+                        "id": "t0-n9",
+                        "kind": "el",
+                        "tag": "a",
+                        "attrs": {
+                          "href": "/longread",
+                          "data-spidey-component": "Link",
+                          "data-spidey-props": "{\"to\":\"/longread\"}"
+                        },
+                        "style": {},
+                        "children": [
+                          {
+                            "id": "t0-n8",
+                            "kind": "text",
+                            "value": "Longread"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "id": "t0-n31",
+                    "kind": "el",
+                    "tag": "main",
+                    "attrs": {
+                      "class": "main"
+                    },
+                    "style": {},
+                    "children": [
+                      {
+                        "id": "t0-n12",
+                        "kind": "el",
+                        "tag": "h1",
+                        "attrs": {},
+                        "style": {},
+                        "children": [
+                          {
+                            "id": "t0-n11",
+                            "kind": "text",
+                            "value": "Welcome to Acme"
+                          }
+                        ]
+                      },
+                      {
+                        "id": "t0-n14",
+                        "kind": "el",
+                        "tag": "p",
+                        "attrs": {
+                          "class": "lead"
+                        },
+                        "style": {},
+                        "children": [
+                          {
+                            "id": "t0-n13",
+                            "kind": "text",
+                            "value": "A demo Vite app for testing Spidey. Each link is a different route."
+                          }
+                        ]
+                      },
+                      {
+                        "id": "t0-n30",
+                        "kind": "el",
+                        "tag": "div",
+                        "attrs": {
+                          "class": "card-grid"
+                        },
+                        "style": {},
+                        "children": [
+                          {
+                            "id": "t0-n19",
+                            "kind": "el",
+                            "tag": "div",
+                            "attrs": {
+                              "class": "card"
+                            },
+                            "style": {},
+                            "children": [
+                              {
+                                "id": "t0-n16",
+                                "kind": "el",
+                                "tag": "h3",
+                                "attrs": {},
+                                "style": {},
+                                "children": [
+                                  {
+                                    "id": "t0-n15",
+                                    "kind": "text",
+                                    "value": "Fast"
+                                  }
+                                ]
+                              },
+                              {
+                                "id": "t0-n18",
+                                "kind": "el",
+                                "tag": "p",
+                                "attrs": {},
+                                "style": {},
+                                "children": [
+                                  {
+                                    "id": "t0-n17",
+                                    "kind": "text",
+                                    "value": "HMR, instant cold starts."
+                                  }
+                                ]
+                              }
+                            ]
+                          },
+                          {
+                            "id": "t0-n24",
+                            "kind": "el",
+                            "tag": "div",
+                            "attrs": {
+                              "class": "card"
+                            },
+                            "style": {},
+                            "children": [
+                              {
+                                "id": "t0-n21",
+                                "kind": "el",
+                                "tag": "h3",
+                                "attrs": {},
+                                "style": {},
+                                "children": [
+                                  {
+                                    "id": "t0-n20",
+                                    "kind": "text",
+                                    "value": "Typed"
+                                  }
+                                ]
+                              },
+                              {
+                                "id": "t0-n23",
+                                "kind": "el",
+                                "tag": "p",
+                                "attrs": {},
+                                "style": {},
+                                "children": [
+                                  {
+                                    "id": "t0-n22",
+                                    "kind": "text",
+                                    "value": "TypeScript end-to-end."
+                                  }
+                                ]
+                              }
+                            ]
+                          },
+                          {
+                            "id": "t0-n29",
+                            "kind": "el",
+                            "tag": "div",
+                            "attrs": {
+                              "class": "card"
+                            },
+                            "style": {},
+                            "children": [
+                              {
+                                "id": "t0-n26",
+                                "kind": "el",
+                                "tag": "h3",
+                                "attrs": {},
+                                "style": {},
+                                "children": [
+                                  {
+                                    "id": "t0-n25",
+                                    "kind": "text",
+                                    "value": "Composable"
+                                  }
+                                ]
+                              },
+                              {
+                                "id": "t0-n28",
+                                "kind": "el",
+                                "tag": "p",
+                                "attrs": {},
+                                "style": {},
+                                "children": [
+                                  {
+                                    "id": "t0-n27",
+                                    "kind": "text",
+                                    "value": "Bring your own routing, state, styling."
+                                  }
+                                ]
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "id": "t0-n33",
+                    "kind": "el",
+                    "tag": "footer",
+                    "attrs": {
+                      "class": "footer"
+                    },
+                    "style": {},
+                    "children": [
+                      {
+                        "id": "t0-n32",
+                        "kind": "text",
+                        "value": "© Acme · vite + react-router"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "css": "* { box-sizing: border-box; }\nhtml, body { margin: 0px; padding: 0px; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; color: rgb(26, 26, 26); background: rgb(250, 250, 250); }\n.page { min-height: 800px; display: flex; flex-direction: column; }\n.nav { display: flex; gap: 20px; align-items: center; padding: 16px 32px; background: white; border-bottom: 1px solid rgb(234, 234, 234); }\n.nav a { color: rgb(68, 68, 68); text-decoration: none; font-size: 14px; }\n.nav a:hover { color: rgb(0, 112, 243); }\n.nav .brand { font-weight: 700; font-size: 18px; color: rgb(26, 26, 26); margin-right: auto; }\n.main { flex: 1 1 0%; padding: 48px 32px; max-width: 960px; width: 100%; margin: 0px auto; }\n.main h1 { font-size: 36px; margin: 0px 0px 16px; }\n.main h2 { font-size: 22px; margin: 0px; }\n.main .lead { font-size: 18px; color: rgb(85, 85, 85); margin-bottom: 32px; }\n.card-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }\n.card { background: white; border: 1px solid rgb(234, 234, 234); border-radius: 8px; padding: 24px; }\n.card h3 { margin: 0px 0px 8px; font-size: 16px; }\n.card p { margin: 0px; color: rgb(102, 102, 102); font-size: 14px; }\n.tbl { width: 100%; border-collapse: collapse; background: white; border: 1px solid rgb(234, 234, 234); border-radius: 8px; overflow: hidden; }\n.tbl th, .tbl td { padding: 12px 16px; text-align: left; }\n.tbl thead { background: rgb(244, 244, 244); font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; color: rgb(85, 85, 85); }\n.tbl tbody tr { border-top: 1px solid rgb(234, 234, 234); }\n.profile { display: flex; gap: 20px; align-items: center; background: white; padding: 24px; border: 1px solid rgb(234, 234, 234); border-radius: 8px; }\n.avatar { width: 64px; height: 64px; border-radius: 50%; background: linear-gradient(135deg, rgb(110, 142, 251), rgb(167, 119, 227)); color: white; font-size: 24px; font-weight: 700; display: grid; place-items: center; }\n.dim { color: rgb(136, 136, 136); }\n.footer { padding: 16px 32px; color: rgb(136, 136, 136); font-size: 12px; border-top: 1px solid rgb(234, 234, 234); background: white; }\n.longread { max-width: 720px; margin: 0px auto; font-family: Georgia, \"Times New Roman\", serif; color: rgb(26, 26, 26); }\n.longread h1, .longread h2, .longread h3, .longread h4 { font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; letter-spacing: -0.01em; }\n.lr-eyebrow { text-transform: uppercase; letter-spacing: 0.12em; font-size: 12px; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; color: rgb(107, 107, 107); margin: 0px 0px 14px; }\n.longread h1 { font-size: 44px; line-height: 1.15; margin: 0px 0px 18px; }\n.longread h2 { font-size: 26px; line-height: 1.3; margin: 56px 0px 14px; }\n.longread h3 { font-size: 19px; line-height: 1.4; margin: 36px 0px 10px; }\n.longread h4 { font-size: 15px; margin: 0px 0px 8px; }\n.lr-lede { font-size: 22px; line-height: 1.55; color: rgb(42, 42, 42); font-style: italic; margin: 0px 0px 24px; }\n.longread p { font-size: 18px; line-height: 1.75; color: rgb(42, 42, 42); margin: 0px 0px 20px; }\n.lr-byline { display: flex; justify-content: space-between; align-items: center; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; font-size: 13px; color: rgb(107, 107, 107); border-top: 1px solid rgb(238, 238, 238); border-bottom: 1px solid rgb(238, 238, 238); padding: 14px 0px; margin: 0px 0px 36px; }\n.lr-figure { margin: 36px 0px; }\n.lr-figure-img { background: linear-gradient(135deg, rgb(42, 63, 106), rgb(91, 140, 255) 60%, rgb(201, 163, 255)); border-radius: 6px; height: 320px; display: grid; place-items: center; color: rgba(255, 255, 255, 0.5); font-family: monospace; font-size: 11px; text-transform: uppercase; letter-spacing: 0.2em; }\n.lr-figure figcaption { margin-top: 10px; font-size: 13px; color: rgb(107, 107, 107); font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; }\n.longread ul, .longread ol { padding-left: 1.4em; margin: 0px 0px 24px; }\n.longread li { font-size: 17px; line-height: 1.7; color: rgb(42, 42, 42); margin-bottom: 10px; }\n.longread blockquote { margin: 32px 0px; padding: 0px 0px 0px 22px; border-left: 3px solid rgb(91, 140, 255); }\n.longread blockquote p { font-size: 22px; font-style: italic; line-height: 1.55; color: rgb(26, 26, 26); }\n.longread blockquote cite { display: block; font-size: 13px; color: rgb(107, 107, 107); font-style: normal; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; margin-top: 6px; }\n.longread pre { background: rgb(14, 17, 23); color: rgb(226, 232, 240); padding: 18px 20px; border-radius: 6px; font-size: 13px; line-height: 1.6; overflow-x: auto; margin: 0px 0px 28px; }\n.longread code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }\n.lr-callout { background: rgb(240, 244, 255); border: 1px solid rgb(214, 224, 255); border-radius: 8px; padding: 18px 22px; margin: 32px 0px; }\n.lr-callout h4 { font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; font-size: 13px; text-transform: uppercase; letter-spacing: 0.1em; color: rgb(91, 140, 255); margin: 0px 0px 8px; }\n.lr-callout p { font-size: 16px; margin: 0px; }\n.lr-table { width: 100%; border-collapse: collapse; margin: 0px 0px 28px; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; }\n.lr-table th, .lr-table td { padding: 10px 12px; text-align: left; border-bottom: 1px solid rgb(238, 238, 238); font-size: 14px; }\n.lr-table th { color: rgb(107, 107, 107); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; }\n.lr-link { color: rgb(91, 140, 255); text-decoration: underline; text-underline-offset: 2px; }\n.lr-divider { border-width: 1px 0px 0px; border-style: solid none none; border-color: rgb(238, 238, 238) currentcolor currentcolor; border-image: initial; margin: 48px 0px; }\n.lr-footer { font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; }\n.lr-tags { display: flex; gap: 8px; margin: 0px 0px 16px; }\n.lr-tag { background: rgb(244, 246, 250); border: 1px solid rgb(230, 233, 239); border-radius: 999px; padding: 4px 12px; font-size: 12px; color: rgb(68, 68, 68); }\n.lr-also { font-size: 14px; color: rgb(107, 107, 107); }",
+      "capturedAt": "2026-04-27T00:50:20.569Z",
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "kind": "route",
+      "route": "/",
+      "url": "/",
+      "title": "Acme Demo",
+      "containerSize": {
+        "width": 1280,
+        "height": 800
+      },
+      "htmlAttrs": {
+        "lang": "en"
+      }
+    },
+    {
+      "id": "route:about",
+      "status": "ok",
+      "tree": {
+        "id": "t1-n27",
+        "kind": "el",
+        "tag": "body",
+        "attrs": {},
+        "style": {},
+        "children": [
+          {
+            "id": "t1-n26",
+            "kind": "el",
+            "tag": "div",
+            "attrs": {
+              "id": "root"
+            },
+            "style": {},
+            "children": [
+              {
+                "id": "t1-n25",
+                "kind": "el",
+                "tag": "div",
+                "attrs": {
+                  "class": "page",
+                  "data-spidey-component": "Layout"
+                },
+                "style": {},
+                "children": [
+                  {
+                    "id": "t1-n10",
+                    "kind": "el",
+                    "tag": "nav",
+                    "attrs": {
+                      "class": "nav",
+                      "data-spidey-component": "Navbar"
+                    },
+                    "style": {},
+                    "children": [
+                      {
+                        "id": "t1-n1",
+                        "kind": "el",
+                        "tag": "a",
+                        "attrs": {
+                          "class": "brand",
+                          "href": "/",
+                          "data-spidey-component": "Link",
+                          "data-spidey-props": "{\"to\":\"/\",\"className\":\"brand\"}"
+                        },
+                        "style": {},
+                        "children": [
+                          {
+                            "id": "t1-n0",
+                            "kind": "text",
+                            "value": "acme"
+                          }
+                        ]
+                      },
+                      {
+                        "id": "t1-n3",
+                        "kind": "el",
+                        "tag": "a",
+                        "attrs": {
+                          "href": "/about",
+                          "data-spidey-component": "Link",
+                          "data-spidey-props": "{\"to\":\"/about\"}"
+                        },
+                        "style": {},
+                        "children": [
+                          {
+                            "id": "t1-n2",
+                            "kind": "text",
+                            "value": "About"
+                          }
+                        ]
+                      },
+                      {
+                        "id": "t1-n5",
+                        "kind": "el",
+                        "tag": "a",
+                        "attrs": {
+                          "href": "/products",
+                          "data-spidey-component": "Link",
+                          "data-spidey-props": "{\"to\":\"/products\"}"
+                        },
+                        "style": {},
+                        "children": [
+                          {
+                            "id": "t1-n4",
+                            "kind": "text",
+                            "value": "Products"
+                          }
+                        ]
+                      },
+                      {
+                        "id": "t1-n7",
+                        "kind": "el",
+                        "tag": "a",
+                        "attrs": {
+                          "href": "/users/42",
+                          "data-spidey-component": "Link",
+                          "data-spidey-props": "{\"to\":\"/users/42\"}"
+                        },
+                        "style": {},
+                        "children": [
+                          {
+                            "id": "t1-n6",
+                            "kind": "text",
+                            "value": "Profile"
+                          }
+                        ]
+                      },
+                      {
+                        "id": "t1-n9",
+                        "kind": "el",
+                        "tag": "a",
+                        "attrs": {
+                          "href": "/longread",
+                          "data-spidey-component": "Link",
+                          "data-spidey-props": "{\"to\":\"/longread\"}"
+                        },
+                        "style": {},
+                        "children": [
+                          {
+                            "id": "t1-n8",
+                            "kind": "text",
+                            "value": "Longread"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "id": "t1-n22",
+                    "kind": "el",
+                    "tag": "main",
+                    "attrs": {
+                      "class": "main"
+                    },
+                    "style": {},
+                    "children": [
+                      {
+                        "id": "t1-n12",
+                        "kind": "el",
+                        "tag": "h1",
+                        "attrs": {},
+                        "style": {},
+                        "children": [
+                          {
+                            "id": "t1-n11",
+                            "kind": "text",
+                            "value": "About"
+                          }
+                        ]
+                      },
+                      {
+                        "id": "t1-n14",
+                        "kind": "el",
+                        "tag": "p",
+                        "attrs": {},
+                        "style": {},
+                        "children": [
+                          {
+                            "id": "t1-n13",
+                            "kind": "text",
+                            "value": "Acme is a fictional company that exists only inside this demo."
+                          }
+                        ]
+                      },
+                      {
+                        "id": "t1-n21",
+                        "kind": "el",
+                        "tag": "ul",
+                        "attrs": {},
+                        "style": {},
+                        "children": [
+                          {
+                            "id": "t1-n16",
+                            "kind": "el",
+                            "tag": "li",
+                            "attrs": {},
+                            "style": {},
+                            "children": [
+                              {
+                                "id": "t1-n15",
+                                "kind": "text",
+                                "value": "Founded in 2026"
+                              }
+                            ]
+                          },
+                          {
+                            "id": "t1-n18",
+                            "kind": "el",
+                            "tag": "li",
+                            "attrs": {},
+                            "style": {},
+                            "children": [
+                              {
+                                "id": "t1-n17",
+                                "kind": "text",
+                                "value": "Headquartered nowhere"
+                              }
+                            ]
+                          },
+                          {
+                            "id": "t1-n20",
+                            "kind": "el",
+                            "tag": "li",
+                            "attrs": {},
+                            "style": {},
+                            "children": [
+                              {
+                                "id": "t1-n19",
+                                "kind": "text",
+                                "value": "Specializes in stress-testing canvas viewers"
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "id": "t1-n24",
+                    "kind": "el",
+                    "tag": "footer",
+                    "attrs": {
+                      "class": "footer"
+                    },
+                    "style": {},
+                    "children": [
+                      {
+                        "id": "t1-n23",
+                        "kind": "text",
+                        "value": "© Acme · vite + react-router"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "css": "* { box-sizing: border-box; }\nhtml, body { margin: 0px; padding: 0px; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; color: rgb(26, 26, 26); background: rgb(250, 250, 250); }\n.page { min-height: 800px; display: flex; flex-direction: column; }\n.nav { display: flex; gap: 20px; align-items: center; padding: 16px 32px; background: white; border-bottom: 1px solid rgb(234, 234, 234); }\n.nav a { color: rgb(68, 68, 68); text-decoration: none; font-size: 14px; }\n.nav a:hover { color: rgb(0, 112, 243); }\n.nav .brand { font-weight: 700; font-size: 18px; color: rgb(26, 26, 26); margin-right: auto; }\n.main { flex: 1 1 0%; padding: 48px 32px; max-width: 960px; width: 100%; margin: 0px auto; }\n.main h1 { font-size: 36px; margin: 0px 0px 16px; }\n.main h2 { font-size: 22px; margin: 0px; }\n.main .lead { font-size: 18px; color: rgb(85, 85, 85); margin-bottom: 32px; }\n.card-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }\n.card { background: white; border: 1px solid rgb(234, 234, 234); border-radius: 8px; padding: 24px; }\n.card h3 { margin: 0px 0px 8px; font-size: 16px; }\n.card p { margin: 0px; color: rgb(102, 102, 102); font-size: 14px; }\n.tbl { width: 100%; border-collapse: collapse; background: white; border: 1px solid rgb(234, 234, 234); border-radius: 8px; overflow: hidden; }\n.tbl th, .tbl td { padding: 12px 16px; text-align: left; }\n.tbl thead { background: rgb(244, 244, 244); font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; color: rgb(85, 85, 85); }\n.tbl tbody tr { border-top: 1px solid rgb(234, 234, 234); }\n.profile { display: flex; gap: 20px; align-items: center; background: white; padding: 24px; border: 1px solid rgb(234, 234, 234); border-radius: 8px; }\n.avatar { width: 64px; height: 64px; border-radius: 50%; background: linear-gradient(135deg, rgb(110, 142, 251), rgb(167, 119, 227)); color: white; font-size: 24px; font-weight: 700; display: grid; place-items: center; }\n.dim { color: rgb(136, 136, 136); }\n.footer { padding: 16px 32px; color: rgb(136, 136, 136); font-size: 12px; border-top: 1px solid rgb(234, 234, 234); background: white; }\n.longread { max-width: 720px; margin: 0px auto; font-family: Georgia, \"Times New Roman\", serif; color: rgb(26, 26, 26); }\n.longread h1, .longread h2, .longread h3, .longread h4 { font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; letter-spacing: -0.01em; }\n.lr-eyebrow { text-transform: uppercase; letter-spacing: 0.12em; font-size: 12px; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; color: rgb(107, 107, 107); margin: 0px 0px 14px; }\n.longread h1 { font-size: 44px; line-height: 1.15; margin: 0px 0px 18px; }\n.longread h2 { font-size: 26px; line-height: 1.3; margin: 56px 0px 14px; }\n.longread h3 { font-size: 19px; line-height: 1.4; margin: 36px 0px 10px; }\n.longread h4 { font-size: 15px; margin: 0px 0px 8px; }\n.lr-lede { font-size: 22px; line-height: 1.55; color: rgb(42, 42, 42); font-style: italic; margin: 0px 0px 24px; }\n.longread p { font-size: 18px; line-height: 1.75; color: rgb(42, 42, 42); margin: 0px 0px 20px; }\n.lr-byline { display: flex; justify-content: space-between; align-items: center; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; font-size: 13px; color: rgb(107, 107, 107); border-top: 1px solid rgb(238, 238, 238); border-bottom: 1px solid rgb(238, 238, 238); padding: 14px 0px; margin: 0px 0px 36px; }\n.lr-figure { margin: 36px 0px; }\n.lr-figure-img { background: linear-gradient(135deg, rgb(42, 63, 106), rgb(91, 140, 255) 60%, rgb(201, 163, 255)); border-radius: 6px; height: 320px; display: grid; place-items: center; color: rgba(255, 255, 255, 0.5); font-family: monospace; font-size: 11px; text-transform: uppercase; letter-spacing: 0.2em; }\n.lr-figure figcaption { margin-top: 10px; font-size: 13px; color: rgb(107, 107, 107); font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; }\n.longread ul, .longread ol { padding-left: 1.4em; margin: 0px 0px 24px; }\n.longread li { font-size: 17px; line-height: 1.7; color: rgb(42, 42, 42); margin-bottom: 10px; }\n.longread blockquote { margin: 32px 0px; padding: 0px 0px 0px 22px; border-left: 3px solid rgb(91, 140, 255); }\n.longread blockquote p { font-size: 22px; font-style: italic; line-height: 1.55; color: rgb(26, 26, 26); }\n.longread blockquote cite { display: block; font-size: 13px; color: rgb(107, 107, 107); font-style: normal; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; margin-top: 6px; }\n.longread pre { background: rgb(14, 17, 23); color: rgb(226, 232, 240); padding: 18px 20px; border-radius: 6px; font-size: 13px; line-height: 1.6; overflow-x: auto; margin: 0px 0px 28px; }\n.longread code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }\n.lr-callout { background: rgb(240, 244, 255); border: 1px solid rgb(214, 224, 255); border-radius: 8px; padding: 18px 22px; margin: 32px 0px; }\n.lr-callout h4 { font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; font-size: 13px; text-transform: uppercase; letter-spacing: 0.1em; color: rgb(91, 140, 255); margin: 0px 0px 8px; }\n.lr-callout p { font-size: 16px; margin: 0px; }\n.lr-table { width: 100%; border-collapse: collapse; margin: 0px 0px 28px; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; }\n.lr-table th, .lr-table td { padding: 10px 12px; text-align: left; border-bottom: 1px solid rgb(238, 238, 238); font-size: 14px; }\n.lr-table th { color: rgb(107, 107, 107); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; }\n.lr-link { color: rgb(91, 140, 255); text-decoration: underline; text-underline-offset: 2px; }\n.lr-divider { border-width: 1px 0px 0px; border-style: solid none none; border-color: rgb(238, 238, 238) currentcolor currentcolor; border-image: initial; margin: 48px 0px; }\n.lr-footer { font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; }\n.lr-tags { display: flex; gap: 8px; margin: 0px 0px 16px; }\n.lr-tag { background: rgb(244, 246, 250); border: 1px solid rgb(230, 233, 239); border-radius: 999px; padding: 4px 12px; font-size: 12px; color: rgb(68, 68, 68); }\n.lr-also { font-size: 14px; color: rgb(107, 107, 107); }",
+      "capturedAt": "2026-04-27T00:50:21.742Z",
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "kind": "route",
+      "route": "/about",
+      "url": "/about",
+      "title": "Acme Demo",
+      "containerSize": {
+        "width": 1280,
+        "height": 800
+      },
+      "htmlAttrs": {
+        "lang": "en"
+      }
+    },
+    {
+      "id": "route:longread",
+      "status": "ok",
+      "tree": {
+        "id": "t2-n261",
+        "kind": "el",
+        "tag": "body",
+        "attrs": {},
+        "style": {},
+        "children": [
+          {
+            "id": "t2-n260",
+            "kind": "el",
+            "tag": "div",
+            "attrs": {
+              "id": "root"
+            },
+            "style": {},
+            "children": [
+              {
+                "id": "t2-n259",
+                "kind": "el",
+                "tag": "div",
+                "attrs": {
+                  "class": "page",
+                  "data-spidey-component": "Layout"
+                },
+                "style": {},
+                "children": [
+                  {
+                    "id": "t2-n10",
+                    "kind": "el",
+                    "tag": "nav",
+                    "attrs": {
+                      "class": "nav",
+                      "data-spidey-component": "Navbar"
+                    },
+                    "style": {},
+                    "children": [
+                      {
+                        "id": "t2-n1",
+                        "kind": "el",
+                        "tag": "a",
+                        "attrs": {
+                          "class": "brand",
+                          "href": "/",
+                          "data-spidey-component": "Link",
+                          "data-spidey-props": "{\"to\":\"/\",\"className\":\"brand\"}"
+                        },
+                        "style": {},
+                        "children": [
+                          {
+                            "id": "t2-n0",
+                            "kind": "text",
+                            "value": "acme"
+                          }
+                        ]
+                      },
+                      {
+                        "id": "t2-n3",
+                        "kind": "el",
+                        "tag": "a",
+                        "attrs": {
+                          "href": "/about",
+                          "data-spidey-component": "Link",
+                          "data-spidey-props": "{\"to\":\"/about\"}"
+                        },
+                        "style": {},
+                        "children": [
+                          {
+                            "id": "t2-n2",
+                            "kind": "text",
+                            "value": "About"
+                          }
+                        ]
+                      },
+                      {
+                        "id": "t2-n5",
+                        "kind": "el",
+                        "tag": "a",
+                        "attrs": {
+                          "href": "/products",
+                          "data-spidey-component": "Link",
+                          "data-spidey-props": "{\"to\":\"/products\"}"
+                        },
+                        "style": {},
+                        "children": [
+                          {
+                            "id": "t2-n4",
+                            "kind": "text",
+                            "value": "Products"
+                          }
+                        ]
+                      },
+                      {
+                        "id": "t2-n7",
+                        "kind": "el",
+                        "tag": "a",
+                        "attrs": {
+                          "href": "/users/42",
+                          "data-spidey-component": "Link",
+                          "data-spidey-props": "{\"to\":\"/users/42\"}"
+                        },
+                        "style": {},
+                        "children": [
+                          {
+                            "id": "t2-n6",
+                            "kind": "text",
+                            "value": "Profile"
+                          }
+                        ]
+                      },
+                      {
+                        "id": "t2-n9",
+                        "kind": "el",
+                        "tag": "a",
+                        "attrs": {
+                          "href": "/longread",
+                          "data-spidey-component": "Link",
+                          "data-spidey-props": "{\"to\":\"/longread\"}"
+                        },
+                        "style": {},
+                        "children": [
+                          {
+                            "id": "t2-n8",
+                            "kind": "text",
+                            "value": "Longread"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "id": "t2-n256",
+                    "kind": "el",
+                    "tag": "main",
+                    "attrs": {
+                      "class": "main"
+                    },
+                    "style": {},
+                    "children": [
+                      {
+                        "id": "t2-n255",
+                        "kind": "el",
+                        "tag": "article",
+                        "attrs": {
+                          "class": "longread"
+                        },
+                        "style": {},
+                        "children": [
+                          {
+                            "id": "t2-n22",
+                            "kind": "el",
+                            "tag": "header",
+                            "attrs": {
+                              "class": "lr-hero"
+                            },
+                            "style": {},
+                            "children": [
+                              {
+                                "id": "t2-n12",
+                                "kind": "el",
+                                "tag": "p",
+                                "attrs": {
+                                  "class": "lr-eyebrow"
+                                },
+                                "style": {},
+                                "children": [
+                                  {
+                                    "id": "t2-n11",
+                                    "kind": "text",
+                                    "value": "Field notes · 12 min read"
+                                  }
+                                ]
+                              },
+                              {
+                                "id": "t2-n14",
+                                "kind": "el",
+                                "tag": "h1",
+                                "attrs": {},
+                                "style": {},
+                                "children": [
+                                  {
+                                    "id": "t2-n13",
+                                    "kind": "text",
+                                    "value": "Eleven years of side projects, ranked"
+                                  }
+                                ]
+                              },
+                              {
+                                "id": "t2-n16",
+                                "kind": "el",
+                                "tag": "p",
+                                "attrs": {
+                                  "class": "lr-lede"
+                                },
+                                "style": {},
+                                "children": [
+                                  {
+                                    "id": "t2-n15",
+                                    "kind": "text",
+                                    "value": "Most of them died inside a week. The handful that survived have something in common, and it isn't the obvious thing. A tour of every weekend project I've started since 2014, what killed each one, and the small set of patterns that turned out to actually matter."
+                                  }
+                                ]
+                              },
+                              {
+                                "id": "t2-n21",
+                                "kind": "el",
+                                "tag": "div",
+                                "attrs": {
+                                  "class": "lr-byline"
+                                },
+                                "style": {},
+                                "children": [
+                                  {
+                                    "id": "t2-n18",
+                                    "kind": "el",
+                                    "tag": "span",
+                                    "attrs": {},
+                                    "style": {},
+                                    "children": [
+                                      {
+                                        "id": "t2-n17",
+                                        "kind": "text",
+                                        "value": "Words by Sam Park · Illustrations by Yuki Watanabe"
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "id": "t2-n20",
+                                    "kind": "el",
+                                    "tag": "span",
+                                    "attrs": {
+                                      "class": "lr-date"
+                                    },
+                                    "style": {},
+                                    "children": [
+                                      {
+                                        "id": "t2-n19",
+                                        "kind": "text",
+                                        "value": "February 2026"
+                                      }
+                                    ]
+                                  }
+                                ]
+                              }
+                            ]
+                          },
+                          {
+                            "id": "t2-n28",
+                            "kind": "el",
+                            "tag": "figure",
+                            "attrs": {
+                              "class": "lr-figure"
+                            },
+                            "style": {},
+                            "children": [
+                              {
+                                "id": "t2-n25",
+                                "kind": "el",
+                                "tag": "div",
+                                "attrs": {
+                                  "class": "lr-figure-img",
+                                  "aria-hidden": "true"
+                                },
+                                "style": {},
+                                "children": [
+                                  {
+                                    "id": "t2-n24",
+                                    "kind": "el",
+                                    "tag": "span",
+                                    "attrs": {},
+                                    "style": {},
+                                    "children": [
+                                      {
+                                        "id": "t2-n23",
+                                        "kind": "text",
+                                        "value": "cover"
+                                      }
+                                    ]
+                                  }
+                                ]
+                              },
+                              {
+                                "id": "t2-n27",
+                                "kind": "el",
+                                "tag": "figcaption",
+                                "attrs": {},
+                                "style": {},
+                                "children": [
+                                  {
+                                    "id": "t2-n26",
+                                    "kind": "text",
+                                    "value": "A graveyard of unfinished side projects. Some of them are still running, somehow, on a Hetzner box I forgot the password to."
+                                  }
+                                ]
+                              }
+                            ]
+                          },
+                          {
+                            "id": "t2-n30",
+                            "kind": "el",
+                            "tag": "h2",
+                            "attrs": {},
+                            "style": {},
+                            "children": [
+                              {
+                                "id": "t2-n29",
+                                "kind": "text",
+                                "value": "The list, briefly"
+                              }
+                            ]
+                          },
+                          {
+                            "id": "t2-n32",
+                            "kind": "el",
+                            "tag": "p",
+                            "attrs": {},
+                            "style": {},
+                            "children": [
+                              {
+                                "id": "t2-n31",
+                                "kind": "text",
+                                "value": "I have, by my count, started forty-one side projects since 2014. Of those, six are still alive in some form, eleven made it past the first month, and the remaining twenty-four were either deleted, abandoned, or quietly turned into other projects. That's a 15% completion rate, which sounds depressing until you remember that most of them deserved to die."
+                              }
+                            ]
+                          },
+                          {
+                            "id": "t2-n34",
+                            "kind": "el",
+                            "tag": "p",
+                            "attrs": {},
+                            "style": {},
+                            "children": [
+                              {
+                                "id": "t2-n33",
+                                "kind": "text",
+                                "value": "What follows is not a victory lap, and not a self-flagellation. It's an honest accounting of what worked, what didn't, and the patterns I noticed only by writing this list down."
+                              }
+                            ]
+                          },
+                          {
+                            "id": "t2-n36",
+                            "kind": "el",
+                            "tag": "h2",
+                            "attrs": {},
+                            "style": {},
+                            "children": [
+                              {
+                                "id": "t2-n35",
+                                "kind": "text",
+                                "value": "What killed the ones that died"
+                              }
+                            ]
+                          },
+                          {
+                            "id": "t2-n56",
+                            "kind": "el",
+                            "tag": "ol",
+                            "attrs": {},
+                            "style": {},
+                            "children": [
+                              {
+                                "id": "t2-n40",
+                                "kind": "el",
+                                "tag": "li",
+                                "attrs": {},
+                                "style": {},
+                                "children": [
+                                  {
+                                    "id": "t2-n38",
+                                    "kind": "el",
+                                    "tag": "strong",
+                                    "attrs": {},
+                                    "style": {},
+                                    "children": [
+                                      {
+                                        "id": "t2-n37",
+                                        "kind": "text",
+                                        "value": "Deployment friction."
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "id": "t2-n39",
+                                    "kind": "text",
+                                    "value": " About a third of the projects died because I couldn't bring myself to ship the second version. Not a bug, not a missing feature — just the tax of pushing code somewhere live."
+                                  }
+                                ]
+                              },
+                              {
+                                "id": "t2-n44",
+                                "kind": "el",
+                                "tag": "li",
+                                "attrs": {},
+                                "style": {},
+                                "children": [
+                                  {
+                                    "id": "t2-n42",
+                                    "kind": "el",
+                                    "tag": "strong",
+                                    "attrs": {},
+                                    "style": {},
+                                    "children": [
+                                      {
+                                        "id": "t2-n41",
+                                        "kind": "text",
+                                        "value": "Domain expertise vacuum."
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "id": "t2-n43",
+                                    "kind": "text",
+                                    "value": " I started a podcast mixing app, a chess tutor, and a music notation editor. I don't know enough about any of those things to make something worth using. I learned this the third time."
+                                  }
+                                ]
+                              },
+                              {
+                                "id": "t2-n48",
+                                "kind": "el",
+                                "tag": "li",
+                                "attrs": {},
+                                "style": {},
+                                "children": [
+                                  {
+                                    "id": "t2-n46",
+                                    "kind": "el",
+                                    "tag": "strong",
+                                    "attrs": {},
+                                    "style": {},
+                                    "children": [
+                                      {
+                                        "id": "t2-n45",
+                                        "kind": "text",
+                                        "value": "Scope creep on day two."
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "id": "t2-n47",
+                                    "kind": "text",
+                                    "value": " A surprising number of projects died not from too little work but from a feature list that doubled overnight. The version that would have shipped on day one was always better than the one I imagined on day two."
+                                  }
+                                ]
+                              },
+                              {
+                                "id": "t2-n55",
+                                "kind": "el",
+                                "tag": "li",
+                                "attrs": {},
+                                "style": {},
+                                "children": [
+                                  {
+                                    "id": "t2-n50",
+                                    "kind": "el",
+                                    "tag": "strong",
+                                    "attrs": {},
+                                    "style": {},
+                                    "children": [
+                                      {
+                                        "id": "t2-n49",
+                                        "kind": "text",
+                                        "value": "No first user."
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "id": "t2-n51",
+                                    "kind": "text",
+                                    "value": " Projects without a specific person I could imagine using them died fastest. My mom counts. A specific Slack channel counts. A vague"
+                                  },
+                                  {
+                                    "id": "t2-n53",
+                                    "kind": "el",
+                                    "tag": "em",
+                                    "attrs": {},
+                                    "style": {},
+                                    "children": [
+                                      {
+                                        "id": "t2-n52",
+                                        "kind": "text",
+                                        "value": "“developers”"
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "id": "t2-n54",
+                                    "kind": "text",
+                                    "value": " doesn't."
+                                  }
+                                ]
+                              }
+                            ]
+                          },
+                          {
+                            "id": "t2-n58",
+                            "kind": "el",
+                            "tag": "h3",
+                            "attrs": {},
+                            "style": {},
+                            "children": [
+                              {
+                                "id": "t2-n57",
+                                "kind": "text",
+                                "value": "The deployment-friction one is interesting"
+                              }
+                            ]
+                          },
+                          {
+                            "id": "t2-n66",
+                            "kind": "el",
+                            "tag": "p",
+                            "attrs": {},
+                            "style": {},
+                            "children": [
+                              {
+                                "id": "t2-n59",
+                                "kind": "text",
+                                "value": "Here's what I noticed only when I made the list: my completion rate jumped sharply after I switched to platforms with essentially zero deploy friction. From 8% before 2020 to 27% after. The technology change wasn't the cause — the cause was that the gap between “I want to make a small change” and “the change is live” collapsed from"
+                              },
+                              {
+                                "id": "t2-n61",
+                                "kind": "el",
+                                "tag": "em",
+                                "attrs": {},
+                                "style": {},
+                                "children": [
+                                  {
+                                    "id": "t2-n60",
+                                    "kind": "text",
+                                    "value": "at least an evening"
+                                  }
+                                ]
+                              },
+                              {
+                                "id": "t2-n62",
+                                "kind": "text",
+                                "value": " to "
+                              },
+                              {
+                                "id": "t2-n64",
+                                "kind": "el",
+                                "tag": "em",
+                                "attrs": {},
+                                "style": {},
+                                "children": [
+                                  {
+                                    "id": "t2-n63",
+                                    "kind": "text",
+                                    "value": "under a minute"
+                                  }
+                                ]
+                              },
+                              {
+                                "id": "t2-n65",
+                                "kind": "text",
+                                "value": ". The activation energy stopped being a tax on momentum."
+                              }
+                            ]
+                          },
+                          {
+                            "id": "t2-n71",
+                            "kind": "el",
+                            "tag": "blockquote",
+                            "attrs": {},
+                            "style": {},
+                            "children": [
+                              {
+                                "id": "t2-n68",
+                                "kind": "el",
+                                "tag": "p",
+                                "attrs": {},
+                                "style": {},
+                                "children": [
+                                  {
+                                    "id": "t2-n67",
+                                    "kind": "text",
+                                    "value": "The single most important predictor of whether a side project survives the first month is whether you can ship a typo fix in less than a minute, no thinking required."
+                                  }
+                                ]
+                              },
+                              {
+                                "id": "t2-n70",
+                                "kind": "el",
+                                "tag": "cite",
+                                "attrs": {},
+                                "style": {},
+                                "children": [
+                                  {
+                                    "id": "t2-n69",
+                                    "kind": "text",
+                                    "value": "— me, after looking at this data"
+                                  }
+                                ]
+                              }
+                            ]
+                          },
+                          {
+                            "id": "t2-n73",
+                            "kind": "el",
+                            "tag": "h2",
+                            "attrs": {},
+                            "style": {},
+                            "children": [
+                              {
+                                "id": "t2-n72",
+                                "kind": "text",
+                                "value": "What the survivors share"
+                              }
+                            ]
+                          },
+                          {
+                            "id": "t2-n75",
+                            "kind": "el",
+                            "tag": "p",
+                            "attrs": {},
+                            "style": {},
+                            "children": [
+                              {
+                                "id": "t2-n74",
+                                "kind": "text",
+                                "value": "Pulling the six surviving projects together: a CLI for syncing my notes, a static-site engine I keep meaning to delete, a tiny RSS reader, a Twitch chat archiver, a metric ingest for my home solar panels, and a script that watches my calendar and yells at me to leave for meetings. They have one thing in common, and it isn't a tech stack."
+                              }
+                            ]
+                          },
+                          {
+                            "id": "t2-n80",
+                            "kind": "el",
+                            "tag": "p",
+                            "attrs": {},
+                            "style": {},
+                            "children": [
+                              {
+                                "id": "t2-n76",
+                                "kind": "text",
+                                "value": "They all had a "
+                              },
+                              {
+                                "id": "t2-n78",
+                                "kind": "el",
+                                "tag": "strong",
+                                "attrs": {},
+                                "style": {},
+                                "children": [
+                                  {
+                                    "id": "t2-n77",
+                                    "kind": "text",
+                                    "value": "specific person"
+                                  }
+                                ]
+                              },
+                              {
+                                "id": "t2-n79",
+                                "kind": "text",
+                                "value": " who would be mildly inconvenienced if the project went down. In every case, that person is me. It turns out the cure for “projects dying when I lose interest” is “projects I rely on for something I do every day.”"
+                              }
+                            ]
+                          },
+                          {
+                            "id": "t2-n89",
+                            "kind": "el",
+                            "tag": "ul",
+                            "attrs": {},
+                            "style": {},
+                            "children": [
+                              {
+                                "id": "t2-n82",
+                                "kind": "el",
+                                "tag": "li",
+                                "attrs": {},
+                                "style": {},
+                                "children": [
+                                  {
+                                    "id": "t2-n81",
+                                    "kind": "text",
+                                    "value": "The notes CLI is the one I use to draft this kind of post."
+                                  }
+                                ]
+                              },
+                              {
+                                "id": "t2-n84",
+                                "kind": "el",
+                                "tag": "li",
+                                "attrs": {},
+                                "style": {},
+                                "children": [
+                                  {
+                                    "id": "t2-n83",
+                                    "kind": "text",
+                                    "value": "The RSS reader is the one I open every morning."
+                                  }
+                                ]
+                              },
+                              {
+                                "id": "t2-n86",
+                                "kind": "el",
+                                "tag": "li",
+                                "attrs": {},
+                                "style": {},
+                                "children": [
+                                  {
+                                    "id": "t2-n85",
+                                    "kind": "text",
+                                    "value": "The Twitch archiver runs my partner's clip review."
+                                  }
+                                ]
+                              },
+                              {
+                                "id": "t2-n88",
+                                "kind": "el",
+                                "tag": "li",
+                                "attrs": {},
+                                "style": {},
+                                "children": [
+                                  {
+                                    "id": "t2-n87",
+                                    "kind": "text",
+                                    "value": "The solar metric ingest feeds the dashboard I check every weekend."
+                                  }
+                                ]
+                              }
+                            ]
+                          },
+                          {
+                            "id": "t2-n91",
+                            "kind": "el",
+                            "tag": "p",
+                            "attrs": {},
+                            "style": {},
+                            "children": [
+                              {
+                                "id": "t2-n90",
+                                "kind": "text",
+                                "value": "The ones I tried to make for other people, before they had told me they wanted them, all died. I don't think this is a universal rule. I think it's a rule for me, and probably for anyone who works on a side project for the same reason they read books — because they like the activity itself, not because they're trying to ship a startup."
+                              }
+                            ]
+                          },
+                          {
+                            "id": "t2-n99",
+                            "kind": "el",
+                            "tag": "aside",
+                            "attrs": {
+                              "class": "lr-callout"
+                            },
+                            "style": {},
+                            "children": [
+                              {
+                                "id": "t2-n93",
+                                "kind": "el",
+                                "tag": "h4",
+                                "attrs": {},
+                                "style": {},
+                                "children": [
+                                  {
+                                    "id": "t2-n92",
+                                    "kind": "text",
+                                    "value": "The scratch-your-own-itch rule has a corollary"
+                                  }
+                                ]
+                              },
+                              {
+                                "id": "t2-n98",
+                                "kind": "el",
+                                "tag": "p",
+                                "attrs": {},
+                                "style": {},
+                                "children": [
+                                  {
+                                    "id": "t2-n94",
+                                    "kind": "text",
+                                    "value": "The corollary is: "
+                                  },
+                                  {
+                                    "id": "t2-n96",
+                                    "kind": "el",
+                                    "tag": "strong",
+                                    "attrs": {},
+                                    "style": {},
+                                    "children": [
+                                      {
+                                        "id": "t2-n95",
+                                        "kind": "text",
+                                        "value": "if you find yourself building a project for an imagined user"
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "id": "t2-n97",
+                                    "kind": "text",
+                                    "value": " who isn't you, and you can't name them, you're probably building the wrong thing. Sometimes it's fine to be wrong."
+                                  }
+                                ]
+                              }
+                            ]
+                          },
+                          {
+                            "id": "t2-n101",
+                            "kind": "el",
+                            "tag": "h2",
+                            "attrs": {},
+                            "style": {},
+                            "children": [
+                              {
+                                "id": "t2-n100",
+                                "kind": "text",
+                                "value": "The honest ranking"
+                              }
+                            ]
+                          },
+                          {
+                            "id": "t2-n185",
+                            "kind": "el",
+                            "tag": "table",
+                            "attrs": {
+                              "class": "lr-table"
+                            },
+                            "style": {},
+                            "children": [
+                              {
+                                "id": "t2-n111",
+                                "kind": "el",
+                                "tag": "thead",
+                                "attrs": {},
+                                "style": {},
+                                "children": [
+                                  {
+                                    "id": "t2-n110",
+                                    "kind": "el",
+                                    "tag": "tr",
+                                    "attrs": {},
+                                    "style": {},
+                                    "children": [
+                                      {
+                                        "id": "t2-n103",
+                                        "kind": "el",
+                                        "tag": "th",
+                                        "attrs": {
+                                          "scope": "col"
+                                        },
+                                        "style": {},
+                                        "children": [
+                                          {
+                                            "id": "t2-n102",
+                                            "kind": "text",
+                                            "value": "Project"
+                                          }
+                                        ]
+                                      },
+                                      {
+                                        "id": "t2-n105",
+                                        "kind": "el",
+                                        "tag": "th",
+                                        "attrs": {
+                                          "scope": "col"
+                                        },
+                                        "style": {},
+                                        "children": [
+                                          {
+                                            "id": "t2-n104",
+                                            "kind": "text",
+                                            "value": "Year"
+                                          }
+                                        ]
+                                      },
+                                      {
+                                        "id": "t2-n107",
+                                        "kind": "el",
+                                        "tag": "th",
+                                        "attrs": {
+                                          "scope": "col"
+                                        },
+                                        "style": {},
+                                        "children": [
+                                          {
+                                            "id": "t2-n106",
+                                            "kind": "text",
+                                            "value": "Status"
+                                          }
+                                        ]
+                                      },
+                                      {
+                                        "id": "t2-n109",
+                                        "kind": "el",
+                                        "tag": "th",
+                                        "attrs": {
+                                          "scope": "col"
+                                        },
+                                        "style": {},
+                                        "children": [
+                                          {
+                                            "id": "t2-n108",
+                                            "kind": "text",
+                                            "value": "Honest verdict"
+                                          }
+                                        ]
+                                      }
+                                    ]
+                                  }
+                                ]
+                              },
+                              {
+                                "id": "t2-n184",
+                                "kind": "el",
+                                "tag": "tbody",
+                                "attrs": {},
+                                "style": {},
+                                "children": [
+                                  {
+                                    "id": "t2-n120",
+                                    "kind": "el",
+                                    "tag": "tr",
+                                    "attrs": {},
+                                    "style": {},
+                                    "children": [
+                                      {
+                                        "id": "t2-n113",
+                                        "kind": "el",
+                                        "tag": "td",
+                                        "attrs": {},
+                                        "style": {},
+                                        "children": [
+                                          {
+                                            "id": "t2-n112",
+                                            "kind": "text",
+                                            "value": "note-sync"
+                                          }
+                                        ]
+                                      },
+                                      {
+                                        "id": "t2-n115",
+                                        "kind": "el",
+                                        "tag": "td",
+                                        "attrs": {},
+                                        "style": {},
+                                        "children": [
+                                          {
+                                            "id": "t2-n114",
+                                            "kind": "text",
+                                            "value": "2018"
+                                          }
+                                        ]
+                                      },
+                                      {
+                                        "id": "t2-n117",
+                                        "kind": "el",
+                                        "tag": "td",
+                                        "attrs": {},
+                                        "style": {},
+                                        "children": [
+                                          {
+                                            "id": "t2-n116",
+                                            "kind": "text",
+                                            "value": "alive"
+                                          }
+                                        ]
+                                      },
+                                      {
+                                        "id": "t2-n119",
+                                        "kind": "el",
+                                        "tag": "td",
+                                        "attrs": {},
+                                        "style": {},
+                                        "children": [
+                                          {
+                                            "id": "t2-n118",
+                                            "kind": "text",
+                                            "value": "Foundational. Use it daily."
+                                          }
+                                        ]
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "id": "t2-n129",
+                                    "kind": "el",
+                                    "tag": "tr",
+                                    "attrs": {},
+                                    "style": {},
+                                    "children": [
+                                      {
+                                        "id": "t2-n122",
+                                        "kind": "el",
+                                        "tag": "td",
+                                        "attrs": {},
+                                        "style": {},
+                                        "children": [
+                                          {
+                                            "id": "t2-n121",
+                                            "kind": "text",
+                                            "value": "solar-ingest"
+                                          }
+                                        ]
+                                      },
+                                      {
+                                        "id": "t2-n124",
+                                        "kind": "el",
+                                        "tag": "td",
+                                        "attrs": {},
+                                        "style": {},
+                                        "children": [
+                                          {
+                                            "id": "t2-n123",
+                                            "kind": "text",
+                                            "value": "2021"
+                                          }
+                                        ]
+                                      },
+                                      {
+                                        "id": "t2-n126",
+                                        "kind": "el",
+                                        "tag": "td",
+                                        "attrs": {},
+                                        "style": {},
+                                        "children": [
+                                          {
+                                            "id": "t2-n125",
+                                            "kind": "text",
+                                            "value": "alive"
+                                          }
+                                        ]
+                                      },
+                                      {
+                                        "id": "t2-n128",
+                                        "kind": "el",
+                                        "tag": "td",
+                                        "attrs": {},
+                                        "style": {},
+                                        "children": [
+                                          {
+                                            "id": "t2-n127",
+                                            "kind": "text",
+                                            "value": "Should not still be a side project."
+                                          }
+                                        ]
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "id": "t2-n138",
+                                    "kind": "el",
+                                    "tag": "tr",
+                                    "attrs": {},
+                                    "style": {},
+                                    "children": [
+                                      {
+                                        "id": "t2-n131",
+                                        "kind": "el",
+                                        "tag": "td",
+                                        "attrs": {},
+                                        "style": {},
+                                        "children": [
+                                          {
+                                            "id": "t2-n130",
+                                            "kind": "text",
+                                            "value": "rss-mini"
+                                          }
+                                        ]
+                                      },
+                                      {
+                                        "id": "t2-n133",
+                                        "kind": "el",
+                                        "tag": "td",
+                                        "attrs": {},
+                                        "style": {},
+                                        "children": [
+                                          {
+                                            "id": "t2-n132",
+                                            "kind": "text",
+                                            "value": "2019"
+                                          }
+                                        ]
+                                      },
+                                      {
+                                        "id": "t2-n135",
+                                        "kind": "el",
+                                        "tag": "td",
+                                        "attrs": {},
+                                        "style": {},
+                                        "children": [
+                                          {
+                                            "id": "t2-n134",
+                                            "kind": "text",
+                                            "value": "alive"
+                                          }
+                                        ]
+                                      },
+                                      {
+                                        "id": "t2-n137",
+                                        "kind": "el",
+                                        "tag": "td",
+                                        "attrs": {},
+                                        "style": {},
+                                        "children": [
+                                          {
+                                            "id": "t2-n136",
+                                            "kind": "text",
+                                            "value": "I have rebuilt this four times."
+                                          }
+                                        ]
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "id": "t2-n147",
+                                    "kind": "el",
+                                    "tag": "tr",
+                                    "attrs": {},
+                                    "style": {},
+                                    "children": [
+                                      {
+                                        "id": "t2-n140",
+                                        "kind": "el",
+                                        "tag": "td",
+                                        "attrs": {},
+                                        "style": {},
+                                        "children": [
+                                          {
+                                            "id": "t2-n139",
+                                            "kind": "text",
+                                            "value": "twitch-archive"
+                                          }
+                                        ]
+                                      },
+                                      {
+                                        "id": "t2-n142",
+                                        "kind": "el",
+                                        "tag": "td",
+                                        "attrs": {},
+                                        "style": {},
+                                        "children": [
+                                          {
+                                            "id": "t2-n141",
+                                            "kind": "text",
+                                            "value": "2023"
+                                          }
+                                        ]
+                                      },
+                                      {
+                                        "id": "t2-n144",
+                                        "kind": "el",
+                                        "tag": "td",
+                                        "attrs": {},
+                                        "style": {},
+                                        "children": [
+                                          {
+                                            "id": "t2-n143",
+                                            "kind": "text",
+                                            "value": "alive"
+                                          }
+                                        ]
+                                      },
+                                      {
+                                        "id": "t2-n146",
+                                        "kind": "el",
+                                        "tag": "td",
+                                        "attrs": {},
+                                        "style": {},
+                                        "children": [
+                                          {
+                                            "id": "t2-n145",
+                                            "kind": "text",
+                                            "value": "Held together by ducktape."
+                                          }
+                                        ]
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "id": "t2-n156",
+                                    "kind": "el",
+                                    "tag": "tr",
+                                    "attrs": {},
+                                    "style": {},
+                                    "children": [
+                                      {
+                                        "id": "t2-n149",
+                                        "kind": "el",
+                                        "tag": "td",
+                                        "attrs": {},
+                                        "style": {},
+                                        "children": [
+                                          {
+                                            "id": "t2-n148",
+                                            "kind": "text",
+                                            "value": "chess-coach"
+                                          }
+                                        ]
+                                      },
+                                      {
+                                        "id": "t2-n151",
+                                        "kind": "el",
+                                        "tag": "td",
+                                        "attrs": {},
+                                        "style": {},
+                                        "children": [
+                                          {
+                                            "id": "t2-n150",
+                                            "kind": "text",
+                                            "value": "2017"
+                                          }
+                                        ]
+                                      },
+                                      {
+                                        "id": "t2-n153",
+                                        "kind": "el",
+                                        "tag": "td",
+                                        "attrs": {},
+                                        "style": {},
+                                        "children": [
+                                          {
+                                            "id": "t2-n152",
+                                            "kind": "text",
+                                            "value": "dead"
+                                          }
+                                        ]
+                                      },
+                                      {
+                                        "id": "t2-n155",
+                                        "kind": "el",
+                                        "tag": "td",
+                                        "attrs": {},
+                                        "style": {},
+                                        "children": [
+                                          {
+                                            "id": "t2-n154",
+                                            "kind": "text",
+                                            "value": "Domain knowledge gap."
+                                          }
+                                        ]
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "id": "t2-n165",
+                                    "kind": "el",
+                                    "tag": "tr",
+                                    "attrs": {},
+                                    "style": {},
+                                    "children": [
+                                      {
+                                        "id": "t2-n158",
+                                        "kind": "el",
+                                        "tag": "td",
+                                        "attrs": {},
+                                        "style": {},
+                                        "children": [
+                                          {
+                                            "id": "t2-n157",
+                                            "kind": "text",
+                                            "value": "podcast-mixer"
+                                          }
+                                        ]
+                                      },
+                                      {
+                                        "id": "t2-n160",
+                                        "kind": "el",
+                                        "tag": "td",
+                                        "attrs": {},
+                                        "style": {},
+                                        "children": [
+                                          {
+                                            "id": "t2-n159",
+                                            "kind": "text",
+                                            "value": "2019"
+                                          }
+                                        ]
+                                      },
+                                      {
+                                        "id": "t2-n162",
+                                        "kind": "el",
+                                        "tag": "td",
+                                        "attrs": {},
+                                        "style": {},
+                                        "children": [
+                                          {
+                                            "id": "t2-n161",
+                                            "kind": "text",
+                                            "value": "dead"
+                                          }
+                                        ]
+                                      },
+                                      {
+                                        "id": "t2-n164",
+                                        "kind": "el",
+                                        "tag": "td",
+                                        "attrs": {},
+                                        "style": {},
+                                        "children": [
+                                          {
+                                            "id": "t2-n163",
+                                            "kind": "text",
+                                            "value": "Deploy friction + scope creep."
+                                          }
+                                        ]
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "id": "t2-n174",
+                                    "kind": "el",
+                                    "tag": "tr",
+                                    "attrs": {},
+                                    "style": {},
+                                    "children": [
+                                      {
+                                        "id": "t2-n167",
+                                        "kind": "el",
+                                        "tag": "td",
+                                        "attrs": {},
+                                        "style": {},
+                                        "children": [
+                                          {
+                                            "id": "t2-n166",
+                                            "kind": "text",
+                                            "value": "habit-tracker"
+                                          }
+                                        ]
+                                      },
+                                      {
+                                        "id": "t2-n169",
+                                        "kind": "el",
+                                        "tag": "td",
+                                        "attrs": {},
+                                        "style": {},
+                                        "children": [
+                                          {
+                                            "id": "t2-n168",
+                                            "kind": "text",
+                                            "value": "2020"
+                                          }
+                                        ]
+                                      },
+                                      {
+                                        "id": "t2-n171",
+                                        "kind": "el",
+                                        "tag": "td",
+                                        "attrs": {},
+                                        "style": {},
+                                        "children": [
+                                          {
+                                            "id": "t2-n170",
+                                            "kind": "text",
+                                            "value": "dead"
+                                          }
+                                        ]
+                                      },
+                                      {
+                                        "id": "t2-n173",
+                                        "kind": "el",
+                                        "tag": "td",
+                                        "attrs": {},
+                                        "style": {},
+                                        "children": [
+                                          {
+                                            "id": "t2-n172",
+                                            "kind": "text",
+                                            "value": "No specific user. Mine, included."
+                                          }
+                                        ]
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "id": "t2-n183",
+                                    "kind": "el",
+                                    "tag": "tr",
+                                    "attrs": {},
+                                    "style": {},
+                                    "children": [
+                                      {
+                                        "id": "t2-n176",
+                                        "kind": "el",
+                                        "tag": "td",
+                                        "attrs": {},
+                                        "style": {},
+                                        "children": [
+                                          {
+                                            "id": "t2-n175",
+                                            "kind": "text",
+                                            "value": "writing-game"
+                                          }
+                                        ]
+                                      },
+                                      {
+                                        "id": "t2-n178",
+                                        "kind": "el",
+                                        "tag": "td",
+                                        "attrs": {},
+                                        "style": {},
+                                        "children": [
+                                          {
+                                            "id": "t2-n177",
+                                            "kind": "text",
+                                            "value": "2024"
+                                          }
+                                        ]
+                                      },
+                                      {
+                                        "id": "t2-n180",
+                                        "kind": "el",
+                                        "tag": "td",
+                                        "attrs": {},
+                                        "style": {},
+                                        "children": [
+                                          {
+                                            "id": "t2-n179",
+                                            "kind": "text",
+                                            "value": "dead"
+                                          }
+                                        ]
+                                      },
+                                      {
+                                        "id": "t2-n182",
+                                        "kind": "el",
+                                        "tag": "td",
+                                        "attrs": {},
+                                        "style": {},
+                                        "children": [
+                                          {
+                                            "id": "t2-n181",
+                                            "kind": "text",
+                                            "value": "Beautiful idea. Shipped nothing."
+                                          }
+                                        ]
+                                      }
+                                    ]
+                                  }
+                                ]
+                              }
+                            ]
+                          },
+                          {
+                            "id": "t2-n187",
+                            "kind": "el",
+                            "tag": "h3",
+                            "attrs": {},
+                            "style": {},
+                            "children": [
+                              {
+                                "id": "t2-n186",
+                                "kind": "text",
+                                "value": "What I'm doing differently now"
+                              }
+                            ]
+                          },
+                          {
+                            "id": "t2-n189",
+                            "kind": "el",
+                            "tag": "p",
+                            "attrs": {},
+                            "style": {},
+                            "children": [
+                              {
+                                "id": "t2-n188",
+                                "kind": "text",
+                                "value": "Two things, both small. The first is that I write a one-paragraph plan for any project I expect to take more than a weekend. The paragraph has to fit on a notecard, in pen, with my own handwriting. If I can't fit it, the scope is too big and I either cut or don't start."
+                              }
+                            ]
+                          },
+                          {
+                            "id": "t2-n191",
+                            "kind": "el",
+                            "tag": "p",
+                            "attrs": {},
+                            "style": {},
+                            "children": [
+                              {
+                                "id": "t2-n190",
+                                "kind": "text",
+                                "value": "The second is that I deploy on day zero. Before any feature works, before there's a UI, before there's anything worth deploying, I push a placeholder to the platform I plan to use, get the domain pointed, and confirm a one-line change can be live in under a minute. This sounds like procrastination but it's the opposite — it removes the only consistent friction I've ever had."
+                              }
+                            ]
+                          },
+                          {
+                            "id": "t2-n194",
+                            "kind": "el",
+                            "tag": "pre",
+                            "attrs": {},
+                            "style": {},
+                            "children": [
+                              {
+                                "id": "t2-n193",
+                                "kind": "el",
+                                "tag": "code",
+                                "attrs": {},
+                                "style": {},
+                                "children": [
+                                  {
+                                    "id": "t2-n192",
+                                    "kind": "text",
+                                    "value": "# the day-zero deploy script\ngit init\necho \"<h1>soon</h1>\" > index.html\ngit add . && git commit -m \"init\"\ngit push → live URL within 60s"
+                                  }
+                                ]
+                              }
+                            ]
+                          },
+                          {
+                            "id": "t2-n196",
+                            "kind": "el",
+                            "tag": "h2",
+                            "attrs": {},
+                            "style": {},
+                            "children": [
+                              {
+                                "id": "t2-n195",
+                                "kind": "text",
+                                "value": "The pattern I missed for years"
+                              }
+                            ]
+                          },
+                          {
+                            "id": "t2-n201",
+                            "kind": "el",
+                            "tag": "p",
+                            "attrs": {},
+                            "style": {},
+                            "children": [
+                              {
+                                "id": "t2-n197",
+                                "kind": "text",
+                                "value": "Looking at the ranking, the pattern that took me the longest to notice is this: "
+                              },
+                              {
+                                "id": "t2-n199",
+                                "kind": "el",
+                                "tag": "strong",
+                                "attrs": {},
+                                "style": {},
+                                "children": [
+                                  {
+                                    "id": "t2-n198",
+                                    "kind": "text",
+                                    "value": "the survivors are all small."
+                                  }
+                                ]
+                              },
+                              {
+                                "id": "t2-n200",
+                                "kind": "text",
+                                "value": " Not small in lines of code; small in surface area. The notes CLI has one command. The RSS reader has three views. The solar ingest does one query. The Twitch archiver records and replays — full stop."
+                              }
+                            ]
+                          },
+                          {
+                            "id": "t2-n203",
+                            "kind": "el",
+                            "tag": "p",
+                            "attrs": {},
+                            "style": {},
+                            "children": [
+                              {
+                                "id": "t2-n202",
+                                "kind": "text",
+                                "value": "The dead ones are nearly all bigger. The chess coach had eleven features in its first commit. The habit tracker had a sync system before it had a way to add habits. The podcast mixer had a plugin architecture. None of them had a single unambiguous job."
+                              }
+                            ]
+                          },
+                          {
+                            "id": "t2-n205",
+                            "kind": "el",
+                            "tag": "p",
+                            "attrs": {},
+                            "style": {},
+                            "children": [
+                              {
+                                "id": "t2-n204",
+                                "kind": "text",
+                                "value": "Maybe this is obvious. It wasn't to me until I made the list."
+                              }
+                            ]
+                          },
+                          {
+                            "id": "t2-n207",
+                            "kind": "el",
+                            "tag": "h3",
+                            "attrs": {},
+                            "style": {},
+                            "children": [
+                              {
+                                "id": "t2-n206",
+                                "kind": "text",
+                                "value": "The tools that actually mattered"
+                              }
+                            ]
+                          },
+                          {
+                            "id": "t2-n209",
+                            "kind": "el",
+                            "tag": "p",
+                            "attrs": {},
+                            "style": {},
+                            "children": [
+                              {
+                                "id": "t2-n208",
+                                "kind": "text",
+                                "value": "A short list, in case it's useful to anyone:"
+                              }
+                            ]
+                          },
+                          {
+                            "id": "t2-n226",
+                            "kind": "el",
+                            "tag": "ul",
+                            "attrs": {},
+                            "style": {},
+                            "children": [
+                              {
+                                "id": "t2-n213",
+                                "kind": "el",
+                                "tag": "li",
+                                "attrs": {},
+                                "style": {},
+                                "children": [
+                                  {
+                                    "id": "t2-n211",
+                                    "kind": "el",
+                                    "tag": "strong",
+                                    "attrs": {},
+                                    "style": {},
+                                    "children": [
+                                      {
+                                        "id": "t2-n210",
+                                        "kind": "text",
+                                        "value": "Postgres"
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "id": "t2-n212",
+                                    "kind": "text",
+                                    "value": ", for everything. I have not regretted this once."
+                                  }
+                                ]
+                              },
+                              {
+                                "id": "t2-n217",
+                                "kind": "el",
+                                "tag": "li",
+                                "attrs": {},
+                                "style": {},
+                                "children": [
+                                  {
+                                    "id": "t2-n215",
+                                    "kind": "el",
+                                    "tag": "strong",
+                                    "attrs": {},
+                                    "style": {},
+                                    "children": [
+                                      {
+                                        "id": "t2-n214",
+                                        "kind": "text",
+                                        "value": "Caddy"
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "id": "t2-n216",
+                                    "kind": "text",
+                                    "value": " for HTTPS. The TLS story was the source of half my pre-2020 deploy fatigue."
+                                  }
+                                ]
+                              },
+                              {
+                                "id": "t2-n221",
+                                "kind": "el",
+                                "tag": "li",
+                                "attrs": {},
+                                "style": {},
+                                "children": [
+                                  {
+                                    "id": "t2-n219",
+                                    "kind": "el",
+                                    "tag": "strong",
+                                    "attrs": {},
+                                    "style": {},
+                                    "children": [
+                                      {
+                                        "id": "t2-n218",
+                                        "kind": "text",
+                                        "value": "SQLite"
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "id": "t2-n220",
+                                    "kind": "text",
+                                    "value": " for the projects where Postgres would be overkill. It's overkill less often than I thought."
+                                  }
+                                ]
+                              },
+                              {
+                                "id": "t2-n225",
+                                "kind": "el",
+                                "tag": "li",
+                                "attrs": {},
+                                "style": {},
+                                "children": [
+                                  {
+                                    "id": "t2-n223",
+                                    "kind": "el",
+                                    "tag": "strong",
+                                    "attrs": {},
+                                    "style": {},
+                                    "children": [
+                                      {
+                                        "id": "t2-n222",
+                                        "kind": "text",
+                                        "value": "One repo per project."
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "id": "t2-n224",
+                                    "kind": "text",
+                                    "value": " Every monorepo experiment I've tried for personal projects has died. I have my reasons. I would lose an argument about them."
+                                  }
+                                ]
+                              }
+                            ]
+                          },
+                          {
+                            "id": "t2-n228",
+                            "kind": "el",
+                            "tag": "h2",
+                            "attrs": {},
+                            "style": {},
+                            "children": [
+                              {
+                                "id": "t2-n227",
+                                "kind": "text",
+                                "value": "Closing"
+                              }
+                            ]
+                          },
+                          {
+                            "id": "t2-n236",
+                            "kind": "el",
+                            "tag": "p",
+                            "attrs": {},
+                            "style": {},
+                            "children": [
+                              {
+                                "id": "t2-n229",
+                                "kind": "text",
+                                "value": "If you have a side project that's been sitting at 80% done for two months, the answer is probably either"
+                              },
+                              {
+                                "id": "t2-n231",
+                                "kind": "el",
+                                "tag": "em",
+                                "attrs": {},
+                                "style": {},
+                                "children": [
+                                  {
+                                    "id": "t2-n230",
+                                    "kind": "text",
+                                    "value": "ship it now"
+                                  }
+                                ]
+                              },
+                              {
+                                "id": "t2-n232",
+                                "kind": "text",
+                                "value": " or "
+                              },
+                              {
+                                "id": "t2-n234",
+                                "kind": "el",
+                                "tag": "em",
+                                "attrs": {},
+                                "style": {},
+                                "children": [
+                                  {
+                                    "id": "t2-n233",
+                                    "kind": "text",
+                                    "value": "delete it now"
+                                  }
+                                ]
+                              },
+                              {
+                                "id": "t2-n235",
+                                "kind": "text",
+                                "value": ". There is rarely a useful third option. The 80% version is, in retrospect, better than 90% of what would've come out of finishing it."
+                              }
+                            ]
+                          },
+                          {
+                            "id": "t2-n238",
+                            "kind": "el",
+                            "tag": "p",
+                            "attrs": {},
+                            "style": {},
+                            "children": [
+                              {
+                                "id": "t2-n237",
+                                "kind": "text",
+                                "value": "And if you're about to start a new side project: write the paragraph, deploy on day zero, and pick a job small enough to hold in one sentence. Don't make my list longer than it needs to be."
+                              }
+                            ]
+                          },
+                          {
+                            "id": "t2-n239",
+                            "kind": "el",
+                            "tag": "hr",
+                            "attrs": {
+                              "class": "lr-divider"
+                            },
+                            "style": {},
+                            "children": []
+                          },
+                          {
+                            "id": "t2-n254",
+                            "kind": "el",
+                            "tag": "footer",
+                            "attrs": {
+                              "class": "lr-footer"
+                            },
+                            "style": {},
+                            "children": [
+                              {
+                                "id": "t2-n248",
+                                "kind": "el",
+                                "tag": "p",
+                                "attrs": {
+                                  "class": "lr-tags"
+                                },
+                                "style": {},
+                                "children": [
+                                  {
+                                    "id": "t2-n241",
+                                    "kind": "el",
+                                    "tag": "span",
+                                    "attrs": {
+                                      "class": "lr-tag"
+                                    },
+                                    "style": {},
+                                    "children": [
+                                      {
+                                        "id": "t2-n240",
+                                        "kind": "text",
+                                        "value": "side projects"
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "id": "t2-n243",
+                                    "kind": "el",
+                                    "tag": "span",
+                                    "attrs": {
+                                      "class": "lr-tag"
+                                    },
+                                    "style": {},
+                                    "children": [
+                                      {
+                                        "id": "t2-n242",
+                                        "kind": "text",
+                                        "value": "retro"
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "id": "t2-n245",
+                                    "kind": "el",
+                                    "tag": "span",
+                                    "attrs": {
+                                      "class": "lr-tag"
+                                    },
+                                    "style": {},
+                                    "children": [
+                                      {
+                                        "id": "t2-n244",
+                                        "kind": "text",
+                                        "value": "deploy"
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "id": "t2-n247",
+                                    "kind": "el",
+                                    "tag": "span",
+                                    "attrs": {
+                                      "class": "lr-tag"
+                                    },
+                                    "style": {},
+                                    "children": [
+                                      {
+                                        "id": "t2-n246",
+                                        "kind": "text",
+                                        "value": "scope"
+                                      }
+                                    ]
+                                  }
+                                ]
+                              },
+                              {
+                                "id": "t2-n253",
+                                "kind": "el",
+                                "tag": "p",
+                                "attrs": {
+                                  "class": "lr-also"
+                                },
+                                "style": {},
+                                "children": [
+                                  {
+                                    "id": "t2-n249",
+                                    "kind": "text",
+                                    "value": "You might also like:"
+                                  },
+                                  {
+                                    "id": "t2-n251",
+                                    "kind": "el",
+                                    "tag": "a",
+                                    "attrs": {
+                                      "href": "#",
+                                      "class": "lr-link"
+                                    },
+                                    "style": {},
+                                    "children": [
+                                      {
+                                        "id": "t2-n250",
+                                        "kind": "text",
+                                        "value": "The thing nobody tells you about “just deploying”"
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "id": "t2-n252",
+                                    "kind": "text",
+                                    "value": "."
+                                  }
+                                ]
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "id": "t2-n258",
+                    "kind": "el",
+                    "tag": "footer",
+                    "attrs": {
+                      "class": "footer"
+                    },
+                    "style": {},
+                    "children": [
+                      {
+                        "id": "t2-n257",
+                        "kind": "text",
+                        "value": "© Acme · vite + react-router"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "css": "* { box-sizing: border-box; }\nhtml, body { margin: 0px; padding: 0px; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; color: rgb(26, 26, 26); background: rgb(250, 250, 250); }\n.page { min-height: 800px; display: flex; flex-direction: column; }\n.nav { display: flex; gap: 20px; align-items: center; padding: 16px 32px; background: white; border-bottom: 1px solid rgb(234, 234, 234); }\n.nav a { color: rgb(68, 68, 68); text-decoration: none; font-size: 14px; }\n.nav a:hover { color: rgb(0, 112, 243); }\n.nav .brand { font-weight: 700; font-size: 18px; color: rgb(26, 26, 26); margin-right: auto; }\n.main { flex: 1 1 0%; padding: 48px 32px; max-width: 960px; width: 100%; margin: 0px auto; }\n.main h1 { font-size: 36px; margin: 0px 0px 16px; }\n.main h2 { font-size: 22px; margin: 0px; }\n.main .lead { font-size: 18px; color: rgb(85, 85, 85); margin-bottom: 32px; }\n.card-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }\n.card { background: white; border: 1px solid rgb(234, 234, 234); border-radius: 8px; padding: 24px; }\n.card h3 { margin: 0px 0px 8px; font-size: 16px; }\n.card p { margin: 0px; color: rgb(102, 102, 102); font-size: 14px; }\n.tbl { width: 100%; border-collapse: collapse; background: white; border: 1px solid rgb(234, 234, 234); border-radius: 8px; overflow: hidden; }\n.tbl th, .tbl td { padding: 12px 16px; text-align: left; }\n.tbl thead { background: rgb(244, 244, 244); font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; color: rgb(85, 85, 85); }\n.tbl tbody tr { border-top: 1px solid rgb(234, 234, 234); }\n.profile { display: flex; gap: 20px; align-items: center; background: white; padding: 24px; border: 1px solid rgb(234, 234, 234); border-radius: 8px; }\n.avatar { width: 64px; height: 64px; border-radius: 50%; background: linear-gradient(135deg, rgb(110, 142, 251), rgb(167, 119, 227)); color: white; font-size: 24px; font-weight: 700; display: grid; place-items: center; }\n.dim { color: rgb(136, 136, 136); }\n.footer { padding: 16px 32px; color: rgb(136, 136, 136); font-size: 12px; border-top: 1px solid rgb(234, 234, 234); background: white; }\n.longread { max-width: 720px; margin: 0px auto; font-family: Georgia, \"Times New Roman\", serif; color: rgb(26, 26, 26); }\n.longread h1, .longread h2, .longread h3, .longread h4 { font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; letter-spacing: -0.01em; }\n.lr-eyebrow { text-transform: uppercase; letter-spacing: 0.12em; font-size: 12px; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; color: rgb(107, 107, 107); margin: 0px 0px 14px; }\n.longread h1 { font-size: 44px; line-height: 1.15; margin: 0px 0px 18px; }\n.longread h2 { font-size: 26px; line-height: 1.3; margin: 56px 0px 14px; }\n.longread h3 { font-size: 19px; line-height: 1.4; margin: 36px 0px 10px; }\n.longread h4 { font-size: 15px; margin: 0px 0px 8px; }\n.lr-lede { font-size: 22px; line-height: 1.55; color: rgb(42, 42, 42); font-style: italic; margin: 0px 0px 24px; }\n.longread p { font-size: 18px; line-height: 1.75; color: rgb(42, 42, 42); margin: 0px 0px 20px; }\n.lr-byline { display: flex; justify-content: space-between; align-items: center; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; font-size: 13px; color: rgb(107, 107, 107); border-top: 1px solid rgb(238, 238, 238); border-bottom: 1px solid rgb(238, 238, 238); padding: 14px 0px; margin: 0px 0px 36px; }\n.lr-figure { margin: 36px 0px; }\n.lr-figure-img { background: linear-gradient(135deg, rgb(42, 63, 106), rgb(91, 140, 255) 60%, rgb(201, 163, 255)); border-radius: 6px; height: 320px; display: grid; place-items: center; color: rgba(255, 255, 255, 0.5); font-family: monospace; font-size: 11px; text-transform: uppercase; letter-spacing: 0.2em; }\n.lr-figure figcaption { margin-top: 10px; font-size: 13px; color: rgb(107, 107, 107); font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; }\n.longread ul, .longread ol { padding-left: 1.4em; margin: 0px 0px 24px; }\n.longread li { font-size: 17px; line-height: 1.7; color: rgb(42, 42, 42); margin-bottom: 10px; }\n.longread blockquote { margin: 32px 0px; padding: 0px 0px 0px 22px; border-left: 3px solid rgb(91, 140, 255); }\n.longread blockquote p { font-size: 22px; font-style: italic; line-height: 1.55; color: rgb(26, 26, 26); }\n.longread blockquote cite { display: block; font-size: 13px; color: rgb(107, 107, 107); font-style: normal; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; margin-top: 6px; }\n.longread pre { background: rgb(14, 17, 23); color: rgb(226, 232, 240); padding: 18px 20px; border-radius: 6px; font-size: 13px; line-height: 1.6; overflow-x: auto; margin: 0px 0px 28px; }\n.longread code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }\n.lr-callout { background: rgb(240, 244, 255); border: 1px solid rgb(214, 224, 255); border-radius: 8px; padding: 18px 22px; margin: 32px 0px; }\n.lr-callout h4 { font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; font-size: 13px; text-transform: uppercase; letter-spacing: 0.1em; color: rgb(91, 140, 255); margin: 0px 0px 8px; }\n.lr-callout p { font-size: 16px; margin: 0px; }\n.lr-table { width: 100%; border-collapse: collapse; margin: 0px 0px 28px; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; }\n.lr-table th, .lr-table td { padding: 10px 12px; text-align: left; border-bottom: 1px solid rgb(238, 238, 238); font-size: 14px; }\n.lr-table th { color: rgb(107, 107, 107); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; }\n.lr-link { color: rgb(91, 140, 255); text-decoration: underline; text-underline-offset: 2px; }\n.lr-divider { border-width: 1px 0px 0px; border-style: solid none none; border-color: rgb(238, 238, 238) currentcolor currentcolor; border-image: initial; margin: 48px 0px; }\n.lr-footer { font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; }\n.lr-tags { display: flex; gap: 8px; margin: 0px 0px 16px; }\n.lr-tag { background: rgb(244, 246, 250); border: 1px solid rgb(230, 233, 239); border-radius: 999px; padding: 4px 12px; font-size: 12px; color: rgb(68, 68, 68); }\n.lr-also { font-size: 14px; color: rgb(107, 107, 107); }",
+      "capturedAt": "2026-04-27T00:50:22.811Z",
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "kind": "route",
+      "route": "/longread",
+      "url": "/longread",
+      "title": "Acme Demo",
+      "containerSize": {
+        "width": 1280,
+        "height": 5063
+      },
+      "htmlAttrs": {
+        "lang": "en"
+      }
+    },
+    {
+      "id": "route:products",
+      "status": "ok",
+      "tree": {
+        "id": "t3-n52",
+        "kind": "el",
+        "tag": "body",
+        "attrs": {},
+        "style": {},
+        "children": [
+          {
+            "id": "t3-n51",
+            "kind": "el",
+            "tag": "div",
+            "attrs": {
+              "id": "root"
+            },
+            "style": {},
+            "children": [
+              {
+                "id": "t3-n50",
+                "kind": "el",
+                "tag": "div",
+                "attrs": {
+                  "class": "page",
+                  "data-spidey-component": "Layout"
+                },
+                "style": {},
+                "children": [
+                  {
+                    "id": "t3-n10",
+                    "kind": "el",
+                    "tag": "nav",
+                    "attrs": {
+                      "class": "nav",
+                      "data-spidey-component": "Navbar"
+                    },
+                    "style": {},
+                    "children": [
+                      {
+                        "id": "t3-n1",
+                        "kind": "el",
+                        "tag": "a",
+                        "attrs": {
+                          "class": "brand",
+                          "href": "/",
+                          "data-spidey-component": "Link",
+                          "data-spidey-props": "{\"to\":\"/\",\"className\":\"brand\"}"
+                        },
+                        "style": {},
+                        "children": [
+                          {
+                            "id": "t3-n0",
+                            "kind": "text",
+                            "value": "acme"
+                          }
+                        ]
+                      },
+                      {
+                        "id": "t3-n3",
+                        "kind": "el",
+                        "tag": "a",
+                        "attrs": {
+                          "href": "/about",
+                          "data-spidey-component": "Link",
+                          "data-spidey-props": "{\"to\":\"/about\"}"
+                        },
+                        "style": {},
+                        "children": [
+                          {
+                            "id": "t3-n2",
+                            "kind": "text",
+                            "value": "About"
+                          }
+                        ]
+                      },
+                      {
+                        "id": "t3-n5",
+                        "kind": "el",
+                        "tag": "a",
+                        "attrs": {
+                          "href": "/products",
+                          "data-spidey-component": "Link",
+                          "data-spidey-props": "{\"to\":\"/products\"}"
+                        },
+                        "style": {},
+                        "children": [
+                          {
+                            "id": "t3-n4",
+                            "kind": "text",
+                            "value": "Products"
+                          }
+                        ]
+                      },
+                      {
+                        "id": "t3-n7",
+                        "kind": "el",
+                        "tag": "a",
+                        "attrs": {
+                          "href": "/users/42",
+                          "data-spidey-component": "Link",
+                          "data-spidey-props": "{\"to\":\"/users/42\"}"
+                        },
+                        "style": {},
+                        "children": [
+                          {
+                            "id": "t3-n6",
+                            "kind": "text",
+                            "value": "Profile"
+                          }
+                        ]
+                      },
+                      {
+                        "id": "t3-n9",
+                        "kind": "el",
+                        "tag": "a",
+                        "attrs": {
+                          "href": "/longread",
+                          "data-spidey-component": "Link",
+                          "data-spidey-props": "{\"to\":\"/longread\"}"
+                        },
+                        "style": {},
+                        "children": [
+                          {
+                            "id": "t3-n8",
+                            "kind": "text",
+                            "value": "Longread"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "id": "t3-n47",
+                    "kind": "el",
+                    "tag": "main",
+                    "attrs": {
+                      "class": "main"
+                    },
+                    "style": {},
+                    "children": [
+                      {
+                        "id": "t3-n12",
+                        "kind": "el",
+                        "tag": "h1",
+                        "attrs": {},
+                        "style": {},
+                        "children": [
+                          {
+                            "id": "t3-n11",
+                            "kind": "text",
+                            "value": "Products"
+                          }
+                        ]
+                      },
+                      {
+                        "id": "t3-n46",
+                        "kind": "el",
+                        "tag": "table",
+                        "attrs": {
+                          "class": "tbl"
+                        },
+                        "style": {},
+                        "children": [
+                          {
+                            "id": "t3-n20",
+                            "kind": "el",
+                            "tag": "thead",
+                            "attrs": {},
+                            "style": {},
+                            "children": [
+                              {
+                                "id": "t3-n19",
+                                "kind": "el",
+                                "tag": "tr",
+                                "attrs": {},
+                                "style": {},
+                                "children": [
+                                  {
+                                    "id": "t3-n14",
+                                    "kind": "el",
+                                    "tag": "th",
+                                    "attrs": {},
+                                    "style": {},
+                                    "children": [
+                                      {
+                                        "id": "t3-n13",
+                                        "kind": "text",
+                                        "value": "Name"
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "id": "t3-n16",
+                                    "kind": "el",
+                                    "tag": "th",
+                                    "attrs": {},
+                                    "style": {},
+                                    "children": [
+                                      {
+                                        "id": "t3-n15",
+                                        "kind": "text",
+                                        "value": "Status"
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "id": "t3-n18",
+                                    "kind": "el",
+                                    "tag": "th",
+                                    "attrs": {},
+                                    "style": {},
+                                    "children": [
+                                      {
+                                        "id": "t3-n17",
+                                        "kind": "text",
+                                        "value": "Price"
+                                      }
+                                    ]
+                                  }
+                                ]
+                              }
+                            ]
+                          },
+                          {
+                            "id": "t3-n45",
+                            "kind": "el",
+                            "tag": "tbody",
+                            "attrs": {},
+                            "style": {},
+                            "children": [
+                              {
+                                "id": "t3-n28",
+                                "kind": "el",
+                                "tag": "tr",
+                                "attrs": {},
+                                "style": {},
+                                "children": [
+                                  {
+                                    "id": "t3-n22",
+                                    "kind": "el",
+                                    "tag": "td",
+                                    "attrs": {},
+                                    "style": {},
+                                    "children": [
+                                      {
+                                        "id": "t3-n21",
+                                        "kind": "text",
+                                        "value": "Widget"
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "id": "t3-n25",
+                                    "kind": "el",
+                                    "tag": "td",
+                                    "attrs": {},
+                                    "style": {},
+                                    "children": [
+                                      {
+                                        "id": "t3-n24",
+                                        "kind": "el",
+                                        "tag": "span",
+                                        "attrs": {
+                                          "data-spidey-component": "Pill",
+                                          "data-spidey-props": "{\"label\":\"ok\",\"tone\":\"ok\"}"
+                                        },
+                                        "style": {
+                                          "display": "inline-block",
+                                          "background": "rgb(220, 246, 227)",
+                                          "color": "rgb(16, 122, 59)",
+                                          "padding": "2px 10px",
+                                          "border-radius": "999px",
+                                          "font-size": "12px",
+                                          "font-weight": "600",
+                                          "letter-spacing": "0.3px"
+                                        },
+                                        "children": [
+                                          {
+                                            "id": "t3-n23",
+                                            "kind": "text",
+                                            "value": "ok"
+                                          }
+                                        ]
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "id": "t3-n27",
+                                    "kind": "el",
+                                    "tag": "td",
+                                    "attrs": {},
+                                    "style": {},
+                                    "children": [
+                                      {
+                                        "id": "t3-n26",
+                                        "kind": "text",
+                                        "value": "$10"
+                                      }
+                                    ]
+                                  }
+                                ]
+                              },
+                              {
+                                "id": "t3-n36",
+                                "kind": "el",
+                                "tag": "tr",
+                                "attrs": {},
+                                "style": {},
+                                "children": [
+                                  {
+                                    "id": "t3-n30",
+                                    "kind": "el",
+                                    "tag": "td",
+                                    "attrs": {},
+                                    "style": {},
+                                    "children": [
+                                      {
+                                        "id": "t3-n29",
+                                        "kind": "text",
+                                        "value": "Gizmo"
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "id": "t3-n33",
+                                    "kind": "el",
+                                    "tag": "td",
+                                    "attrs": {},
+                                    "style": {},
+                                    "children": [
+                                      {
+                                        "id": "t3-n32",
+                                        "kind": "el",
+                                        "tag": "span",
+                                        "attrs": {
+                                          "data-spidey-component": "Pill",
+                                          "data-spidey-props": "{\"label\":\"warn\",\"tone\":\"warn\"}"
+                                        },
+                                        "style": {
+                                          "display": "inline-block",
+                                          "background": "rgb(255, 243, 205)",
+                                          "color": "rgb(138, 99, 0)",
+                                          "padding": "2px 10px",
+                                          "border-radius": "999px",
+                                          "font-size": "12px",
+                                          "font-weight": "600",
+                                          "letter-spacing": "0.3px"
+                                        },
+                                        "children": [
+                                          {
+                                            "id": "t3-n31",
+                                            "kind": "text",
+                                            "value": "warn"
+                                          }
+                                        ]
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "id": "t3-n35",
+                                    "kind": "el",
+                                    "tag": "td",
+                                    "attrs": {},
+                                    "style": {},
+                                    "children": [
+                                      {
+                                        "id": "t3-n34",
+                                        "kind": "text",
+                                        "value": "$25"
+                                      }
+                                    ]
+                                  }
+                                ]
+                              },
+                              {
+                                "id": "t3-n44",
+                                "kind": "el",
+                                "tag": "tr",
+                                "attrs": {},
+                                "style": {},
+                                "children": [
+                                  {
+                                    "id": "t3-n38",
+                                    "kind": "el",
+                                    "tag": "td",
+                                    "attrs": {},
+                                    "style": {},
+                                    "children": [
+                                      {
+                                        "id": "t3-n37",
+                                        "kind": "text",
+                                        "value": "Doohickey"
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "id": "t3-n41",
+                                    "kind": "el",
+                                    "tag": "td",
+                                    "attrs": {},
+                                    "style": {},
+                                    "children": [
+                                      {
+                                        "id": "t3-n40",
+                                        "kind": "el",
+                                        "tag": "span",
+                                        "attrs": {
+                                          "data-spidey-component": "Pill",
+                                          "data-spidey-props": "{\"label\":\"info\",\"tone\":\"info\"}"
+                                        },
+                                        "style": {
+                                          "display": "inline-block",
+                                          "background": "rgb(230, 239, 255)",
+                                          "color": "rgb(26, 85, 196)",
+                                          "padding": "2px 10px",
+                                          "border-radius": "999px",
+                                          "font-size": "12px",
+                                          "font-weight": "600",
+                                          "letter-spacing": "0.3px"
+                                        },
+                                        "children": [
+                                          {
+                                            "id": "t3-n39",
+                                            "kind": "text",
+                                            "value": "info"
+                                          }
+                                        ]
+                                      }
+                                    ]
+                                  },
+                                  {
+                                    "id": "t3-n43",
+                                    "kind": "el",
+                                    "tag": "td",
+                                    "attrs": {},
+                                    "style": {},
+                                    "children": [
+                                      {
+                                        "id": "t3-n42",
+                                        "kind": "text",
+                                        "value": "$8"
+                                      }
+                                    ]
+                                  }
+                                ]
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "id": "t3-n49",
+                    "kind": "el",
+                    "tag": "footer",
+                    "attrs": {
+                      "class": "footer"
+                    },
+                    "style": {},
+                    "children": [
+                      {
+                        "id": "t3-n48",
+                        "kind": "text",
+                        "value": "© Acme · vite + react-router"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "css": "* { box-sizing: border-box; }\nhtml, body { margin: 0px; padding: 0px; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; color: rgb(26, 26, 26); background: rgb(250, 250, 250); }\n.page { min-height: 800px; display: flex; flex-direction: column; }\n.nav { display: flex; gap: 20px; align-items: center; padding: 16px 32px; background: white; border-bottom: 1px solid rgb(234, 234, 234); }\n.nav a { color: rgb(68, 68, 68); text-decoration: none; font-size: 14px; }\n.nav a:hover { color: rgb(0, 112, 243); }\n.nav .brand { font-weight: 700; font-size: 18px; color: rgb(26, 26, 26); margin-right: auto; }\n.main { flex: 1 1 0%; padding: 48px 32px; max-width: 960px; width: 100%; margin: 0px auto; }\n.main h1 { font-size: 36px; margin: 0px 0px 16px; }\n.main h2 { font-size: 22px; margin: 0px; }\n.main .lead { font-size: 18px; color: rgb(85, 85, 85); margin-bottom: 32px; }\n.card-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }\n.card { background: white; border: 1px solid rgb(234, 234, 234); border-radius: 8px; padding: 24px; }\n.card h3 { margin: 0px 0px 8px; font-size: 16px; }\n.card p { margin: 0px; color: rgb(102, 102, 102); font-size: 14px; }\n.tbl { width: 100%; border-collapse: collapse; background: white; border: 1px solid rgb(234, 234, 234); border-radius: 8px; overflow: hidden; }\n.tbl th, .tbl td { padding: 12px 16px; text-align: left; }\n.tbl thead { background: rgb(244, 244, 244); font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; color: rgb(85, 85, 85); }\n.tbl tbody tr { border-top: 1px solid rgb(234, 234, 234); }\n.profile { display: flex; gap: 20px; align-items: center; background: white; padding: 24px; border: 1px solid rgb(234, 234, 234); border-radius: 8px; }\n.avatar { width: 64px; height: 64px; border-radius: 50%; background: linear-gradient(135deg, rgb(110, 142, 251), rgb(167, 119, 227)); color: white; font-size: 24px; font-weight: 700; display: grid; place-items: center; }\n.dim { color: rgb(136, 136, 136); }\n.footer { padding: 16px 32px; color: rgb(136, 136, 136); font-size: 12px; border-top: 1px solid rgb(234, 234, 234); background: white; }\n.longread { max-width: 720px; margin: 0px auto; font-family: Georgia, \"Times New Roman\", serif; color: rgb(26, 26, 26); }\n.longread h1, .longread h2, .longread h3, .longread h4 { font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; letter-spacing: -0.01em; }\n.lr-eyebrow { text-transform: uppercase; letter-spacing: 0.12em; font-size: 12px; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; color: rgb(107, 107, 107); margin: 0px 0px 14px; }\n.longread h1 { font-size: 44px; line-height: 1.15; margin: 0px 0px 18px; }\n.longread h2 { font-size: 26px; line-height: 1.3; margin: 56px 0px 14px; }\n.longread h3 { font-size: 19px; line-height: 1.4; margin: 36px 0px 10px; }\n.longread h4 { font-size: 15px; margin: 0px 0px 8px; }\n.lr-lede { font-size: 22px; line-height: 1.55; color: rgb(42, 42, 42); font-style: italic; margin: 0px 0px 24px; }\n.longread p { font-size: 18px; line-height: 1.75; color: rgb(42, 42, 42); margin: 0px 0px 20px; }\n.lr-byline { display: flex; justify-content: space-between; align-items: center; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; font-size: 13px; color: rgb(107, 107, 107); border-top: 1px solid rgb(238, 238, 238); border-bottom: 1px solid rgb(238, 238, 238); padding: 14px 0px; margin: 0px 0px 36px; }\n.lr-figure { margin: 36px 0px; }\n.lr-figure-img { background: linear-gradient(135deg, rgb(42, 63, 106), rgb(91, 140, 255) 60%, rgb(201, 163, 255)); border-radius: 6px; height: 320px; display: grid; place-items: center; color: rgba(255, 255, 255, 0.5); font-family: monospace; font-size: 11px; text-transform: uppercase; letter-spacing: 0.2em; }\n.lr-figure figcaption { margin-top: 10px; font-size: 13px; color: rgb(107, 107, 107); font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; }\n.longread ul, .longread ol { padding-left: 1.4em; margin: 0px 0px 24px; }\n.longread li { font-size: 17px; line-height: 1.7; color: rgb(42, 42, 42); margin-bottom: 10px; }\n.longread blockquote { margin: 32px 0px; padding: 0px 0px 0px 22px; border-left: 3px solid rgb(91, 140, 255); }\n.longread blockquote p { font-size: 22px; font-style: italic; line-height: 1.55; color: rgb(26, 26, 26); }\n.longread blockquote cite { display: block; font-size: 13px; color: rgb(107, 107, 107); font-style: normal; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; margin-top: 6px; }\n.longread pre { background: rgb(14, 17, 23); color: rgb(226, 232, 240); padding: 18px 20px; border-radius: 6px; font-size: 13px; line-height: 1.6; overflow-x: auto; margin: 0px 0px 28px; }\n.longread code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }\n.lr-callout { background: rgb(240, 244, 255); border: 1px solid rgb(214, 224, 255); border-radius: 8px; padding: 18px 22px; margin: 32px 0px; }\n.lr-callout h4 { font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; font-size: 13px; text-transform: uppercase; letter-spacing: 0.1em; color: rgb(91, 140, 255); margin: 0px 0px 8px; }\n.lr-callout p { font-size: 16px; margin: 0px; }\n.lr-table { width: 100%; border-collapse: collapse; margin: 0px 0px 28px; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; }\n.lr-table th, .lr-table td { padding: 10px 12px; text-align: left; border-bottom: 1px solid rgb(238, 238, 238); font-size: 14px; }\n.lr-table th { color: rgb(107, 107, 107); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; }\n.lr-link { color: rgb(91, 140, 255); text-decoration: underline; text-underline-offset: 2px; }\n.lr-divider { border-width: 1px 0px 0px; border-style: solid none none; border-color: rgb(238, 238, 238) currentcolor currentcolor; border-image: initial; margin: 48px 0px; }\n.lr-footer { font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; }\n.lr-tags { display: flex; gap: 8px; margin: 0px 0px 16px; }\n.lr-tag { background: rgb(244, 246, 250); border: 1px solid rgb(230, 233, 239); border-radius: 999px; padding: 4px 12px; font-size: 12px; color: rgb(68, 68, 68); }\n.lr-also { font-size: 14px; color: rgb(107, 107, 107); }",
+      "capturedAt": "2026-04-27T00:50:23.880Z",
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "kind": "route",
+      "route": "/products",
+      "url": "/products",
+      "title": "Acme Demo",
+      "containerSize": {
+        "width": 1280,
+        "height": 800
+      },
+      "htmlAttrs": {
+        "lang": "en"
+      }
+    },
+    {
+      "id": "route:users_id",
+      "status": "ok",
+      "tree": {
+        "id": "t4-n30",
+        "kind": "el",
+        "tag": "body",
+        "attrs": {},
+        "style": {},
+        "children": [
+          {
+            "id": "t4-n29",
+            "kind": "el",
+            "tag": "div",
+            "attrs": {
+              "id": "root"
+            },
+            "style": {},
+            "children": [
+              {
+                "id": "t4-n28",
+                "kind": "el",
+                "tag": "div",
+                "attrs": {
+                  "class": "page",
+                  "data-spidey-component": "Layout"
+                },
+                "style": {},
+                "children": [
+                  {
+                    "id": "t4-n10",
+                    "kind": "el",
+                    "tag": "nav",
+                    "attrs": {
+                      "class": "nav",
+                      "data-spidey-component": "Navbar"
+                    },
+                    "style": {},
+                    "children": [
+                      {
+                        "id": "t4-n1",
+                        "kind": "el",
+                        "tag": "a",
+                        "attrs": {
+                          "class": "brand",
+                          "href": "/",
+                          "data-spidey-component": "Link",
+                          "data-spidey-props": "{\"to\":\"/\",\"className\":\"brand\"}"
+                        },
+                        "style": {},
+                        "children": [
+                          {
+                            "id": "t4-n0",
+                            "kind": "text",
+                            "value": "acme"
+                          }
+                        ]
+                      },
+                      {
+                        "id": "t4-n3",
+                        "kind": "el",
+                        "tag": "a",
+                        "attrs": {
+                          "href": "/about",
+                          "data-spidey-component": "Link",
+                          "data-spidey-props": "{\"to\":\"/about\"}"
+                        },
+                        "style": {},
+                        "children": [
+                          {
+                            "id": "t4-n2",
+                            "kind": "text",
+                            "value": "About"
+                          }
+                        ]
+                      },
+                      {
+                        "id": "t4-n5",
+                        "kind": "el",
+                        "tag": "a",
+                        "attrs": {
+                          "href": "/products",
+                          "data-spidey-component": "Link",
+                          "data-spidey-props": "{\"to\":\"/products\"}"
+                        },
+                        "style": {},
+                        "children": [
+                          {
+                            "id": "t4-n4",
+                            "kind": "text",
+                            "value": "Products"
+                          }
+                        ]
+                      },
+                      {
+                        "id": "t4-n7",
+                        "kind": "el",
+                        "tag": "a",
+                        "attrs": {
+                          "href": "/users/42",
+                          "data-spidey-component": "Link",
+                          "data-spidey-props": "{\"to\":\"/users/42\"}"
+                        },
+                        "style": {},
+                        "children": [
+                          {
+                            "id": "t4-n6",
+                            "kind": "text",
+                            "value": "Profile"
+                          }
+                        ]
+                      },
+                      {
+                        "id": "t4-n9",
+                        "kind": "el",
+                        "tag": "a",
+                        "attrs": {
+                          "href": "/longread",
+                          "data-spidey-component": "Link",
+                          "data-spidey-props": "{\"to\":\"/longread\"}"
+                        },
+                        "style": {},
+                        "children": [
+                          {
+                            "id": "t4-n8",
+                            "kind": "text",
+                            "value": "Longread"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "id": "t4-n25",
+                    "kind": "el",
+                    "tag": "main",
+                    "attrs": {
+                      "class": "main"
+                    },
+                    "style": {},
+                    "children": [
+                      {
+                        "id": "t4-n13",
+                        "kind": "el",
+                        "tag": "h1",
+                        "attrs": {},
+                        "style": {},
+                        "children": [
+                          {
+                            "id": "t4-n11",
+                            "kind": "text",
+                            "value": "User #"
+                          },
+                          {
+                            "id": "t4-n12",
+                            "kind": "text",
+                            "value": "1"
+                          }
+                        ]
+                      },
+                      {
+                        "id": "t4-n24",
+                        "kind": "el",
+                        "tag": "div",
+                        "attrs": {
+                          "class": "profile"
+                        },
+                        "style": {},
+                        "children": [
+                          {
+                            "id": "t4-n15",
+                            "kind": "el",
+                            "tag": "div",
+                            "attrs": {
+                              "data-spidey-component": "Avatar",
+                              "data-spidey-props": "{\"name\":\"User 1\",\"size\":64}"
+                            },
+                            "style": {
+                              "width": "64px",
+                              "height": "64px",
+                              "border-radius": "50%",
+                              "overflow": "hidden",
+                              "background": "linear-gradient(135deg, rgb(110, 142, 251), rgb(167, 119, 227))",
+                              "display": "grid",
+                              "place-items": "center",
+                              "color": "white",
+                              "font-size": "26.88px",
+                              "font-weight": "700"
+                            },
+                            "children": [
+                              {
+                                "id": "t4-n14",
+                                "kind": "text",
+                                "value": "U"
+                              }
+                            ]
+                          },
+                          {
+                            "id": "t4-n23",
+                            "kind": "el",
+                            "tag": "div",
+                            "attrs": {},
+                            "style": {},
+                            "children": [
+                              {
+                                "id": "t4-n18",
+                                "kind": "el",
+                                "tag": "h2",
+                                "attrs": {},
+                                "style": {},
+                                "children": [
+                                  {
+                                    "id": "t4-n16",
+                                    "kind": "text",
+                                    "value": "User "
+                                  },
+                                  {
+                                    "id": "t4-n17",
+                                    "kind": "text",
+                                    "value": "1"
+                                  }
+                                ]
+                              },
+                              {
+                                "id": "t4-n22",
+                                "kind": "el",
+                                "tag": "p",
+                                "attrs": {
+                                  "class": "dim"
+                                },
+                                "style": {},
+                                "children": [
+                                  {
+                                    "id": "t4-n19",
+                                    "kind": "text",
+                                    "value": "Joined recently · "
+                                  },
+                                  {
+                                    "id": "t4-n21",
+                                    "kind": "el",
+                                    "tag": "span",
+                                    "attrs": {
+                                      "data-spidey-component": "Pill",
+                                      "data-spidey-props": "{\"label\":\"Active member\",\"tone\":\"ok\"}"
+                                    },
+                                    "style": {
+                                      "display": "inline-block",
+                                      "background": "rgb(220, 246, 227)",
+                                      "color": "rgb(16, 122, 59)",
+                                      "padding": "2px 10px",
+                                      "border-radius": "999px",
+                                      "font-size": "12px",
+                                      "font-weight": "600",
+                                      "letter-spacing": "0.3px"
+                                    },
+                                    "children": [
+                                      {
+                                        "id": "t4-n20",
+                                        "kind": "text",
+                                        "value": "Active member"
+                                      }
+                                    ]
+                                  }
+                                ]
+                              }
+                            ]
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "id": "t4-n27",
+                    "kind": "el",
+                    "tag": "footer",
+                    "attrs": {
+                      "class": "footer"
+                    },
+                    "style": {},
+                    "children": [
+                      {
+                        "id": "t4-n26",
+                        "kind": "text",
+                        "value": "© Acme · vite + react-router"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "css": "* { box-sizing: border-box; }\nhtml, body { margin: 0px; padding: 0px; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; color: rgb(26, 26, 26); background: rgb(250, 250, 250); }\n.page { min-height: 800px; display: flex; flex-direction: column; }\n.nav { display: flex; gap: 20px; align-items: center; padding: 16px 32px; background: white; border-bottom: 1px solid rgb(234, 234, 234); }\n.nav a { color: rgb(68, 68, 68); text-decoration: none; font-size: 14px; }\n.nav a:hover { color: rgb(0, 112, 243); }\n.nav .brand { font-weight: 700; font-size: 18px; color: rgb(26, 26, 26); margin-right: auto; }\n.main { flex: 1 1 0%; padding: 48px 32px; max-width: 960px; width: 100%; margin: 0px auto; }\n.main h1 { font-size: 36px; margin: 0px 0px 16px; }\n.main h2 { font-size: 22px; margin: 0px; }\n.main .lead { font-size: 18px; color: rgb(85, 85, 85); margin-bottom: 32px; }\n.card-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }\n.card { background: white; border: 1px solid rgb(234, 234, 234); border-radius: 8px; padding: 24px; }\n.card h3 { margin: 0px 0px 8px; font-size: 16px; }\n.card p { margin: 0px; color: rgb(102, 102, 102); font-size: 14px; }\n.tbl { width: 100%; border-collapse: collapse; background: white; border: 1px solid rgb(234, 234, 234); border-radius: 8px; overflow: hidden; }\n.tbl th, .tbl td { padding: 12px 16px; text-align: left; }\n.tbl thead { background: rgb(244, 244, 244); font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; color: rgb(85, 85, 85); }\n.tbl tbody tr { border-top: 1px solid rgb(234, 234, 234); }\n.profile { display: flex; gap: 20px; align-items: center; background: white; padding: 24px; border: 1px solid rgb(234, 234, 234); border-radius: 8px; }\n.avatar { width: 64px; height: 64px; border-radius: 50%; background: linear-gradient(135deg, rgb(110, 142, 251), rgb(167, 119, 227)); color: white; font-size: 24px; font-weight: 700; display: grid; place-items: center; }\n.dim { color: rgb(136, 136, 136); }\n.footer { padding: 16px 32px; color: rgb(136, 136, 136); font-size: 12px; border-top: 1px solid rgb(234, 234, 234); background: white; }\n.longread { max-width: 720px; margin: 0px auto; font-family: Georgia, \"Times New Roman\", serif; color: rgb(26, 26, 26); }\n.longread h1, .longread h2, .longread h3, .longread h4 { font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; letter-spacing: -0.01em; }\n.lr-eyebrow { text-transform: uppercase; letter-spacing: 0.12em; font-size: 12px; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; color: rgb(107, 107, 107); margin: 0px 0px 14px; }\n.longread h1 { font-size: 44px; line-height: 1.15; margin: 0px 0px 18px; }\n.longread h2 { font-size: 26px; line-height: 1.3; margin: 56px 0px 14px; }\n.longread h3 { font-size: 19px; line-height: 1.4; margin: 36px 0px 10px; }\n.longread h4 { font-size: 15px; margin: 0px 0px 8px; }\n.lr-lede { font-size: 22px; line-height: 1.55; color: rgb(42, 42, 42); font-style: italic; margin: 0px 0px 24px; }\n.longread p { font-size: 18px; line-height: 1.75; color: rgb(42, 42, 42); margin: 0px 0px 20px; }\n.lr-byline { display: flex; justify-content: space-between; align-items: center; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; font-size: 13px; color: rgb(107, 107, 107); border-top: 1px solid rgb(238, 238, 238); border-bottom: 1px solid rgb(238, 238, 238); padding: 14px 0px; margin: 0px 0px 36px; }\n.lr-figure { margin: 36px 0px; }\n.lr-figure-img { background: linear-gradient(135deg, rgb(42, 63, 106), rgb(91, 140, 255) 60%, rgb(201, 163, 255)); border-radius: 6px; height: 320px; display: grid; place-items: center; color: rgba(255, 255, 255, 0.5); font-family: monospace; font-size: 11px; text-transform: uppercase; letter-spacing: 0.2em; }\n.lr-figure figcaption { margin-top: 10px; font-size: 13px; color: rgb(107, 107, 107); font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; }\n.longread ul, .longread ol { padding-left: 1.4em; margin: 0px 0px 24px; }\n.longread li { font-size: 17px; line-height: 1.7; color: rgb(42, 42, 42); margin-bottom: 10px; }\n.longread blockquote { margin: 32px 0px; padding: 0px 0px 0px 22px; border-left: 3px solid rgb(91, 140, 255); }\n.longread blockquote p { font-size: 22px; font-style: italic; line-height: 1.55; color: rgb(26, 26, 26); }\n.longread blockquote cite { display: block; font-size: 13px; color: rgb(107, 107, 107); font-style: normal; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; margin-top: 6px; }\n.longread pre { background: rgb(14, 17, 23); color: rgb(226, 232, 240); padding: 18px 20px; border-radius: 6px; font-size: 13px; line-height: 1.6; overflow-x: auto; margin: 0px 0px 28px; }\n.longread code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }\n.lr-callout { background: rgb(240, 244, 255); border: 1px solid rgb(214, 224, 255); border-radius: 8px; padding: 18px 22px; margin: 32px 0px; }\n.lr-callout h4 { font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; font-size: 13px; text-transform: uppercase; letter-spacing: 0.1em; color: rgb(91, 140, 255); margin: 0px 0px 8px; }\n.lr-callout p { font-size: 16px; margin: 0px; }\n.lr-table { width: 100%; border-collapse: collapse; margin: 0px 0px 28px; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; }\n.lr-table th, .lr-table td { padding: 10px 12px; text-align: left; border-bottom: 1px solid rgb(238, 238, 238); font-size: 14px; }\n.lr-table th { color: rgb(107, 107, 107); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; }\n.lr-link { color: rgb(91, 140, 255); text-decoration: underline; text-underline-offset: 2px; }\n.lr-divider { border-width: 1px 0px 0px; border-style: solid none none; border-color: rgb(238, 238, 238) currentcolor currentcolor; border-image: initial; margin: 48px 0px; }\n.lr-footer { font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; }\n.lr-tags { display: flex; gap: 8px; margin: 0px 0px 16px; }\n.lr-tag { background: rgb(244, 246, 250); border: 1px solid rgb(230, 233, 239); border-radius: 999px; padding: 4px 12px; font-size: 12px; color: rgb(68, 68, 68); }\n.lr-also { font-size: 14px; color: rgb(107, 107, 107); }",
+      "capturedAt": "2026-04-27T00:50:24.943Z",
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "kind": "route",
+      "route": "/users/:id",
+      "url": "/users/1",
+      "title": "Acme Demo",
+      "containerSize": {
+        "width": 1280,
+        "height": 800
+      },
+      "htmlAttrs": {
+        "lang": "en"
+      }
+    },
+    {
+      "id": "component:Avatar-58b7ed",
+      "status": "ok",
+      "tree": {
+        "id": "t5-n3",
+        "kind": "el",
+        "tag": "body",
+        "attrs": {},
+        "style": {},
+        "children": [
+          {
+            "id": "t5-n2",
+            "kind": "el",
+            "tag": "div",
+            "attrs": {
+              "data-spidey-component-root": "true"
+            },
+            "style": {
+              "display": "inline-block",
+              "padding": "16px",
+              "background": "white"
+            },
+            "children": [
+              {
+                "id": "t5-n1",
+                "kind": "el",
+                "tag": "div",
+                "attrs": {
+                  "data-spidey-component": "Avatar",
+                  "data-spidey-props": "{\"name\":\"Patty Littel V\",\"src\":\"https://loremflickr.com/2537/907?lock=2395851884064673\",\"size\":83}"
+                },
+                "style": {
+                  "width": "83px",
+                  "height": "83px",
+                  "border-radius": "50%",
+                  "overflow": "hidden",
+                  "background": "linear-gradient(135deg, rgb(110, 142, 251), rgb(167, 119, 227))",
+                  "display": "grid",
+                  "place-items": "center",
+                  "color": "white",
+                  "font-size": "34.86px",
+                  "font-weight": "700"
+                },
+                "children": [
+                  {
+                    "id": "t5-n0",
+                    "kind": "el",
+                    "tag": "img",
+                    "attrs": {
+                      "src": "https://loremflickr.com/2537/907?lock=2395851884064673",
+                      "alt": "Patty Littel V"
+                    },
+                    "style": {
+                      "width": "100%",
+                      "height": "100%",
+                      "object-fit": "cover"
+                    },
+                    "children": []
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "css": "html, body { margin: 0px; padding: 0px; background: white; }",
+      "capturedAt": "2026-04-27T00:50:26.005Z",
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "kind": "component",
+      "component": {
+        "name": "Avatar",
+        "file": "src/components/Avatar.tsx",
+        "propsUsed": {
+          "name": "Patty Littel V",
+          "src": "https://loremflickr.com/2537/907?lock=2395851884064673",
+          "size": 83
+        }
+      },
+      "title": "Spidey preview",
+      "containerSize": {
+        "width": 115,
+        "height": 115
+      },
+      "htmlAttrs": {
+        "lang": "en"
+      }
+    },
+    {
+      "id": "component:Navbar-4d5e55",
+      "status": "ok",
+      "tree": {
+        "id": "t6-n1",
+        "kind": "el",
+        "tag": "body",
+        "attrs": {},
+        "style": {},
+        "children": [
+          {
+            "id": "t6-n0",
+            "kind": "el",
+            "tag": "div",
+            "attrs": {
+              "id": "root"
+            },
+            "style": {},
+            "children": []
+          }
+        ]
+      },
+      "css": "html, body { margin: 0px; padding: 0px; background: white; }",
+      "capturedAt": "2026-04-27T00:50:28.276Z",
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "kind": "component",
+      "component": {
+        "name": "Navbar",
+        "file": "src/components/Navbar.tsx",
+        "propsUsed": {}
+      },
+      "title": "Spidey preview",
+      "containerSize": {
+        "width": 1280,
+        "height": 800
+      },
+      "htmlAttrs": {
+        "lang": "en"
+      }
+    },
+    {
+      "id": "component:Pill-87e5a5",
+      "status": "ok",
+      "tree": {
+        "id": "t7-n3",
+        "kind": "el",
+        "tag": "body",
+        "attrs": {},
+        "style": {},
+        "children": [
+          {
+            "id": "t7-n2",
+            "kind": "el",
+            "tag": "div",
+            "attrs": {
+              "data-spidey-component-root": "true"
+            },
+            "style": {
+              "display": "inline-block",
+              "padding": "16px",
+              "background": "white"
+            },
+            "children": [
+              {
+                "id": "t7-n1",
+                "kind": "el",
+                "tag": "span",
+                "attrs": {
+                  "data-spidey-component": "Pill",
+                  "data-spidey-props": "{\"label\":\"aestivus caecus ratione\",\"tone\":\"info\"}"
+                },
+                "style": {
+                  "display": "inline-block",
+                  "background": "rgb(230, 239, 255)",
+                  "color": "rgb(26, 85, 196)",
+                  "padding": "2px 10px",
+                  "border-radius": "999px",
+                  "font-size": "12px",
+                  "font-weight": "600",
+                  "letter-spacing": "0.3px"
+                },
+                "children": [
+                  {
+                    "id": "t7-n0",
+                    "kind": "text",
+                    "value": "aestivus caecus ratione"
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "css": "html, body { margin: 0px; padding: 0px; background: white; }",
+      "capturedAt": "2026-04-27T00:50:29.334Z",
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "kind": "component",
+      "component": {
+        "name": "Pill",
+        "file": "src/components/Pill.tsx",
+        "propsUsed": {
+          "label": "aestivus caecus ratione",
+          "tone": "info"
+        }
+      },
+      "title": "Spidey preview",
+      "containerSize": {
+        "width": 176,
+        "height": 51
+      },
+      "htmlAttrs": {
+        "lang": "en"
+      }
+    }
+  ],
+  "components": [
+    {
+      "name": "Avatar",
+      "file": "/Users/matheus/Desktop/spidey-claude/examples/vite-app/src/components/Avatar.tsx",
+      "relPath": "src/components/Avatar.tsx",
+      "exportKind": "named",
+      "propsName": "AvatarProps",
+      "props": {
+        "name": {
+          "kind": "string",
+          "optional": false
+        },
+        "src": {
+          "kind": "string",
+          "optional": true
+        },
+        "size": {
+          "kind": "number",
+          "optional": true
+        }
+      }
+    },
+    {
+      "name": "Navbar",
+      "file": "/Users/matheus/Desktop/spidey-claude/examples/vite-app/src/components/Navbar.tsx",
+      "relPath": "src/components/Navbar.tsx",
+      "exportKind": "named",
+      "props": {}
+    },
+    {
+      "name": "Pill",
+      "file": "/Users/matheus/Desktop/spidey-claude/examples/vite-app/src/components/Pill.tsx",
+      "relPath": "src/components/Pill.tsx",
+      "exportKind": "named",
+      "propsName": "PillProps",
+      "props": {
+        "label": {
+          "kind": "string",
+          "optional": false
+        },
+        "tone": {
+          "kind": "enum",
+          "values": [
+            "info",
+            "warn",
+            "ok"
+          ],
+          "optional": true
+        }
+      }
+    }
+  ]
+}

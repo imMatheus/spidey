@@ -12,6 +12,10 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import type { Tool } from "./editor/state";
+import { Button } from "@/components/ui/button";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { Separator } from "@/components/ui/separator";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 
 type Props = {
   tool: Tool;
@@ -47,44 +51,57 @@ export function EditorToolbar({
   saveStatus,
 }: Props) {
   return (
-    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 flex items-center gap-1 bg-panel border border-edge rounded-md p-1 shadow-lg">
-      {TOOLS.map((t) => {
-        const active = tool === t.tool;
-        const Icon = t.Icon;
-        return (
-          <button
-            key={t.tool}
-            onClick={() => onSetTool(t.tool)}
-            title={`${t.label} (${t.key})`}
-            className={[
-              "w-8 h-8 grid place-items-center rounded cursor-pointer transition-colors",
-              active
-                ? "bg-accent-soft text-accent ring-1 ring-accent"
-                : "text-fg-dim hover:bg-panel-2 hover:text-fg",
-            ].join(" ")}
+    <div className="flex items-center gap-1 bg-card border border-border rounded-md p-1 shadow-lg">
+      <ToggleGroup
+        type="single"
+        size="sm"
+        value={tool}
+        onValueChange={(v) => v && onSetTool(v as Tool)}
+      >
+        {TOOLS.map((t) => {
+          const Icon = t.Icon;
+          return (
+            <Tooltip key={t.tool}>
+              <TooltipTrigger asChild>
+                <ToggleGroupItem value={t.tool} aria-label={t.label}>
+                  <Icon size={16} strokeWidth={2} />
+                </ToggleGroupItem>
+              </TooltipTrigger>
+              <TooltipContent>
+                {t.label} ({t.key})
+              </TooltipContent>
+            </Tooltip>
+          );
+        })}
+      </ToggleGroup>
+      <Separator orientation="vertical" className="!h-5 mx-1" />
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            onClick={onUndo}
+            disabled={!canUndo}
           >
-            <Icon size={16} strokeWidth={2} />
-          </button>
-        );
-      })}
-      <span className="w-px h-5 bg-edge mx-1" />
-      <button
-        onClick={onUndo}
-        disabled={!canUndo}
-        title="Undo (⌘Z)"
-        className="w-8 h-8 grid place-items-center rounded cursor-pointer text-fg-dim hover:bg-panel-2 hover:text-fg disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-transparent"
-      >
-        <Undo2 size={16} strokeWidth={2} />
-      </button>
-      <button
-        onClick={onRedo}
-        disabled={!canRedo}
-        title="Redo (⌘⇧Z)"
-        className="w-8 h-8 grid place-items-center rounded cursor-pointer text-fg-dim hover:bg-panel-2 hover:text-fg disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-transparent"
-      >
-        <Redo2 size={16} strokeWidth={2} />
-      </button>
-      <span className="w-px h-5 bg-edge mx-1" />
+            <Undo2 size={16} strokeWidth={2} />
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent>Undo (⌘Z)</TooltipContent>
+      </Tooltip>
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            onClick={onRedo}
+            disabled={!canRedo}
+          >
+            <Redo2 size={16} strokeWidth={2} />
+          </Button>
+        </TooltipTrigger>
+        <TooltipContent>Redo (⌘⇧Z)</TooltipContent>
+      </Tooltip>
+      <Separator orientation="vertical" className="!h-5 mx-1" />
       <SaveBadge status={saveStatus} />
     </div>
   );
@@ -93,24 +110,24 @@ export function EditorToolbar({
 function SaveBadge({ status }: { status: SaveStatus }) {
   let icon: LucideIcon | null = null;
   let text = "";
-  let cls = "text-fg-faint";
+  let cls = "text-muted-foreground/70";
   switch (status.kind) {
     case "idle":
       break;
     case "saving":
       icon = Loader2;
       text = "Saving";
-      cls = "text-fg-dim";
+      cls = "text-muted-foreground";
       break;
     case "saved":
       icon = Check;
       text = "Saved";
-      cls = "text-ok";
+      cls = "text-emerald-500";
       break;
     case "error":
       icon = AlertTriangle;
       text = "Save failed";
-      cls = "text-danger";
+      cls = "text-destructive";
       break;
   }
   if (!icon) return <span className="w-16" />;

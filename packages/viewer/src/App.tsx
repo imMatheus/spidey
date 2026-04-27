@@ -12,9 +12,11 @@ import { Toolbar, type ViewportPreset, VIEWPORTS } from "./Toolbar";
 import { Canvas } from "./Canvas";
 import { Inspector } from "./Inspector";
 import { EditorToolbar, type SaveStatus } from "./EditorToolbar";
+import { HandoffBar } from "./HandoffBar";
 import { reducer, makeInitialState, type Tool } from "./editor/state";
 import { normalizeDoc } from "./editor/legacy";
 import { findElementById } from "./editor/render";
+import { TooltipProvider } from "@/components/ui/tooltip";
 
 type LoadState =
   | { status: "loading" }
@@ -69,6 +71,11 @@ export function App() {
       });
   }, []);
 
+  // True when the .spidey/baseline.json sidecar is missing (no `spidey
+  // generate` since the schema introduced baseline tracking, or someone
+  // moved the file). HandoffBar surfaces a banner.
+  const [baselineMissing, setBaselineMissing] = useState(false);
+
   // Whenever the active project changes, re-fetch its document and seed the
   // editor with its trees. Selection / focus / saved state all reset.
   useEffect(() => {
@@ -82,12 +89,21 @@ export function App() {
       activeProjectId != null
         ? `/spidey-projects/${activeProjectId}.json`
         : "/spidey.json";
-    fetch(url)
-      .then((r) => {
+    const baselineUrl =
+      activeProjectId != null
+        ? `/spidey-projects/${activeProjectId}/baseline.json`
+        : null;
+
+    Promise.all([
+      fetch(url).then((r) => {
         if (!r.ok) throw new Error(`spidey.json HTTP ${r.status}`);
         return r.json();
-      })
-      .then((rawDoc: SpideyDocument) => {
+      }),
+      baselineUrl
+        ? fetch(baselineUrl).then((r) => (r.ok ? r.json() : null))
+        : Promise.resolve(null),
+    ])
+      .then(([rawDoc, baselineDoc]: [SpideyDocument, SpideyDocument | null]) => {
         const doc = normalizeDoc(rawDoc);
         const tiles = doc.tiles ?? [];
         const tileTrees: Record<string, SpideyNode | null> = {};
@@ -102,8 +118,28 @@ export function App() {
             componentName: t.component?.name,
           };
         }
+
+        // Build baseline tile trees from the sidecar. When absent, fall
+        // back to the current trees (changeset starts empty until the
+        // user edits) and surface the missing-baseline banner.
+        let baselineTrees: Record<string, SpideyNode | null> | undefined;
+        if (baselineDoc) {
+          const normalized = normalizeDoc(baselineDoc);
+          const baseTiles = normalized.tiles ?? [];
+          baselineTrees = {};
+          for (const t of baseTiles) baselineTrees[t.id] = t.tree ?? null;
+          // Tiles that exist in current but not baseline: baseline = current
+          // (they were added since last generate — don't surface as "removed").
+          for (const id of Object.keys(tileTrees)) {
+            if (!(id in baselineTrees)) baselineTrees[id] = tileTrees[id];
+          }
+          setBaselineMissing(false);
+        } else {
+          setBaselineMissing(true);
+        }
+
         tileBodiesRef.current.clear();
-        dispatch({ type: "init", tileTrees, tilesMeta });
+        dispatch({ type: "init", tileTrees, tilesMeta, baselineTrees });
         setState({ status: "ready", doc });
       })
       .catch((e) =>
@@ -327,9 +363,9 @@ export function App() {
 
   if (state.status === "loading") {
     return (
-      <div className="absolute inset-0 grid place-items-center text-center text-fg-dim">
+      <div className="absolute inset-0 grid place-items-center text-center text-muted-foreground">
         <div>
-          <div className="text-lg mb-1.5 text-fg">Loading…</div>
+          <div className="text-lg mb-1.5 text-foreground">Loading…</div>
           <div>Fetching spidey.json</div>
         </div>
       </div>
@@ -338,9 +374,9 @@ export function App() {
 
   if (state.status === "error") {
     return (
-      <div className="absolute inset-0 grid place-items-center text-center text-fg-dim">
+      <div className="absolute inset-0 grid place-items-center text-center text-muted-foreground">
         <div>
-          <div className="text-lg mb-1.5 text-fg">Could not load spidey.json</div>
+          <div className="text-lg mb-1.5 text-foreground">Could not load spidey.json</div>
           <div>{state.message}</div>
         </div>
       </div>
@@ -356,9 +392,23 @@ export function App() {
   const activeTree = activeTileId != null ? editor.tileTrees[activeTileId] ?? null : null;
   const componentInfo =
     activeTile?.kind === "component" ? activeTile.component ?? null : null;
+  // Names of components the user has explicitly captured as masters. Spidey's
+  // capture phase tags every named React fiber (including Next.js internals
+  // like InnerLayoutRouter and route shells like Layout) with
+  // `data-spidey-component`, but the inspector should only treat ancestors
+  // as instance-locked when there's a master tile to "go edit" — otherwise
+  // every node on every route is locked to its layout wrapper.
+  const masterComponentNames = new Set<string>(
+    docTiles
+      .filter((t): t is typeof t & { component: { name: string } } =>
+        t.kind === "component" && !!t.component?.name,
+      )
+      .map((t) => t.component.name),
+  );
 
   return (
-    <div className="grid grid-cols-[260px_1fr_340px] grid-rows-[44px_1fr] h-full">
+    <TooltipProvider delayDuration={300}>
+    <div className="grid grid-cols-[260px_1fr_340px] grid-rows-[44px_1fr] h-full bg-background text-foreground">
       <Sidebar
         doc={doc}
         pages={filteredPages}
@@ -412,6 +462,7 @@ export function App() {
         tileId={activeTileId}
         tree={activeTree}
         componentInfo={componentInfo}
+        masterComponentNames={masterComponentNames}
         selectedNodeId={selectedNodeId}
         selectedElement={selectedElement}
         tileBody={activeTileBody}
@@ -429,15 +480,30 @@ export function App() {
         }}
         dispatch={dispatch}
       />
-      <EditorToolbar
-        tool={editor.tool}
-        onSetTool={(tool: Tool) => dispatch({ type: "setTool", tool })}
-        canUndo={editor.history.length > 0}
-        canRedo={editor.future.length > 0}
-        onUndo={() => dispatch({ type: "undo" })}
-        onRedo={() => dispatch({ type: "redo" })}
-        saveStatus={saveStatus}
-      />
+      {/* Bottom-center floating panel: gesture-handoff bar (top) above the
+          editor toolbar (bottom). Wrapped in a tinted frame so the section
+          reads as one unit and stands out against the canvas. */}
+      <div className="absolute bottom-4 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center gap-2 p-2 bg-muted/70 border border-border rounded-xl backdrop-blur-md shadow-2xl">
+        {state.status === "ready" && (
+          <HandoffBar
+            editor={editor}
+            doc={state.doc}
+            activeProjectId={activeProjectId}
+            baselineMissing={baselineMissing}
+            onCleared={() => dispatch({ type: "clearChangeLog" })}
+          />
+        )}
+        <EditorToolbar
+          tool={editor.tool}
+          onSetTool={(tool: Tool) => dispatch({ type: "setTool", tool })}
+          canUndo={editor.history.length > 0}
+          canRedo={editor.future.length > 0}
+          onUndo={() => dispatch({ type: "undo" })}
+          onRedo={() => dispatch({ type: "redo" })}
+          saveStatus={saveStatus}
+        />
+      </div>
     </div>
+    </TooltipProvider>
   );
 }

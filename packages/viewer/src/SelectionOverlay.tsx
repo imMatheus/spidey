@@ -231,7 +231,7 @@ export function SelectionOverlay({
     <div className="absolute inset-0 pointer-events-none">
       {showHover && (
         <div
-          className="absolute pointer-events-none border border-dashed border-accent bg-accent/5"
+          className="absolute pointer-events-none border border-dashed border-primary bg-primary/5"
           style={{
             left: hovRect.x,
             top: hovRect.y,
@@ -244,7 +244,7 @@ export function SelectionOverlay({
         <>
           <div
             className={[
-              "absolute border-[1.5px] border-accent",
+              "absolute border-[1.5px] border-primary",
               showHandles ? "pointer-events-auto cursor-move" : "pointer-events-none",
             ].join(" ")}
             style={{
@@ -277,7 +277,7 @@ export function SelectionOverlay({
             )}
           </div>
           <div
-            className="absolute pointer-events-none bg-accent text-white px-1.5 py-0.5 text-[11px] font-mono rounded-xs whitespace-nowrap"
+            className="absolute pointer-events-none bg-primary text-primary-foreground px-1.5 py-0.5 text-[11px] font-mono rounded-xs whitespace-nowrap"
             style={{
               left: selRect.x,
               top: selRect.y + selRect.height + 6,
@@ -305,7 +305,7 @@ function Handle({
     <span
       onMouseDown={onMouseDown}
       className={[
-        "absolute w-1.5 h-1.5 bg-white border-[1.5px] border-accent rounded-[1px]",
+        "absolute w-1.5 h-1.5 bg-white border-[1.5px] border-primary rounded-[1px]",
         onMouseDown ? "pointer-events-auto" : "",
         pos,
       ].join(" ")}
@@ -326,7 +326,7 @@ function Measurement({
   return (
     <>
       <div
-        className="absolute bg-warn pointer-events-none"
+        className="absolute bg-pink-500 pointer-events-none"
         style={
           horizontal
             ? {
@@ -344,7 +344,7 @@ function Measurement({
         }
       />
       <div
-        className="absolute bg-warn text-white text-[11px] font-mono px-1.5 py-px rounded-xs whitespace-nowrap pointer-events-none"
+        className="absolute bg-pink-500 text-white text-[11px] font-mono px-1.5 py-px rounded-xs whitespace-nowrap pointer-events-none"
         style={{
           left: m.label.x,
           top: m.label.y,

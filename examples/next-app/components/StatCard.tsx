@@ -28,10 +28,10 @@ export function StatCard({ label, value, delta }: StatCardProps) {
           style={{
             marginTop: 6,
             fontSize: 12,
-            color: positive ? "#23a559" : "#d23a3a",
+            color: positive ? "#ae00ff" : "#d23a3a",
           }}
         >
-          {positive ? "▲" : "▼"} {Math.abs(delta)}%
+          {positive ? "▲" : "▼"}{Math.abs(delta)}%
         </div>
       )}
     </div>

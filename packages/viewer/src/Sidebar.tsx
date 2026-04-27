@@ -2,6 +2,12 @@ import { Bug } from "lucide-react";
 import type { SpideyDocument, SpideyNode, SpideyPage } from "@spidey/shared";
 import { LayersPanel } from "./LayersPanel";
 import type { EditAction } from "./editor/state";
+import { Input } from "@/components/ui/input";
+import {
+  NativeSelect,
+  NativeSelectOption,
+} from "@/components/ui/native-select";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 type Project = { id: string; name: string };
 
@@ -55,34 +61,38 @@ export function Sidebar({
   const showLayers = activeId != null;
 
   return (
-    <aside className="col-start-1 row-start-1 row-span-2 bg-panel border-r border-edge flex flex-col min-h-0">
-      <div className="p-3 border-b border-edge">
+    <aside className="col-start-1 row-start-1 row-span-2 bg-card border-r border-border flex flex-col min-h-0">
+      <div className="p-3 border-b border-border">
         <div className="flex items-center justify-between mb-2 gap-2">
           <h1 className="m-0 text-sm font-semibold tracking-wide whitespace-nowrap inline-flex items-center gap-1.5">
-            <Bug size={14} strokeWidth={2} className="text-accent" />
+            <Bug size={14} strokeWidth={2} className="text-primary" />
             Spidey
           </h1>
-          {projects.length > 1 && (
-            <select
-              value={activeProjectId ?? ""}
-              onChange={(e) => onSwitchProject(e.target.value)}
-              className="bg-panel-2 text-fg border border-edge rounded px-1.5 py-1 text-[11px] cursor-pointer focus:outline-hidden focus:border-accent min-w-0 max-w-[150px]"
-              title="Switch project"
-            >
-              {projects.map((p) => (
-                <option key={p.id} value={p.id}>
-                  {p.name}
-                </option>
-              ))}
-            </select>
-          )}
+          <div className="flex items-center gap-1 min-w-0">
+            {projects.length > 1 && (
+              <NativeSelect
+                size="sm"
+                className="max-w-[120px] text-[11px]"
+                value={activeProjectId ?? ""}
+                onChange={(e) => onSwitchProject(e.target.value)}
+                title="Switch project"
+              >
+                {projects.map((p) => (
+                  <NativeSelectOption key={p.id} value={p.id}>
+                    {p.name}
+                  </NativeSelectOption>
+                ))}
+              </NativeSelect>
+            )}
+            <ThemeToggle />
+          </div>
         </div>
-        <input
+        <Input
           type="search"
           placeholder="Filter…"
           value={search}
           onChange={(e) => onSearch(e.target.value)}
-          className="w-full bg-panel-2 text-fg border border-edge rounded px-2 py-1.5 text-xs focus:outline-hidden focus:border-accent"
+          className="h-8 text-xs"
         />
       </div>
       <div className="flex-1 min-h-0 overflow-y-auto py-1">
@@ -119,7 +129,7 @@ export function Sidebar({
           // forces internal row-state (open/closed, drop targets) to reset
           // when the active tile changes.
           key={activeId}
-          className="flex flex-col min-h-0 flex-1 border-t border-edge"
+          className="flex flex-col min-h-0 flex-1 border-t border-border"
         >
           <LayersPanel
             tileId={activeId}
@@ -132,7 +142,7 @@ export function Sidebar({
           />
         </div>
       )}
-      <div className="px-3 py-2 border-t border-edge text-[11px] text-fg-dim shrink-0">
+      <div className="px-3 py-2 border-t border-border text-[11px] text-muted-foreground shrink-0">
         {allTiles.length} tiles
         {errCount > 0 ? ` · ${errCount} error${errCount === 1 ? "" : "s"}` : ""}
       </div>
@@ -151,7 +161,7 @@ function Section({
 }) {
   return (
     <div className="mb-2">
-      <div className="px-3 pt-2 pb-1 text-[10px] uppercase tracking-[0.6px] text-fg-faint flex items-center justify-between">
+      <div className="px-3 pt-2 pb-1 text-[10px] uppercase tracking-[0.6px] text-muted-foreground/70 flex items-center justify-between">
         <span>{title}</span>
         <span>{count}</span>
       </div>
@@ -161,7 +171,7 @@ function Section({
 }
 
 function Empty({ children }: { children: React.ReactNode }) {
-  return <div className="px-3 py-1.5 text-fg-dim text-xs">{children}</div>;
+  return <div className="px-3 py-1.5 text-muted-foreground text-xs">{children}</div>;
 }
 
 function Row({
@@ -186,21 +196,21 @@ function Row({
       title={isComponent ? page.component?.file : page.url}
       className={[
         "px-3 py-2 cursor-pointer text-xs flex items-center gap-2 border-l-2",
-        "hover:bg-panel-2",
-        focus ? "bg-panel-2 border-l-accent" : "border-l-transparent",
+        "hover:bg-muted",
+        focus ? "bg-muted border-l-primary" : "border-l-transparent",
       ].join(" ")}
     >
       <span
         className={[
           "w-1.5 h-1.5 rounded-full shrink-0",
-          page.status === "error" ? "bg-danger" : "bg-ok",
+          page.status === "error" ? "bg-destructive" : "bg-emerald-500",
         ].join(" ")}
       />
       <span
         className={[
           "flex-1 whitespace-nowrap overflow-hidden text-ellipsis",
-          active && !isComponent ? "text-accent font-medium" : "",
-          isComponent ? "font-mono text-accent" : "",
+          active && !isComponent ? "text-primary font-medium" : "",
+          isComponent ? "font-mono text-primary" : "",
         ].join(" ")}
       >
         {isComponent ? `<${display}>` : display}
