@@ -1,5 +1,7 @@
 # 🕷 Spidey
 
+![Spidey](./spidey.png)
+
 Turn any local Vite or Next.js TypeScript app into a Figma-style canvas of all its screens.
 
 ```bash

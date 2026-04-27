@@ -16,6 +16,7 @@ import { Button } from "@/components/ui/button";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Separator } from "@/components/ui/separator";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { cn } from "@/lib/utils";
 
 type Props = {
   tool: Tool;
@@ -37,7 +38,7 @@ const TOOLS: { tool: Tool; key: string; Icon: LucideIcon; label: string }[] = [
   { tool: "select", key: "V", Icon: MousePointer2, label: "Select" },
   { tool: "hand", key: "H", Icon: Hand, label: "Pan canvas" },
   { tool: "text", key: "T", Icon: Type, label: "Text" },
-  { tool: "rect", key: "R", Icon: Square, label: "Rectangle" },
+  { tool: "rect", key: "B", Icon: Square, label: "Box" },
   { tool: "image", key: "I", Icon: ImageIcon, label: "Image" },
 ];
 
@@ -60,10 +61,21 @@ export function EditorToolbar({
       >
         {TOOLS.map((t) => {
           const Icon = t.Icon;
+          const active = t.tool === tool;
           return (
             <Tooltip key={t.tool}>
               <TooltipTrigger asChild>
-                <ToggleGroupItem value={t.tool} aria-label={t.label}>
+                <ToggleGroupItem
+                  value={t.tool}
+                  aria-label={t.label}
+                  className={cn(
+                    // Override the shadcn base's data-[state=on]:bg-muted via
+                    // tailwind-merge: same variant prefix, last value wins.
+                    "data-[state=on]:bg-primary data-[state=on]:text-primary-foreground",
+                    active &&
+                      "bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground",
+                  )}
+                >
                   <Icon size={16} strokeWidth={2} />
                 </ToggleGroupItem>
               </TooltipTrigger>

@@ -2162,58 +2162,6 @@
                     ]
                   },
                   {
-                    "id": "t5-n40",
-                    "kind": "el",
-                    "tag": "p",
-                    "attrs": {},
-                    "style": {},
-                    "children": [
-                      {
-                        "id": "t5-n33",
-                        "kind": "text",
-                        "value": "Strong claim up front: "
-                      },
-                      {
-                        "id": "t5-n35",
-                        "kind": "el",
-                        "tag": "strong",
-                        "attrs": {},
-                        "style": {},
-                        "children": [
-                          {
-                            "id": "t5-n34",
-                            "kind": "text",
-                            "value": "most of the value of splitting a monolith comes from things that have nothing to do with microservices."
-                          }
-                        ]
-                      },
-                      {
-                        "id": "t5-n36",
-                        "kind": "text",
-                        "value": " The decoupling forces you to write down what each piece is for. The boundary forces you to be explicit about ownership. The deploy story forces you to take observability seriously. You could get most of the same wins by just"
-                      },
-                      {
-                        "id": "t5-n38",
-                        "kind": "el",
-                        "tag": "em",
-                        "attrs": {},
-                        "style": {},
-                        "children": [
-                          {
-                            "id": "t5-n37",
-                            "kind": "text",
-                            "value": "writing things down"
-                          }
-                        ]
-                      },
-                      {
-                        "id": "t5-n39",
-                        "kind": "text",
-                        "value": " in a single repo. We didn't. We split things up. I'm not arguing that was wrong, but I want to be honest about which wins came from which decisions."
-                      }
-                    ]
-                  },
-                  {
                     "id": "t5-n42",
                     "kind": "el",
                     "tag": "h2",
@@ -2354,67 +2302,59 @@
                     ]
                   },
                   {
-                    "id": "t5-n62",
-                    "kind": "el",
-                    "tag": "h3",
-                    "attrs": {},
-                    "style": {},
-                    "children": [
-                      {
-                        "id": "t5-n61",
-                        "kind": "text",
-                        "value": "The specific decision that paid off"
-                      }
-                    ]
-                  },
-                  {
-                    "id": "t5-n64",
+                    "id": "u-4e74e89a",
                     "kind": "el",
                     "tag": "p",
-                    "attrs": {},
-                    "style": {},
+                    "attrs": {
+                      "data-spidey-primitive": "text"
+                    },
+                    "style": {
+                      "margin": "0",
+                      "margin-bottom": "29px"
+                    },
                     "children": [
                       {
-                        "id": "t5-n63",
+                        "id": "u-70052c8f",
                         "kind": "text",
-                        "value": "Of all the architecture choices, the one I would make again without flinching is keeping our auth flow inside the original monolith for two extra years. Auth is the worst place to discover you don't understand microservices. We carved off the easy domains first — billing, notifications, search — and let auth keep shipping inside the boring well-trodden codebase. By the time we finally split it out we had built up enough operational maturity that the move was uneventful. The version of us that did it on day one would have shipped at least one critical security incident out of impatience."
+                        "value": "tex1"
                       }
                     ]
                   },
                   {
-                    "id": "t5-n69",
+                    "id": "u-1a14b137",
                     "kind": "el",
-                    "tag": "blockquote",
-                    "attrs": {},
-                    "style": {},
+                    "tag": "p",
+                    "attrs": {
+                      "data-spidey-primitive": "text"
+                    },
+                    "style": {
+                      "margin": "0",
+                      "margin-bottom": "29px"
+                    },
                     "children": [
                       {
-                        "id": "t5-n66",
-                        "kind": "el",
-                        "tag": "p",
-                        "attrs": {},
-                        "style": {},
-                        "children": [
-                          {
-                            "id": "t5-n65",
-                            "kind": "text",
-                            "value": "The most expensive mistakes are made when you're moving fast on something you don't fully understand yet, in a domain that's unforgiving of mistakes. Auth is one of those domains."
-                          }
-                        ]
-                      },
+                        "id": "u-cae5ff11",
+                        "kind": "text",
+                        "value": "tex3"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "u-cf485841",
+                    "kind": "el",
+                    "tag": "p",
+                    "attrs": {
+                      "data-spidey-primitive": "text"
+                    },
+                    "style": {
+                      "margin": "0",
+                      "margin-bottom": "68px"
+                    },
+                    "children": [
                       {
-                        "id": "t5-n68",
-                        "kind": "el",
-                        "tag": "cite",
-                        "attrs": {},
-                        "style": {},
-                        "children": [
-                          {
-                            "id": "t5-n67",
-                            "kind": "text",
-                            "value": "— Aitor Mendes, infra lead at Stripe (paraphrased, sorry Aitor)"
-                          }
-                        ]
+                        "id": "u-7bee1120",
+                        "kind": "text",
+                        "value": "tex2"
                       }
                     ]
                   },
@@ -2711,34 +2651,6 @@
                     ]
                   },
                   {
-                    "id": "t5-n114",
-                    "kind": "el",
-                    "tag": "p",
-                    "attrs": {},
-                    "style": {},
-                    "children": [
-                      {
-                        "id": "t5-n111",
-                        "kind": "text",
-                        "value": "We picked Postgres for everything except the obvious cases. Three people argued for a document store; one argued for a graph database; the room got tired and went with Postgres. Two years later, the same three people each told me, separately, that Postgres was the right call. "
-                      },
-                      {
-                        "id": "t5-n113",
-                        "kind": "el",
-                        "tag": "em",
-                        "attrs": {},
-                        "style": {},
-                        "children": [
-                          {
-                            "id": "t5-n112",
-                            "kind": "text",
-                            "value": "Boring choices age well."
-                          }
-                        ]
-                      }
-                    ]
-                  },
-                  {
                     "id": "t5-n122",
                     "kind": "el",
                     "tag": "aside",
@@ -2791,6 +2703,34 @@
                             "id": "t5-n120",
                             "kind": "text",
                             "value": ". We probably spend more engineering hours on query tuning than on capacity planning, deployment automation, and incident response combined. Nobody warns you about this in the architecture books."
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "id": "t5-n114",
+                    "kind": "el",
+                    "tag": "p",
+                    "attrs": {},
+                    "style": {},
+                    "children": [
+                      {
+                        "id": "t5-n111",
+                        "kind": "text",
+                        "value": "We picked Postgres for everything except the obvious cases. Three people argued for a document store; one argued for a graph database; the room got tired and went with Postgres. Two years later, the same three people each told me, separately, that Postgres was the right call. "
+                      },
+                      {
+                        "id": "t5-n113",
+                        "kind": "el",
+                        "tag": "em",
+                        "attrs": {},
+                        "style": {},
+                        "children": [
+                          {
+                            "id": "t5-n112",
+                            "kind": "text",
+                            "value": "Boring choices age well."
                           }
                         ]
                       }
@@ -3604,6 +3544,160 @@
                         ]
                       }
                     ]
+                  },
+                  {
+                    "id": "u-4ba531c7",
+                    "kind": "el",
+                    "tag": "p",
+                    "attrs": {
+                      "data-spidey-primitive": "text"
+                    },
+                    "style": {
+                      "margin": "0"
+                    },
+                    "children": [
+                      {
+                        "id": "u-159b03df",
+                        "kind": "text",
+                        "value": "Text"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "u-655170de",
+                    "kind": "el",
+                    "tag": "img",
+                    "attrs": {
+                      "src": "data:image/svg+xml;utf8,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%20200%20140'%20preserveAspectRatio%3D'none'%3E%3Crect%20width%3D'100%25'%20height%3D'100%25'%20fill%3D'%2523eef0f4'%2F%3E%3Cpath%20d%3D'M0%200L200%20140M200%200L0%20140'%20stroke%3D'%2523bbb'%20stroke-width%3D'1'%2F%3E%3C%2Fsvg%3E",
+                      "alt": "",
+                      "data-spidey-primitive": "image"
+                    },
+                    "style": {
+                      "width": "200px",
+                      "height": "140px"
+                    },
+                    "children": []
+                  },
+                  {
+                    "id": "u-239b4156",
+                    "kind": "el",
+                    "tag": "p",
+                    "attrs": {
+                      "data-spidey-primitive": "text"
+                    },
+                    "style": {
+                      "margin": "0"
+                    },
+                    "children": [
+                      {
+                        "id": "u-1dec1ba9",
+                        "kind": "text",
+                        "value": "Textjdjdjjosjdopjasdpojasdjapsod"
+                      },
+                      {
+                        "id": "u-84120de2",
+                        "kind": "el",
+                        "tag": "p",
+                        "attrs": {
+                          "data-spidey-primitive": "text"
+                        },
+                        "style": {
+                          "margin": "0"
+                        },
+                        "children": [
+                          {
+                            "id": "u-336cd968",
+                            "kind": "text",
+                            "value": "Textjdjdjjosjdopjasdpojasdjapsod"
+                          },
+                          {
+                            "id": "t5-n62",
+                            "kind": "el",
+                            "tag": "h3",
+                            "attrs": {},
+                            "style": {},
+                            "children": [
+                              {
+                                "id": "t5-n61",
+                                "kind": "text",
+                                "value": "The specific decision that paid off"
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      {
+                        "id": "u-a11c00f9",
+                        "kind": "el",
+                        "tag": "p",
+                        "attrs": {
+                          "data-spidey-primitive": "text"
+                        },
+                        "style": {
+                          "margin": "0"
+                        },
+                        "children": [
+                          {
+                            "id": "u-3bef5611",
+                            "kind": "text",
+                            "value": "Textjdjdjjosjdopjasdpojasdjapsod"
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "id": "t5-n64",
+                    "kind": "el",
+                    "tag": "p",
+                    "attrs": {},
+                    "style": {},
+                    "children": [
+                      {
+                        "id": "t5-n63",
+                        "kind": "text",
+                        "value": "Of all the architecture choices, the one I would make again without flinching is keeping our auth flow inside the original monolith for two extra years. Auth is the worst place to discover you don't understand microservices. We carved off the easy domains first — billing, notifications, search — and let auth keep shipping inside the boring well-trodden codebase. By the time we finally split it out we had built up enough operational maturity that the move was uneventful. The version of us that did it on day one would have shipped at least one critical security incident out of impatience."
+                      },
+                      {
+                        "id": "t5-n66",
+                        "kind": "el",
+                        "tag": "p",
+                        "attrs": {},
+                        "style": {},
+                        "children": [
+                          {
+                            "id": "t5-n65",
+                            "kind": "text",
+                            "value": "The most expensive mistakes are made when you're moving fast on something you don't fully understand yet, in a domain that's unforgiving of mistakes. Auth is one of those domains."
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
+                    "id": "t5-n69",
+                    "kind": "el",
+                    "tag": "blockquote",
+                    "attrs": {},
+                    "style": {
+                      "border-color": "#ff0000"
+                    },
+                    "children": [
+                      {
+                        "id": "t5-n68",
+                        "kind": "el",
+                        "tag": "cite",
+                        "attrs": {},
+                        "style": {},
+                        "children": [
+                          {
+                            "id": "t5-n67",
+                            "kind": "text",
+                            "value": "— Aitor Mendes, infra lead at Stripe (paraphrased, sorry Aitor)"
+                          }
+                        ]
+                      }
+                    ]
                   }
                 ]
               }
@@ -4092,5 +4186,5 @@
       }
     }
   ],
-  "editedAt": "2026-04-27T05:08:15.478Z"
+  "editedAt": "2026-04-27T05:57:29.550Z"
 }

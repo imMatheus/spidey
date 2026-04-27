@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import type { SpideyNode, SpideyTile } from "@spidey/shared";
-import { findById, findInstanceAncestor } from "./editor/tree";
+import { findById, findInstanceAncestor, findParent } from "./editor/tree";
 import { renderNode } from "./editor/render";
 import { newId, type Tool } from "./editor/state";
 import type { EditAction } from "./editor/state";
@@ -73,7 +73,7 @@ export function Tile({
    *  exposed up to App via onBodyReady so node-id ↔ HTMLElement lookups
    *  have a stable starting point. */
   const synthBodyRef = useRef<HTMLElement | null>(null);
-  /** Last-down state — used by drag-vs-click and rectangle-rubber-band. */
+  /** Last-down state — used by drag-vs-click detection. */
   const downRef = useRef<{
     x: number;
     y: number;
@@ -81,7 +81,21 @@ export function Tile({
     nodeId: string | null;
   } | null>(null);
   const lastClickAt = useRef(0);
-  const rubberRef = useRef<HTMLDivElement | null>(null);
+  /** Active drag-to-rearrange state. Set when the user starts dragging an
+   *  element on the select tool past the click threshold. Cleared on drop. */
+  const dragRef = useRef<{
+    nodeId: string;
+    indicator: HTMLDivElement;
+    drop: { parentId: string; index: number } | null;
+    /** The actual rendered element being dragged. We mutate its opacity to
+     *  produce a ghost effect while the drag is in flight, and restore on
+     *  release. */
+    sourceEl: HTMLElement | null;
+    /** Floating "Moving <tag>" label that follows the cursor. Lives on
+     *  document.body (outside the shadow root) so it's not clipped by the
+     *  tile's overflow. */
+    label: HTMLDivElement | null;
+  } | null>(null);
 
   // ----- Shell mount (page identity changed) -----
   // Mount only the shadow shell here: reset, captured CSS, synth html/body
@@ -110,6 +124,7 @@ export function Tile({
         padding: 0;
         overflow: auto;
       }
+      body { position: relative; }
       [data-spidey-id][contenteditable="true"] { outline: 2px solid rgba(91,140,255,0.7); outline-offset: 1px; cursor: text; }
     `;
     shadow.appendChild(reset);
@@ -185,10 +200,121 @@ export function Tile({
       return { x: (clientX - r.left) / (sx || 1), y: (clientY - r.top) / (sy || 1) };
     };
 
+    // ----- Insert-tool hover highlight -----
+    // When text/box/image is the active tool, hovering shows a ring on
+    // the element that will be the parent of the inserted node. The ring
+    // is a child of body positioned absolutely; body is `position:relative`
+    // (set in the reset CSS) so left/top/width/height are body-local px.
+    let insertHover: HTMLDivElement | null = null;
+    const ensureInsertHover = (): HTMLDivElement | null => {
+      if (!body) return null;
+      if (!insertHover) {
+        insertHover = document.createElement("div");
+        insertHover.dataset.spideyInsertHover = "1";
+        insertHover.style.cssText =
+          "position:absolute; pointer-events:none; z-index:99998; box-sizing:border-box; border:2px dashed #5b8cff; background:rgba(91,140,255,0.10);";
+        body.appendChild(insertHover);
+      }
+      return insertHover;
+    };
+    const clearInsertHover = () => {
+      if (insertHover) {
+        insertHover.remove();
+        insertHover = null;
+      }
+    };
+    const updateInsertHover = (target: HTMLElement | null) => {
+      if (!body || !tree || tree.kind !== "el") return;
+      // Walk up to nearest element with data-spidey-id.
+      let el: HTMLElement | null = target;
+      while (el && !el.hasAttribute?.("data-spidey-id")) {
+        el = el.parentElement;
+      }
+      const ind = ensureInsertHover();
+      if (!ind) return;
+      const focusEl =
+        el ??
+        (body.querySelector(
+          `[data-spidey-id="${tree.id}"]`,
+        ) as HTMLElement | null);
+      if (!focusEl) {
+        ind.style.display = "none";
+        return;
+      }
+      const tRect = focusEl.getBoundingClientRect();
+      const bRect = body.getBoundingClientRect();
+      const sx = bRect.width / (body.clientWidth || 1) || 1;
+      const sy = bRect.height / (body.clientHeight || 1) || 1;
+      ind.style.display = "block";
+      ind.style.left = `${(tRect.left - bRect.left) / sx}px`;
+      ind.style.top = `${(tRect.top - bRect.top) / sy}px`;
+      ind.style.width = `${tRect.width / sx}px`;
+      ind.style.height = `${tRect.height / sy}px`;
+    };
+
+    const isInsertTool = tool === "rect" || tool === "text" || tool === "image";
+
+    /** Tear down a drag — restore the source element's styles, remove the
+     *  indicator + cursor label, and optionally dispatch the move. Used by
+     *  both the normal-drop branch and the inactive-tile fallback. */
+    const finishDrag = (dispatchDrop: boolean) => {
+      const drag = dragRef.current;
+      if (!drag) return;
+      drag.indicator.remove();
+      drag.label?.remove();
+      if (drag.sourceEl) {
+        drag.sourceEl.style.opacity = "";
+        drag.sourceEl.style.outline = "";
+        drag.sourceEl.style.outlineOffset = "";
+        drag.sourceEl.style.transition = "";
+      }
+      if (body) body.style.cursor = "";
+      dragRef.current = null;
+      if (dispatchDrop && drag.drop) {
+        dispatch({
+          type: "moveNode",
+          tileId: page.id,
+          nodeId: drag.nodeId,
+          newParentId: drag.drop.parentId,
+          newIndex: drag.drop.index,
+        });
+      }
+    };
+
+    /** Minimal CSS.escape polyfill substitute — node ids are short
+     *  alphanumerics so we just need the brackets/quotes to be safe. */
+    const cssEscape = (s: string) =>
+      typeof CSS !== "undefined" && CSS.escape ? CSS.escape(s) : s.replace(/"/g, '\\"');
+
+    /** Resolve the SpideyNode element that should receive a newly-inserted
+     *  primitive given the user's click target. Walks up to the nearest
+     *  data-spidey-id ancestor; falls back to the tile root when the click
+     *  was on the empty body. Always returns an `el`-kind node (text leaves
+     *  can't have children). */
+    const parentForInsert = (
+      target: HTMLElement | null,
+      root: SpideyNode & { kind: "el" },
+    ): SpideyNode & { kind: "el" } => {
+      let el: HTMLElement | null = target;
+      while (el && !el.hasAttribute?.("data-spidey-id")) {
+        el = el.parentElement;
+      }
+      const id = el?.getAttribute("data-spidey-id");
+      if (!id) return root;
+      const node = findById(root, id);
+      if (!node || node.kind !== "el") return root;
+      return node;
+    };
+
     const onMouseOver = (e: MouseEvent) => {
       if (!active) return;
+      const path = e.composedPath()[0] as HTMLElement | null;
+      if (isInsertTool) {
+        updateInsertHover(path);
+        return;
+      }
       if (tool !== "select") return;
-      const el = isInsideContent(e.composedPath()[0] as HTMLElement);
+      const el = isInsideContent(path);
       if (!el) {
         onHoverNode(null);
         return;
@@ -197,49 +323,255 @@ export function Tile({
     };
     const onMouseOut = (e: MouseEvent) => {
       if (!active) return;
-      if (tool !== "select") return;
       const next = e.relatedTarget as Node | null;
       if (next && root.contains(next)) return;
+      if (isInsertTool) {
+        clearInsertHover();
+        return;
+      }
+      if (tool !== "select") return;
       onHoverNode(null);
     };
     const onMouseDown = (e: MouseEvent) => {
       if (tool === "hand") return; // let canvas pan
-      // Track down for click vs drag detection. For rect tool, additionally
-      // start a rubber-band overlay.
       const target = e.composedPath()[0] as HTMLElement | null;
       const id = target?.getAttribute?.("data-spidey-id") ?? null;
       downRef.current = { x: e.clientX, y: e.clientY, t: Date.now(), nodeId: id };
-
-      if (tool === "rect" && body) {
-        // create a transient overlay element on the body for rubber-band
-        const overlay = document.createElement("div");
-        overlay.style.cssText =
-          "position:absolute; pointer-events:none; border:1px dashed #5b8cff; background:rgba(91,140,255,0.15); z-index: 99999;";
-        const local = tileLocal(e.clientX, e.clientY);
-        overlay.style.left = `${local.x}px`;
-        overlay.style.top = `${local.y}px`;
-        overlay.style.width = "0px";
-        overlay.style.height = "0px";
-        overlay.dataset.spideyRubber = "1";
-        body.appendChild(overlay);
-        rubberRef.current = overlay;
-        e.preventDefault();
-      }
     };
     const onMouseMove = (e: MouseEvent) => {
       const start = downRef.current;
       if (!start) return;
-      if (tool === "rect" && rubberRef.current) {
-        const a = tileLocal(start.x, start.y);
-        const b = tileLocal(e.clientX, e.clientY);
-        const left = Math.min(a.x, b.x);
-        const top = Math.min(a.y, b.y);
-        const w = Math.abs(b.x - a.x);
-        const h = Math.abs(b.y - a.y);
-        rubberRef.current.style.left = `${left}px`;
-        rubberRef.current.style.top = `${top}px`;
-        rubberRef.current.style.width = `${w}px`;
-        rubberRef.current.style.height = `${h}px`;
+      if (tool !== "select" || !active || !start.nodeId || !body || !tree)
+        return;
+
+      const dx = e.clientX - start.x;
+      const dy = e.clientY - start.y;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+
+      // Begin drag once we're past the click threshold.
+      if (!dragRef.current && dist > CLICK_DIST_PX) {
+        const indicator = document.createElement("div");
+        indicator.dataset.spideyDropIndicator = "1";
+        indicator.style.cssText =
+          "position:absolute; pointer-events:none; z-index:100000; box-sizing:border-box; transition: top 80ms ease, left 80ms ease, width 80ms ease, height 80ms ease, background-color 120ms ease;";
+        body.appendChild(indicator);
+
+        // Ghost the source element so the user sees what they grabbed.
+        const sourceEl = body.querySelector(
+          `[data-spidey-id="${cssEscape(start.nodeId)}"]`,
+        ) as HTMLElement | null;
+        if (sourceEl) {
+          sourceEl.style.transition = "opacity 100ms ease";
+          sourceEl.style.opacity = "0.4";
+          sourceEl.style.outline = "2px dashed #5b8cff";
+          sourceEl.style.outlineOffset = "2px";
+        }
+
+        // Floating cursor label, attached to document.body so it isn't
+        // clipped by the shadow host's overflow.
+        const tagLabel =
+          (sourceEl?.getAttribute("data-spidey-component") &&
+            `<${sourceEl.getAttribute("data-spidey-component")}>`) ||
+          (sourceEl ? `<${sourceEl.tagName.toLowerCase()}>` : "node");
+        const label = document.createElement("div");
+        label.textContent = `Moving ${tagLabel}`;
+        label.style.cssText =
+          "position:fixed; pointer-events:none; z-index:2147483647; padding:4px 8px; border-radius:6px; background:#5b8cff; color:white; font:600 11px ui-sans-serif,system-ui,sans-serif; box-shadow:0 4px 12px rgba(0,0,0,0.2); transform: translate(12px, 12px); white-space:nowrap;";
+        document.body.appendChild(label);
+
+        dragRef.current = {
+          nodeId: start.nodeId,
+          indicator,
+          drop: null,
+          sourceEl,
+          label,
+        };
+        body.style.cursor = "grabbing";
+      }
+
+      const drag = dragRef.current;
+      if (!drag) return;
+
+      // Pin the floating label to the cursor.
+      if (drag.label) {
+        drag.label.style.left = `${e.clientX}px`;
+        drag.label.style.top = `${e.clientY}px`;
+      }
+
+      // Hit-test inside the shadow root.
+      const hit = (root as ShadowRoot).elementFromPoint(
+        e.clientX,
+        e.clientY,
+      ) as HTMLElement | null;
+      let target: HTMLElement | null = hit;
+      while (target && !target.hasAttribute?.("data-spidey-id")) {
+        target = target.parentElement;
+      }
+      const draggedNode = findById(tree, drag.nodeId);
+      const targetId = target?.getAttribute("data-spidey-id") ?? null;
+
+      // Reject self / descendants / non-element drops.
+      const invalid =
+        !target ||
+        !targetId ||
+        targetId === drag.nodeId ||
+        (draggedNode && findById(draggedNode, targetId));
+
+      if (invalid || !target || !targetId) {
+        drag.indicator.style.display = "none";
+        drag.drop = null;
+        return;
+      }
+
+      const bRect = body.getBoundingClientRect();
+      const sx = bRect.width / (body.clientWidth || 1) || 1;
+      const sy = bRect.height / (body.clientHeight || 1) || 1;
+      const px = (clientX: number) => (clientX - bRect.left) / sx;
+      const py = (clientY: number) => (clientY - bRect.top) / sy;
+
+      // Gap-aware drop detection: if the cursor is over a target with
+      // data-spidey-id children but NOT inside any of them (i.e. in the
+      // parent's whitespace / gap), show an insertion line between the two
+      // adjacent children with the correct index instead of falling back to
+      // "drop-as-child at end".
+      const childEls: HTMLElement[] = Array.from(target.children).filter(
+        (c): c is HTMLElement =>
+          c instanceof HTMLElement &&
+          c.hasAttribute("data-spidey-id") &&
+          c.getAttribute("data-spidey-id") !== drag.nodeId,
+      );
+      const cursorInRect = (r: DOMRect) =>
+        e.clientX >= r.left &&
+        e.clientX <= r.right &&
+        e.clientY >= r.top &&
+        e.clientY <= r.bottom;
+      const cursorInsideAnyChild = childEls.some((c) =>
+        cursorInRect(c.getBoundingClientRect()),
+      );
+
+      drag.indicator.style.background = "#5b8cff";
+      drag.indicator.style.border = "none";
+      drag.indicator.style.display = "block";
+
+      if (childEls.length > 0 && !cursorInsideAnyChild) {
+        // Cursor is in the parent's whitespace / between children. Detect
+        // layout direction (any two children with overlapping Y ranges =>
+        // horizontal flow) and find the insertion gap.
+        const rects = childEls.map((c) => c.getBoundingClientRect());
+        const horizontal = rects.some((r, i) => {
+          if (i === 0) return false;
+          const prev = rects[i - 1];
+          return r.top < prev.bottom && r.bottom > prev.top;
+        });
+        let gapIndex: number;
+        if (horizontal) {
+          gapIndex = rects.findIndex((r) => r.left + r.width / 2 > e.clientX);
+        } else {
+          gapIndex = rects.findIndex((r) => r.top + r.height / 2 > e.clientY);
+        }
+        if (gapIndex < 0) gapIndex = childEls.length;
+
+        // Draw a thin line spanning the gap between the upper/left and
+        // lower/right neighbours (or the start/end edge when at the bounds).
+        const upper = childEls[gapIndex - 1];
+        const lower = childEls[gapIndex];
+        const tRect = target.getBoundingClientRect();
+        if (horizontal) {
+          let lineX: number;
+          if (upper && lower) {
+            const u = upper.getBoundingClientRect();
+            const l = lower.getBoundingClientRect();
+            lineX = (u.right + l.left) / 2;
+          } else if (lower) {
+            lineX = lower.getBoundingClientRect().left;
+          } else if (upper) {
+            lineX = upper.getBoundingClientRect().right;
+          } else {
+            lineX = tRect.left;
+          }
+          drag.indicator.style.left = `${px(lineX) - 1}px`;
+          drag.indicator.style.top = `${py(tRect.top)}px`;
+          drag.indicator.style.width = "2px";
+          drag.indicator.style.height = `${tRect.height / sy}px`;
+        } else {
+          let lineY: number;
+          if (upper && lower) {
+            const u = upper.getBoundingClientRect();
+            const l = lower.getBoundingClientRect();
+            lineY = (u.bottom + l.top) / 2;
+          } else if (lower) {
+            lineY = lower.getBoundingClientRect().top;
+          } else if (upper) {
+            lineY = upper.getBoundingClientRect().bottom;
+          } else {
+            lineY = tRect.top;
+          }
+          drag.indicator.style.left = `${px(tRect.left)}px`;
+          drag.indicator.style.top = `${py(lineY) - 1}px`;
+          drag.indicator.style.width = `${tRect.width / sx}px`;
+          drag.indicator.style.height = "2px";
+        }
+
+        // Translate the visible-children gap index into the absolute
+        // SpideyNode children index. childEls excluded the dragged node, so
+        // we need to bump the index when the dragged node sits before the
+        // gap in the original child list.
+        const targetNode = findById(tree, targetId);
+        if (targetNode && targetNode.kind === "el") {
+          const orig = targetNode.children;
+          let absIdx = 0;
+          let visited = 0;
+          for (; absIdx < orig.length; absIdx++) {
+            if (visited === gapIndex) break;
+            if (orig[absIdx].id !== drag.nodeId) visited++;
+          }
+          drag.drop = { parentId: targetId, index: absIdx };
+        } else {
+          drag.drop = null;
+        }
+        return;
+      }
+
+      // Otherwise: cursor is directly inside the target's box (a leaf, or a
+      // child of the target was hit). Use the 25/50/25 heuristic to choose
+      // sibling-above / sibling-below / drop-as-child.
+      const tRect = target.getBoundingClientRect();
+      const yLocal = (e.clientY - tRect.top) / tRect.height;
+      let mode: "above" | "below" | "child";
+      if (yLocal < 0.25) mode = "above";
+      else if (yLocal > 0.75) mode = "below";
+      else mode = "child";
+
+      const parentInfo = findParent(tree, targetId);
+      // If the target is the tile root, fall back to "child".
+      if (!parentInfo && (mode === "above" || mode === "below"))
+        mode = "child";
+
+      const left = px(tRect.left);
+      const top = py(tRect.top);
+      const width = tRect.width / sx;
+      const height = tRect.height / sy;
+      if (mode === "child") {
+        drag.indicator.style.left = `${left}px`;
+        drag.indicator.style.top = `${top}px`;
+        drag.indicator.style.width = `${width}px`;
+        drag.indicator.style.height = `${height}px`;
+        drag.indicator.style.background = "rgba(91,140,255,0.18)";
+        drag.indicator.style.border = "2px solid #5b8cff";
+        drag.drop = { parentId: targetId, index: Number.MAX_SAFE_INTEGER };
+      } else {
+        const lineTop = mode === "above" ? top - 1 : top + height - 1;
+        drag.indicator.style.left = `${left}px`;
+        drag.indicator.style.top = `${lineTop}px`;
+        drag.indicator.style.width = `${width}px`;
+        drag.indicator.style.height = "2px";
+        if (parentInfo) {
+          const idx =
+            mode === "above" ? parentInfo.index : parentInfo.index + 1;
+          drag.drop = { parentId: parentInfo.parent.id, index: idx };
+        } else {
+          drag.drop = null;
+        }
       }
     };
     const onMouseUp = (e: MouseEvent) => {
@@ -256,75 +588,47 @@ export function Tile({
       // and stops further interpretation.
       if (!active) {
         if (wasClick) onActivate();
-        if (rubberRef.current) {
-          rubberRef.current.remove();
-          rubberRef.current = null;
+        if (dragRef.current) {
+          finishDrag(/* dispatchDrop */ false);
         }
+        return;
+      }
+
+      // Drag-to-rearrange dispatch. If a drag was active, this supersedes
+      // the click-select path below. The reducer's moveNode is cycle-safe.
+      if (dragRef.current) {
+        finishDrag(/* dispatchDrop */ true);
         return;
       }
 
       const target = e.composedPath()[0] as HTMLElement | null;
 
-      if (tool === "rect") {
-        const overlay = rubberRef.current;
-        rubberRef.current = null;
-        if (overlay) {
-          const a = tileLocal(start.x, start.y);
-          const b = tileLocal(e.clientX, e.clientY);
-          const left = Math.min(a.x, b.x);
-          const top = Math.min(a.y, b.y);
-          let w = Math.abs(b.x - a.x);
-          let h = Math.abs(b.y - a.y);
-          // single click → default size
-          if (w < 4 && h < 4) {
-            w = 120;
-            h = 80;
-          }
-          overlay.remove();
-          if (tree && tree.kind === "el") {
-            const node: SpideyNode = makeRectNode(left, top, w, h);
-            dispatch({
-              type: "insertNode",
-              tileId: page.id,
-              parentId: tree.id,
-              index: tree.children.length,
-              node,
-            });
-            onSelectNode(node.id);
-          }
-        }
-        return;
-      }
-
-      if (tool === "text" && wasClick) {
-        const local = tileLocal(e.clientX, e.clientY);
-        if (tree && tree.kind === "el") {
-          const node: SpideyNode = makeTextNode(local.x, local.y, "Text");
-          dispatch({
-            type: "insertNode",
-            tileId: page.id,
-            parentId: tree.id,
-            index: tree.children.length,
-            node,
-          });
-          onSelectNode(node.id);
-        }
-        return;
-      }
-
-      if (tool === "image" && wasClick) {
-        const local = tileLocal(e.clientX, e.clientY);
-        if (tree && tree.kind === "el") {
-          const node: SpideyNode = makeImageNode(local.x, local.y, 200, 140);
-          dispatch({
-            type: "insertNode",
-            tileId: page.id,
-            parentId: tree.id,
-            index: tree.children.length,
-            node,
-          });
-          onSelectNode(node.id);
-        }
+      // Insert tools (text/box/image): the new node becomes a child of the
+      // element the user clicked on (in document flow, no absolute
+      // positioning), appended as the last child so existing siblings keep
+      // their order. Falls back to the tile root for clicks on the empty
+      // body. Re-uses the same parent-hit-test as the hover indicator so
+      // visual highlight and actual drop target always match.
+      if (
+        wasClick &&
+        (tool === "rect" || tool === "text" || tool === "image") &&
+        tree &&
+        tree.kind === "el"
+      ) {
+        const parent = parentForInsert(target, tree);
+        let node: SpideyNode;
+        if (tool === "rect") node = makeBoxNode();
+        else if (tool === "text") node = makeTextNode("Text");
+        else node = makeImageNode();
+        dispatch({
+          type: "insertNode",
+          tileId: page.id,
+          parentId: parent.id,
+          index: parent.children.length,
+          node,
+        });
+        onSelectNode(node.id);
+        clearInsertHover();
         return;
       }
 
@@ -367,6 +671,8 @@ export function Tile({
       target.removeEventListener("mousedown", onMouseDown as EventListener);
       window.removeEventListener("mousemove", onMouseMove);
       window.removeEventListener("mouseup", onMouseUp);
+      clearInsertHover();
+      if (dragRef.current) finishDrag(false);
     };
   }, [active, tool, tree, page.id, onActivate, onSelectNode, onHoverNode, dispatch]);
 
@@ -455,56 +761,35 @@ export function Tile({
 
 // --------- helpers ---------
 
-function makeRectNode(
-  x: number,
-  y: number,
-  w: number,
-  h: number,
-): SpideyNode {
+function makeBoxNode(): SpideyNode {
   return {
     id: newId(),
     kind: "el",
     tag: "div",
-    attrs: { "data-spidey-primitive": "rect" },
+    attrs: { "data-spidey-primitive": "box" },
     style: {
-      position: "absolute",
-      left: `${Math.round(x)}px`,
-      top: `${Math.round(y)}px`,
-      width: `${Math.round(w)}px`,
-      height: `${Math.round(h)}px`,
-      background: "#5b8cff",
-      "border-radius": "6px",
+      width: "100px",
+      height: "100px",
+      background: "#ef4444",
     },
     children: [],
   };
 }
 
-function makeTextNode(x: number, y: number, value: string): SpideyNode {
+function makeTextNode(value: string): SpideyNode {
   return {
     id: newId(),
     kind: "el",
-    tag: "div",
+    tag: "p",
     attrs: { "data-spidey-primitive": "text" },
-    style: {
-      position: "absolute",
-      left: `${Math.round(x)}px`,
-      top: `${Math.round(y)}px`,
-      color: "#1a1a1a",
-      "font-size": "16px",
-      "font-family": "inherit",
-      "min-width": "40px",
-    },
+    style: { margin: "0" },
     children: [{ id: newId(), kind: "text", value }],
   };
 }
 
-function makeImageNode(
-  x: number,
-  y: number,
-  w: number,
-  h: number,
-): SpideyNode {
-  // 1px transparent gif; user replaces via the style panel.
+function makeImageNode(): SpideyNode {
+  const w = 200;
+  const h = 140;
   const placeholder =
     "data:image/svg+xml;utf8," +
     encodeURIComponent(
@@ -516,11 +801,8 @@ function makeImageNode(
     tag: "img",
     attrs: { src: placeholder, alt: "", "data-spidey-primitive": "image" },
     style: {
-      position: "absolute",
-      left: `${Math.round(x)}px`,
-      top: `${Math.round(y)}px`,
-      width: `${Math.round(w)}px`,
-      height: `${Math.round(h)}px`,
+      width: `${w}px`,
+      height: `${h}px`,
     },
     children: [],
   };

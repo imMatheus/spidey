@@ -1,4 +1,3 @@
-import { useEffect, useState } from "react";
 import type { SpideyNode } from "@spidey/shared";
 import { Textarea } from "@/components/ui/textarea";
 import type { EditAction } from "../../editor/state";
@@ -53,28 +52,18 @@ function TextRow({
   value: string;
   onChange: (next: string) => void;
 }) {
-  const [draft, setDraft] = useState(value);
-  useEffect(() => setDraft(value), [value]);
-
-  const commit = (next: string) => {
-    if (next === value) return;
-    onChange(next);
-  };
-
+  // Fully controlled — every keystroke dispatches setText so the live tile
+  // mirrors the inspector instantly. The reducer rebuilds the tree
+  // structurally; the rendered DOM updates via Tile's re-mount-on-rev.
   return (
     <Textarea
-      value={draft}
+      value={value}
       placeholder="(empty)"
-      onChange={(e) => setDraft(e.target.value)}
-      onBlur={(e) => commit(e.target.value)}
+      onChange={(e) => onChange(e.target.value)}
       onKeyDown={(e) => {
-        if (e.key === "Escape") {
-          setDraft(value);
+        if (e.key === "Escape")
           (e.target as HTMLTextAreaElement).blur();
-        }
       }}
-      // field-sizing-content auto-grows but disables manual resize on
-      // some browsers — drop it so the bottom-right grip works.
       className="min-h-12 px-2 py-1.5 text-xs font-mono resize-y [field-sizing:fixed]"
       rows={2}
     />

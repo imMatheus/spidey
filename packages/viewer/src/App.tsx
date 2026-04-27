@@ -188,8 +188,11 @@ export function App() {
         setSelectedNodeId(null);
         return;
       }
-      // Cmd-D duplicate
+      // Cmd-D duplicate. Node-level shortcuts must not fire while typing in
+      // an inspector field — the textarea / input would otherwise lose its
+      // native browser handling for these keys (paste, cut, copy, etc).
       if (
+        !inField &&
         meta &&
         (e.key === "d" || e.key === "D") &&
         activeTileId &&
@@ -204,18 +207,36 @@ export function App() {
         return;
       }
       // Cmd-C / Cmd-X copy/cut
-      if (meta && (e.key === "c" || e.key === "C") && activeTileId && selectedNodeId) {
+      if (
+        !inField &&
+        meta &&
+        (e.key === "c" || e.key === "C") &&
+        activeTileId &&
+        selectedNodeId
+      ) {
         dispatch({ type: "copyNode", tileId: activeTileId, nodeId: selectedNodeId });
         return;
       }
-      if (meta && (e.key === "x" || e.key === "X") && activeTileId && selectedNodeId) {
+      if (
+        !inField &&
+        meta &&
+        (e.key === "x" || e.key === "X") &&
+        activeTileId &&
+        selectedNodeId
+      ) {
         e.preventDefault();
         dispatch({ type: "cutNode", tileId: activeTileId, nodeId: selectedNodeId });
         setSelectedNodeId(null);
         return;
       }
       // Cmd-V paste-as-child of selection (or root if no selection)
-      if (meta && (e.key === "v" || e.key === "V") && activeTileId && editor.clipboard) {
+      if (
+        !inField &&
+        meta &&
+        (e.key === "v" || e.key === "V") &&
+        activeTileId &&
+        editor.clipboard
+      ) {
         e.preventDefault();
         const tree = editor.tileTrees[activeTileId];
         const parentId = selectedNodeId ?? tree?.id;
@@ -240,8 +261,8 @@ export function App() {
         case "T":
           dispatch({ type: "setTool", tool: "text" });
           break;
-        case "r":
-        case "R":
+        case "b":
+        case "B":
           dispatch({ type: "setTool", tool: "rect" });
           break;
         case "i":
@@ -465,8 +486,6 @@ export function App() {
         masterComponentNames={masterComponentNames}
         selectedNodeId={selectedNodeId}
         selectedElement={selectedElement}
-        tileBody={activeTileBody}
-        scale={scale}
         rev={editor.rev}
         onEditMaster={(componentName) => {
           const master = docTiles.find(

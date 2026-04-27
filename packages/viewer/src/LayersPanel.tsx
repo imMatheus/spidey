@@ -75,7 +75,7 @@ export function LayersPanel({
       onMouseLeave={() => onHover(null)}
     >
       {breadcrumb.length > 0 && (
-        <div className="px-3 py-2 border-b border-border text-[11px] text-muted-foreground whitespace-nowrap overflow-x-auto shrink-0">
+        <div className="px-4 py-2 border-b border-border text-[11px] text-muted-foreground whitespace-nowrap overflow-x-auto shrink-0">
           {breadcrumb.map((n, i) => {
             const isLast = i === breadcrumb.length - 1;
             return (
@@ -92,7 +92,7 @@ export function LayersPanel({
                   title={describeNode(n)}
                   className={[
                     "bg-transparent border-0 px-1 py-0.5 cursor-pointer rounded font-mono text-[11px] hover:bg-muted hover:text-foreground",
-                    isLast ? "text-primary font-semibold" : "text-muted-foreground",
+                    isLast ? "text-foreground font-semibold" : "text-muted-foreground",
                   ].join(" ")}
                 >
                   {nodeChip(n)}
@@ -102,12 +102,12 @@ export function LayersPanel({
           })}
         </div>
       )}
-      <div className="text-[10px] uppercase tracking-[0.6px] text-muted-foreground/70 px-3 pt-3 pb-1 shrink-0">
+      <div className="text-[12px] font-semibold text-foreground px-4 pt-3 pb-1 shrink-0">
         Layers
       </div>
       <div className="flex-1 overflow-y-auto pb-2 font-mono text-[11px]">
         {trees.length === 0 ? (
-          <div className="px-3 py-2 text-muted-foreground text-[11px]">
+          <div className="px-4 py-2 text-muted-foreground text-[11px]">
             Empty tree.
           </div>
         ) : (
@@ -342,19 +342,19 @@ function TreeRow({
           onMenu(node.id, e.clientX, e.clientY);
         }}
         className={[
-          "relative flex items-center gap-1 py-0.5 cursor-pointer whitespace-nowrap",
-          isSelected ? "bg-primary/15 text-primary" : "hover:bg-muted",
+          "relative flex items-center gap-1 py-1 cursor-pointer whitespace-nowrap",
+          isSelected ? "bg-muted" : "hover:bg-muted/60",
         ].join(" ")}
-        style={{ paddingLeft: depth * 12 + 8 }}
+        style={{ paddingLeft: depth * 12 + 16 }}
       >
         {dropZone === "before" && (
-          <div className="absolute top-0 left-0 right-0 h-px bg-primary pointer-events-none" />
+          <div className="absolute top-0 left-0 right-0 h-px bg-foreground/60 pointer-events-none" />
         )}
         {dropZone === "after" && (
-          <div className="absolute bottom-0 left-0 right-0 h-px bg-primary pointer-events-none" />
+          <div className="absolute bottom-0 left-0 right-0 h-px bg-foreground/60 pointer-events-none" />
         )}
         {dropZone === "inside" && (
-          <div className="absolute inset-0 ring-1 ring-primary ring-inset pointer-events-none" />
+          <div className="absolute inset-0 ring-1 ring-foreground/40 ring-inset pointer-events-none" />
         )}
         <motion.span
           onClick={(e) => {

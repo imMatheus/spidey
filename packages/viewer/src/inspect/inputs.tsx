@@ -10,11 +10,6 @@ import {
 } from "@/components/ui/select";
 import { Toggle } from "@/components/ui/toggle";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 
 const INPUT_CLASS = "h-7 px-1.5 py-1 text-[11px] font-mono rounded-md";
 
@@ -395,30 +390,6 @@ export function FourCornerInput({
       setStyle={setStyle}
       labels={corners.map((c) => c[1]) as [string, string, string, string]}
     />
-  );
-}
-
-/**
- * Wraps any disabled control with a tooltip explaining why it's disabled.
- * Tooltip appears on hover regardless of disabled state of the trigger.
- */
-export function DisabledHint({
-  disabled,
-  hint,
-  children,
-}: {
-  disabled: boolean;
-  hint: string;
-  children: ReactNode;
-}) {
-  if (!disabled) return <>{children}</>;
-  return (
-    <Tooltip>
-      <TooltipTrigger asChild>
-        <div className="w-full">{children}</div>
-      </TooltipTrigger>
-      <TooltipContent side="left">{hint}</TooltipContent>
-    </Tooltip>
   );
 }
 

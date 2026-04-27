@@ -28,8 +28,6 @@ type Props = {
   masterComponentNames: Set<string>;
   selectedNodeId: string | null;
   selectedElement: HTMLElement | null;
-  tileBody: HTMLElement | null;
-  scale: number;
   rev: number;
   /** Activate the master tile for the given component name. */
   onEditMaster: (componentName: string) => void;
@@ -52,8 +50,6 @@ export function Inspector({
   masterComponentNames,
   selectedNodeId,
   selectedElement,
-  tileBody,
-  scale,
   rev,
   onEditMaster,
   dispatch,
@@ -95,11 +91,9 @@ export function Inspector({
           onEditMaster={() => onEditMaster(instanceLock.componentName)}
         />
       )}
-      {selectedNodeId && selectedElement && tileBody ? (
+      {selectedNodeId && selectedElement ? (
         <StylePanels
           el={selectedElement}
-          tileBody={tileBody}
-          scale={scale}
           rev={rev}
           tileId={tileId}
           nodeId={selectedNodeId}
@@ -247,8 +241,6 @@ function StylePanels({
   dispatch,
 }: {
   el: HTMLElement;
-  tileBody: HTMLElement;
-  scale: number;
   rev: number;
   tileId: string;
   nodeId: string;
