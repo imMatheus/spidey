@@ -28,7 +28,7 @@ export function StrokeSection({
   const inline = node.style;
   return (
     <Section title="Stroke">
-      <FieldRow label="width">
+      <FieldRow label="Width">
         <FourSideInput
           props={[
             "border-top-width",
@@ -41,14 +41,14 @@ export function StrokeSection({
           setStyle={setStyle}
         />
       </FieldRow>
-      <FieldRow label="color">
+      <FieldRow label="Color">
         <ColorInput
           value={inline["border-color"] ?? inline["border-top-color"] ?? ""}
           computed={computed?.getPropertyValue("border-top-color") || ""}
           onChange={(next) => setStyle("border-color", next || null)}
         />
       </FieldRow>
-      <FieldRow label="style">
+      <FieldRow label="Style">
         <SelectInput
           value={inline["border-style"] ?? inline["border-top-style"] ?? ""}
           computed={computed?.getPropertyValue("border-top-style") || ""}
@@ -56,7 +56,7 @@ export function StrokeSection({
           onChange={(next) => setStyle("border-style", next || null)}
         />
       </FieldRow>
-      <FieldRow label="radius">
+      <FieldRow label="Radius">
         <FourCornerInput
           inline={inline}
           computed={computed}

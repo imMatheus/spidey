@@ -67,21 +67,21 @@ export function LayoutSection({
 
   return (
     <Section title="Layout">
-      <FieldRow label="width">
+      <FieldRow label="Width">
         <NumberInput
           value={inline.width ?? ""}
           computed={computed?.getPropertyValue("width") || ""}
           onChange={(next) => setStyle("width", next || null)}
         />
       </FieldRow>
-      <FieldRow label="height">
+      <FieldRow label="Height">
         <NumberInput
           value={inline.height ?? ""}
           computed={computed?.getPropertyValue("height") || ""}
           onChange={(next) => setStyle("height", next || null)}
         />
       </FieldRow>
-      <FieldRow label="display">
+      <FieldRow label="Display">
         <SelectInput
           value={inline.display ?? ""}
           computed={computed?.getPropertyValue("display") || ""}
@@ -91,28 +91,28 @@ export function LayoutSection({
       </FieldRow>
       {isFlex && (
         <>
-          <FieldRow label="direction">
+          <FieldRow label="Direction">
             <SegmentedInput
               value={inline["flex-direction"] ?? ""}
               options={FLEX_DIR_OPTIONS}
               onChange={(next) => setStyle("flex-direction", next || null)}
             />
           </FieldRow>
-          <FieldRow label="justify">
+          <FieldRow label="Justify">
             <SegmentedInput
               value={inline["justify-content"] ?? ""}
               options={JUSTIFY_OPTIONS}
               onChange={(next) => setStyle("justify-content", next || null)}
             />
           </FieldRow>
-          <FieldRow label="align">
+          <FieldRow label="Align">
             <SegmentedInput
               value={inline["align-items"] ?? ""}
               options={ALIGN_OPTIONS}
               onChange={(next) => setStyle("align-items", next || null)}
             />
           </FieldRow>
-          <FieldRow label="gap">
+          <FieldRow label="Gap">
             <NumberInput
               value={inline.gap ?? ""}
               computed={computed?.getPropertyValue("gap") || ""}

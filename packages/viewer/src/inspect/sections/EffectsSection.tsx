@@ -105,7 +105,7 @@ export function EffectsSection({
 
   return (
     <Section title="Effects">
-      <FieldRow label="opacity">
+      <FieldRow label="Opacity">
         <NumberInput
           value={inline.opacity ?? ""}
           computed={computed?.getPropertyValue("opacity") || ""}
@@ -113,37 +113,37 @@ export function EffectsSection({
           unit=""
         />
       </FieldRow>
-      <FieldRow label="shadow X">
+      <FieldRow label="Shadow X">
         <NumberInput
           value={shadow.x}
           onChange={(next) => updateShadow({ x: next })}
         />
       </FieldRow>
-      <FieldRow label="shadow Y">
+      <FieldRow label="Shadow Y">
         <NumberInput
           value={shadow.y}
           onChange={(next) => updateShadow({ y: next })}
         />
       </FieldRow>
-      <FieldRow label="shadow blur">
+      <FieldRow label="Shadow blur">
         <NumberInput
           value={shadow.blur}
           onChange={(next) => updateShadow({ blur: next })}
         />
       </FieldRow>
-      <FieldRow label="shadow spread">
+      <FieldRow label="Shadow spread">
         <NumberInput
           value={shadow.spread}
           onChange={(next) => updateShadow({ spread: next })}
         />
       </FieldRow>
-      <FieldRow label="shadow color">
+      <FieldRow label="Shadow color">
         <ColorInput
           value={shadow.color}
           onChange={(next) => updateShadow({ color: next })}
         />
       </FieldRow>
-      <FieldRow label="inset">
+      <FieldRow label="Inset">
         <ToggleButton
           pressed={shadow.inset}
           onChange={(on) => updateShadow({ inset: on })}
@@ -151,7 +151,7 @@ export function EffectsSection({
           icon={<Box size={12} />}
         />
       </FieldRow>
-      <FieldRow label="blur">
+      <FieldRow label="Blur">
         <NumberInput
           value={blur}
           onChange={(next) =>

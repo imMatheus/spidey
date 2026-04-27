@@ -546,20 +546,6 @@
                             ]
                           },
                           {
-                            "id": "t1-n18",
-                            "kind": "el",
-                            "tag": "li",
-                            "attrs": {},
-                            "style": {},
-                            "children": [
-                              {
-                                "id": "t1-n17",
-                                "kind": "text",
-                                "value": "Headquartered nowhere"
-                              }
-                            ]
-                          },
-                          {
                             "id": "t1-n20",
                             "kind": "el",
                             "tag": "li",
@@ -570,6 +556,20 @@
                                 "id": "t1-n19",
                                 "kind": "text",
                                 "value": "Specializes in stress-testing canvas viewers"
+                              }
+                            ]
+                          },
+                          {
+                            "id": "t1-n18",
+                            "kind": "el",
+                            "tag": "li",
+                            "attrs": {},
+                            "style": {},
+                            "children": [
+                              {
+                                "id": "t1-n17",
+                                "kind": "text",
+                                "value": "Headquartered nowhere"
                               }
                             ]
                           }
@@ -3673,5 +3673,5 @@
       }
     }
   ],
-  "editedAt": "2026-04-27T04:56:58.802Z"
+  "editedAt": "2026-04-27T06:23:43.376Z"
 }

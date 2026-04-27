@@ -11,8 +11,6 @@ import {
   Terminal,
 } from "lucide-react";
 import { toast } from "sonner";
-import type { SpideyDocument } from "@spidey/shared";
-import type { EditorState } from "./editor/state";
 import { renderPrompt, summarize, type ChangeSummary } from "./editor/changeset";
 import { Button } from "@/components/ui/button";
 import claudeIcon from "./assets/claude.png";
@@ -24,6 +22,12 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
+import {
+  useEditorDispatch,
+  useEditorState,
+  useProject,
+  useReadyDoc,
+} from "./context";
 
 type AgentName = "claude" | "codex";
 
@@ -39,21 +43,12 @@ type JobStatus = {
   logTail: string;
 };
 
-type Props = {
-  editor: EditorState;
-  doc: SpideyDocument;
-  activeProjectId: string | null;
-  baselineMissing: boolean;
-  onCleared: () => void;
-};
-
-export function HandoffBar({
-  editor,
-  doc,
-  activeProjectId,
-  baselineMissing,
-  onCleared,
-}: Props) {
+export function HandoffBar() {
+  const editor = useEditorState();
+  const dispatch = useEditorDispatch();
+  const doc = useReadyDoc();
+  const { activeProjectId, baselineMissing } = useProject();
+  const onCleared = () => dispatch({ type: "clearChangeLog" });
   const summary = useMemo<ChangeSummary>(() => {
     return summarize(
       editor.changeLog,

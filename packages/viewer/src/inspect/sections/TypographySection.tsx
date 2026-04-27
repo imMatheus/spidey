@@ -69,7 +69,7 @@ export function TypographySection({
 
   return (
     <Section title="Typography">
-      <FieldRow label="family">
+      <FieldRow label="Family">
         <NumberInput
           value={inline["font-family"] ?? ""}
           computed={computed?.getPropertyValue("font-family") || ""}
@@ -77,14 +77,14 @@ export function TypographySection({
           unit=""
         />
       </FieldRow>
-      <FieldRow label="size">
+      <FieldRow label="Size">
         <NumberInput
           value={inline["font-size"] ?? ""}
           computed={computed?.getPropertyValue("font-size") || ""}
           onChange={(next) => setStyle("font-size", next || null)}
         />
       </FieldRow>
-      <FieldRow label="weight">
+      <FieldRow label="Weight">
         <SelectInput
           value={inline["font-weight"] ?? ""}
           computed={computed?.getPropertyValue("font-weight") || ""}
@@ -92,7 +92,7 @@ export function TypographySection({
           onChange={(next) => setStyle("font-weight", next || null)}
         />
       </FieldRow>
-      <FieldRow label="line-h">
+      <FieldRow label="Line height">
         <NumberInput
           value={inline["line-height"] ?? ""}
           computed={computed?.getPropertyValue("line-height") || ""}
@@ -100,28 +100,28 @@ export function TypographySection({
           unit=""
         />
       </FieldRow>
-      <FieldRow label="letter">
+      <FieldRow label="Letter">
         <NumberInput
           value={inline["letter-spacing"] ?? ""}
           computed={computed?.getPropertyValue("letter-spacing") || ""}
           onChange={(next) => setStyle("letter-spacing", next || null)}
         />
       </FieldRow>
-      <FieldRow label="color">
+      <FieldRow label="Color">
         <ColorInput
           value={inline.color ?? ""}
           computed={computed?.getPropertyValue("color") || ""}
           onChange={(next) => setStyle("color", next || null)}
         />
       </FieldRow>
-      <FieldRow label="align">
+      <FieldRow label="Align">
         <SegmentedInput
           value={inline["text-align"] ?? ""}
           options={ALIGN_OPTIONS}
           onChange={(next) => setStyle("text-align", next || null)}
         />
       </FieldRow>
-      <FieldRow label="style">
+      <FieldRow label="Style">
         <div className="flex items-center gap-1">
           <ToggleButton
             pressed={isItalic}
@@ -143,7 +143,7 @@ export function TypographySection({
           />
         </div>
       </FieldRow>
-      <FieldRow label="transform">
+      <FieldRow label="Transform">
         <SelectInput
           value={inline["text-transform"] ?? ""}
           computed={computed?.getPropertyValue("text-transform") || ""}

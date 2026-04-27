@@ -1,59 +1,39 @@
-import type { SpideyDocument, SpideyNode, SpideyPage } from '@spidey/shared'
+import { useState } from 'react'
+import type { SpideyPage } from '@spidey/shared'
 import { LayersPanel } from './LayersPanel'
-import type { EditAction } from './editor/state'
 import { Input } from '@/components/ui/input'
 import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select'
 import { ThemeToggle } from '@/components/theme-toggle'
 import spideyLogo from './assets/spidey-logo.png'
+import { useProject, useSelection, useSelectionActions } from './context'
 
-type Project = { id: string; name: string }
+export function Sidebar() {
+  const {
+    doc,
+    projects,
+    activeProjectId,
+    setActiveProjectId,
+    focusId,
+    setFocusId,
+  } = useProject()
+  const { activeTileId } = useSelection()
+  const { setActiveTileId } = useSelectionActions()
 
-type Props = {
-  doc: SpideyDocument
-  pages: SpideyPage[]
-  search: string
-  onSearch: (s: string) => void
-  focusId: string | null
-  activeId: string | null
-  projects: Project[]
-  activeProjectId: string | null
-  onSwitchProject: (id: string) => void
-  onSelect: (id: string) => void
+  const [search, setSearch] = useState('')
 
-  // ----- Layers panel inputs (active tile only) -----
-  activeTree: SpideyNode | null
-  selectedNodeId: string | null
-  rev: number
-  onSelectNode: (id: string | null) => void
-  onHoverNode: (id: string | null) => void
-  dispatch: (action: EditAction) => void
-}
-
-export function Sidebar({
-  doc,
-  pages,
-  search,
-  onSearch,
-  focusId,
-  activeId,
-  projects,
-  activeProjectId,
-  onSwitchProject,
-  onSelect,
-  activeTree,
-  selectedNodeId,
-  rev,
-  onSelectNode,
-  onHoverNode,
-  dispatch,
-}: Props) {
-  const allTiles = doc.tiles ?? doc.pages ?? []
+  const allTiles = doc?.tiles ?? doc?.pages ?? []
   const errCount = allTiles.filter((p) => p.status === 'error').length
-  const routes = pages.filter((p) => (p.kind ?? 'route') === 'route')
-  const components = pages.filter((p) => p.kind === 'component')
+  const filteredTiles = filterPages(allTiles, search)
+  const routes = filteredTiles.filter((p) => (p.kind ?? 'route') === 'route')
+  const components = filteredTiles.filter((p) => p.kind === 'component')
 
-  const showLayers = activeId != null
+  const showLayers = activeTileId != null
   const activeProject = projects.find((p) => p.id === activeProjectId)
+
+  const onSelect = (id: string) => {
+    setFocusId(id)
+    setActiveTileId(id)
+  }
 
   return (
     <aside className="col-start-1 row-start-1 row-span-2 bg-card border-r border-border flex flex-col min-h-0">
@@ -77,7 +57,7 @@ export function Sidebar({
               size="sm"
               className="w-full text-[13px] font-medium border-transparent bg-transparent shadow-none hover:bg-muted dark:bg-transparent dark:hover:bg-muted px-2"
               value={activeProjectId ?? ''}
-              onChange={(e) => onSwitchProject(e.target.value)}
+              onChange={(e) => setActiveProjectId(e.target.value)}
               title="Switch project"
             >
               {projects.map((p) => (
@@ -96,7 +76,7 @@ export function Sidebar({
           type="search"
           placeholder="Filter…"
           value={search}
-          onChange={(e) => onSearch(e.target.value)}
+          onChange={(e) => setSearch(e.target.value)}
           className="h-8 text-xs"
         />
       </div>
@@ -108,12 +88,12 @@ export function Sidebar({
               key={p.id}
               page={p}
               focus={focusId === p.id}
-              active={activeId === p.id}
+              active={activeTileId === p.id}
               onSelect={() => onSelect(p.id)}
             />
           ))}
         </Section>
-        {components.length > 0 || (doc.components?.length ?? 0) > 0 ? (
+        {components.length > 0 || (doc?.components?.length ?? 0) > 0 ? (
           <Section title="Components" count={components.length}>
             {components.length === 0 && <Empty>No matching components.</Empty>}
             {components.map((p) => (
@@ -121,30 +101,21 @@ export function Sidebar({
                 key={p.id}
                 page={p}
                 focus={focusId === p.id}
-                active={activeId === p.id}
+                active={activeTileId === p.id}
                 onSelect={() => onSelect(p.id)}
               />
             ))}
           </Section>
         ) : null}
       </div>
-      {showLayers && activeId && (
+      {showLayers && activeTileId && (
         <div
-          // Anchored bottom region with its own flex space; key=activeId
-          // forces internal row-state (open/closed, drop targets) to reset
-          // when the active tile changes.
-          key={activeId}
+          // key=activeTileId forces internal row state (open/closed, drop
+          // targets) to reset when the active tile changes.
+          key={activeTileId}
           className="flex flex-col min-h-0 flex-1 border-t border-border"
         >
-          <LayersPanel
-            tileId={activeId}
-            tree={activeTree}
-            selectedId={selectedNodeId}
-            rev={rev}
-            onSelect={onSelectNode}
-            onHover={onHoverNode}
-            dispatch={dispatch}
-          />
+          <LayersPanel tileId={activeTileId} />
         </div>
       )}
       <div className="px-4 py-2 border-t border-border text-[11px] text-muted-foreground shrink-0">
@@ -153,6 +124,20 @@ export function Sidebar({
       </div>
     </aside>
   )
+}
+
+function filterPages(pages: SpideyPage[], search: string): SpideyPage[] {
+  const q = search.trim().toLowerCase()
+  if (!q) return pages
+  return pages.filter((p) => {
+    const haystacks = [
+      p.route,
+      p.title,
+      p.component?.name,
+      p.component?.file,
+    ].filter((s): s is string => typeof s === 'string')
+    return haystacks.some((s) => s.toLowerCase().includes(q))
+  })
 }
 
 function Section({

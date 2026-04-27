@@ -26,7 +26,7 @@ export function FieldRow({
   return (
     <>
       <label
-        className="text-muted-foreground/70 font-mono self-center"
+        className="text-muted-foreground self-center text-[12px]"
         htmlFor={htmlFor}
       >
         {label}
@@ -46,10 +46,10 @@ export function Section({
 }) {
   return (
     <div className="border-b border-border">
-      <div className="text-[10px] uppercase tracking-[0.6px] text-muted-foreground/70 px-3 pt-3 pb-1">
+      <div className="text-[12px] font-semibold text-foreground px-4 pt-3 pb-1.5">
         {title}
       </div>
-      <div className="grid grid-cols-[80px_1fr] gap-x-2 gap-y-1.5 px-3 pb-3 text-[11px] items-center">
+      <div className="grid grid-cols-[88px_1fr] gap-x-2 gap-y-1.5 px-4 pb-3 text-[11px] items-center">
         {children}
       </div>
     </div>

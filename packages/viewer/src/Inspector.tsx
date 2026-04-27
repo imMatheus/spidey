@@ -1,6 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { Lock, PenSquare } from "lucide-react";
-import type { SpideyNode } from "@spidey/shared";
+import type { SpideyNode, SpideyTile } from "@spidey/shared";
 import { findById, findInstanceAncestor } from "./editor/tree";
 import type { EditAction } from "./editor/state";
 import { Button } from "@/components/ui/button";
@@ -12,27 +12,16 @@ import { StrokeSection } from "./inspect/sections/StrokeSection";
 import { EffectsSection } from "./inspect/sections/EffectsSection";
 import { SpacingSection } from "./inspect/sections/SpacingSection";
 import { ContentSection } from "./inspect/sections/ContentSection";
-
-type Props = {
-  tileId: string | null;
-  componentInfo: {
-    name: string;
-    file: string;
-    propsUsed: Record<string, unknown>;
-  } | null;
-  tree: SpideyNode | null;
-  /** Component names the user captured as master tiles. Anything else
-   *  (route shells, Next/React internals) is tagged at capture but should
-   *  NOT trigger an instance-lock — the lock metaphor only makes sense
-   *  for design-system pieces with a "go edit master" target. */
-  masterComponentNames: Set<string>;
-  selectedNodeId: string | null;
-  selectedElement: HTMLElement | null;
-  rev: number;
-  /** Activate the master tile for the given component name. */
-  onEditMaster: (componentName: string) => void;
-  dispatch: (action: EditAction) => void;
-};
+import {
+  useEditorDispatch,
+  useEditorRev,
+  useProject,
+  useReadyDoc,
+  useSelection,
+  useSelectionActions,
+  useTileTree,
+} from "./context";
+import { useSelectedElement } from "./hooks/useSelectedElement";
 
 const ASIDE =
   "col-start-3 row-start-1 row-span-2 bg-card border-l border-border flex flex-col min-h-0 overflow-hidden";
@@ -42,19 +31,56 @@ const ASIDE =
  * Typography, Fill, Stroke, Effects) editable inputs that dispatch
  * `setStyle` actions; the read-only Spacing box-model is now editable and
  * pinned at the bottom so it's always visible.
+ *
+ * Reads selection + active tile from context; resolves component info /
+ * master-component names from the loaded doc; pulls the live HTMLElement
+ * via `useSelectedElement`.
  */
-export function Inspector({
-  tileId,
-  componentInfo,
-  tree,
-  masterComponentNames,
-  selectedNodeId,
-  selectedElement,
-  rev,
-  onEditMaster,
-  dispatch,
-}: Props) {
-  if (!tileId || !tree) {
+export function Inspector() {
+  const dispatch = useEditorDispatch();
+  const doc = useReadyDoc();
+  const rev = useEditorRev();
+  const { activeTileId, selectedNodeId } = useSelection();
+  const { setActiveTileId, setSelectedNodeId } = useSelectionActions();
+  const { setFocusId } = useProject();
+  const tree = useTileTree(activeTileId);
+  const selectedElement = useSelectedElement();
+
+  const docTiles = doc.tiles ?? [];
+  const activeTile: SpideyTile | null =
+    activeTileId != null
+      ? docTiles.find((p) => p.id === activeTileId) ?? null
+      : null;
+  const componentInfo =
+    activeTile?.kind === "component" ? activeTile.component ?? null : null;
+
+  // Names of components captured as masters. Spidey's capture phase tags
+  // every named React fiber (including framework internals like
+  // InnerLayoutRouter), but the inspector should only treat ancestors as
+  // instance-locked when there's a master tile to "go edit".
+  const masterComponentNames = useMemo(() => {
+    return new Set<string>(
+      docTiles
+        .filter(
+          (t): t is typeof t & { component: { name: string } } =>
+            t.kind === "component" && !!t.component?.name,
+        )
+        .map((t) => t.component.name),
+    );
+  }, [docTiles]);
+
+  const onEditMaster = (componentName: string) => {
+    const master = docTiles.find(
+      (t) => t.kind === "component" && t.component?.name === componentName,
+    );
+    if (master) {
+      setActiveTileId(master.id);
+      setFocusId(master.id);
+      setSelectedNodeId(null);
+    }
+  };
+
+  if (!activeTileId || !tree) {
     return (
       <aside className={ASIDE}>
         <div className="grid place-items-center h-full text-muted-foreground text-center text-xs">
@@ -73,10 +99,9 @@ export function Inspector({
     !isMasterTile && selectedNodeId
       ? findInstanceAncestor(tree, selectedNodeId)
       : null;
-  // Only lock when the ancestor is a tracked design-system component (has a
+  // Lock only when the ancestor is a tracked design-system component (has a
   // master tile). Layout shells / framework internals get tagged by capture
-  // but aren't reusable masters — editing route content inside them should
-  // be free, not locked.
+  // but aren't reusable masters.
   const instanceLock =
     rawAncestor && masterComponentNames.has(rawAncestor.componentName)
       ? rawAncestor
@@ -95,14 +120,14 @@ export function Inspector({
         <StylePanels
           el={selectedElement}
           rev={rev}
-          tileId={tileId}
+          tileId={activeTileId}
           nodeId={selectedNodeId}
           node={selectedNode && selectedNode.kind === "el" ? selectedNode : null}
           locked={!!instanceLock}
           dispatch={dispatch}
         />
       ) : (
-        <div className="p-4 text-muted-foreground text-xs">
+        <div className="px-4 py-3 text-muted-foreground text-[12px]">
           Select an element to inspect or edit its styles.
         </div>
       )}
@@ -118,16 +143,16 @@ function InstanceLockBanner({
   onEditMaster: () => void;
 }) {
   return (
-    <div className="border-b border-border bg-primary/10 px-3 py-2 flex items-center gap-2">
-      <Lock size={13} strokeWidth={2} className="text-primary shrink-0" />
+    <div className="border-b border-border bg-muted/40 px-4 py-2 flex items-center gap-2">
+      <Lock size={13} strokeWidth={2} className="text-amber-500 shrink-0" />
       <div className="flex-1 min-w-0">
-        <div className="text-[11px] text-foreground flex items-center gap-1.5">
+        <div className="text-[12px] text-foreground flex items-center gap-1.5">
           <span>Instance of</span>
-          <span className="font-mono text-primary font-semibold">
+          <span className="font-mono font-semibold">
             {`<${componentName}>`}
           </span>
         </div>
-        <div className="text-[10px] text-muted-foreground">
+        <div className="text-[11px] text-muted-foreground">
           Style edits go on the master.
         </div>
       </div>
@@ -157,8 +182,8 @@ function SelectedComponentPanel({
       )
     : [];
   return (
-    <div className="border-b border-border p-3 bg-background/30">
-      <div className="font-mono text-primary text-[14px] font-semibold">
+    <div className="border-b border-border px-4 py-3">
+      <div className="font-mono text-foreground text-[13px] font-semibold">
         {`<${name}>`}
       </div>
       {entries.length > 0 ? (
@@ -185,12 +210,12 @@ function ComponentHeader({
     ([, v]) => v !== "__spidey_noop__",
   );
   return (
-    <div className="border-b border-border p-3 bg-background/30 shrink-0">
+    <div className="border-b border-border px-4 py-3 shrink-0">
       <div className="flex items-baseline gap-2">
-        <span className="font-mono text-primary text-[14px] font-semibold">
+        <span className="font-mono text-foreground text-[13px] font-semibold">
           {`<${info.name}>`}
         </span>
-        <span className="text-[10px] text-muted-foreground/70 truncate" title={info.file}>
+        <span className="text-[11px] text-muted-foreground truncate" title={info.file}>
           {info.file}
         </span>
       </div>
@@ -282,10 +307,10 @@ function StylePanels({
         {componentName && (
           <SelectedComponentPanel name={componentName} props={runtimeProps} />
         )}
-        <div className="p-3 border-b border-border">
-          <div className="font-mono text-[13px] text-foreground mb-1.5">
+        <div className="px-4 py-3 border-b border-border">
+          <div className="font-mono text-[13px] text-foreground font-semibold mb-1.5">
             &lt;{tag}&gt;
-            {domId && <span className="text-amber-500 ml-1">#{domId}</span>}
+            {domId && <span className="text-amber-500 ml-1 font-normal">#{domId}</span>}
           </div>
           {classes.length > 0 && (
             <div className="flex flex-wrap gap-1 mb-1.5">

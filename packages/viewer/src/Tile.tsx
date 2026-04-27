@@ -2,30 +2,26 @@ import { useEffect, useRef } from "react";
 import type { SpideyNode, SpideyTile } from "@spidey/shared";
 import { findById, findInstanceAncestor, findParent } from "./editor/tree";
 import { renderNode } from "./editor/render";
-import { newId, type Tool } from "./editor/state";
-import type { EditAction } from "./editor/state";
+import { newId } from "./editor/state";
 import { SelectionOverlay } from "./SelectionOverlay";
+import {
+  useEditorDispatch,
+  useEditorRev,
+  useEditorState,
+  useRegisterTileBody,
+  useSelection,
+  useSelectionActions,
+  useTileTree,
+} from "./context";
 
 type Props = {
   page: SpideyTile;
-  tree: SpideyNode | null;
   width: number;
   height: number;
   x: number;
   y: number;
-  active: boolean;
   /** Current canvas scale; used to keep the active ring visible at low zoom */
   scale: number;
-  selectedNodeId: string | null;
-  hoveredNodeId: string | null;
-  altPressed: boolean;
-  tool: Tool;
-  rev: number;
-  onActivate: () => void;
-  onSelectNode: (id: string | null) => void;
-  onHoverNode: (id: string | null) => void;
-  onBodyReady: (tileId: string, body: HTMLElement) => void;
-  dispatch: (action: EditAction) => void;
 };
 
 const CLICK_TIME_MS = 350;
@@ -47,31 +43,26 @@ function applyAttrs(
   }
 }
 
-export function Tile({
-  page,
-  tree,
-  width,
-  height,
-  x,
-  y,
-  active,
-  scale,
-  selectedNodeId,
-  hoveredNodeId,
-  altPressed,
-  tool,
-  rev,
-  onActivate,
-  onSelectNode,
-  onHoverNode,
-  onBodyReady,
-  dispatch,
-}: Props) {
+export function Tile({ page, width, height, x, y, scale }: Props) {
+  const dispatch = useEditorDispatch();
+  const rev = useEditorRev();
+  const tool = useEditorState().tool;
+  const tree = useTileTree(page.id);
+  const { activeTileId, selectedNodeId, hoveredNodeId, altPressed } =
+    useSelection();
+  const { setActiveTileId, setSelectedNodeId, setHoveredNodeId } =
+    useSelectionActions();
+  const registerBody = useRegisterTileBody();
+
+  const active = activeTileId === page.id;
+  const tileSelectedNodeId = active ? selectedNodeId : null;
+  const tileHoveredNodeId = active ? hoveredNodeId : null;
+
   const hostRef = useRef<HTMLDivElement>(null);
   const bodyWrapperRef = useRef<HTMLDivElement>(null);
   /** The synthesized <body> inside the shadow root. Set during shell-mount,
-   *  exposed up to App via onBodyReady so node-id ↔ HTMLElement lookups
-   *  have a stable starting point. */
+   *  registered with the TileBodies context so node-id ↔ HTMLElement
+   *  lookups have a stable starting point. */
   const synthBodyRef = useRef<HTMLElement | null>(null);
   /** Last-down state — used by drag-vs-click detection. */
   const downRef = useRef<{
@@ -87,9 +78,8 @@ export function Tile({
     nodeId: string;
     indicator: HTMLDivElement;
     drop: { parentId: string; index: number } | null;
-    /** The actual rendered element being dragged. We mutate its opacity to
-     *  produce a ghost effect while the drag is in flight, and restore on
-     *  release. */
+    /** The actual rendered element being dragged. Opacity/outline mutated
+     *  for ghost effect; restored on release. */
     sourceEl: HTMLElement | null;
     /** Floating "Moving <tag>" label that follows the cursor. Lives on
      *  document.body (outside the shadow root) so it's not clipped by the
@@ -98,8 +88,6 @@ export function Tile({
   } | null>(null);
 
   // ----- Shell mount (page identity changed) -----
-  // Mount only the shadow shell here: reset, captured CSS, synth html/body
-  // with attrs. Tree contents are populated by the tree-effect below.
   useEffect(() => {
     const host = hostRef.current;
     if (!host) return;
@@ -145,11 +133,10 @@ export function Tile({
     shadow.appendChild(synthHtml);
 
     synthBodyRef.current = synthBody;
-    onBodyReady(page.id, synthBody);
-    // We intentionally exclude onBodyReady from deps — Canvas may pass a
-    // freshly-bound lambda on every render, and a re-firing shell-mount
-    // would wipe the body without re-firing the (independent) tree-mount
-    // effect. Capture the callback via the latest closure each render.
+    registerBody(page.id, synthBody);
+    // registerBody comes from a stable context callback — safe to omit
+    // from deps. Including it would re-fire on every render of the
+    // provider and wipe the body unnecessarily.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [page.id, page.status, page.css, page.bodyAttrs, page.htmlAttrs]);
 
@@ -166,8 +153,7 @@ export function Tile({
       body.appendChild(renderNode(child));
     }
 
-    // Defang anchors so clicks don't navigate, and forms so submits don't
-    // reload the viewer.
+    // Defang anchors so clicks don't navigate; forms so submits don't reload.
     body.querySelectorAll("a[href]").forEach((a) => {
       a.setAttribute("data-href", a.getAttribute("href") ?? "");
       a.removeAttribute("href");
@@ -191,20 +177,7 @@ export function Tile({
       return target;
     };
 
-    // Coords helper: client → tile-local pixels.
-    const tileLocal = (clientX: number, clientY: number) => {
-      if (!body) return { x: 0, y: 0 };
-      const r = body.getBoundingClientRect();
-      const sx = r.width / (body.clientWidth || 1);
-      const sy = r.height / (body.clientHeight || 1);
-      return { x: (clientX - r.left) / (sx || 1), y: (clientY - r.top) / (sy || 1) };
-    };
-
     // ----- Insert-tool hover highlight -----
-    // When text/box/image is the active tool, hovering shows a ring on
-    // the element that will be the parent of the inserted node. The ring
-    // is a child of body positioned absolutely; body is `position:relative`
-    // (set in the reset CSS) so left/top/width/height are body-local px.
     let insertHover: HTMLDivElement | null = null;
     const ensureInsertHover = (): HTMLDivElement | null => {
       if (!body) return null;
@@ -225,7 +198,6 @@ export function Tile({
     };
     const updateInsertHover = (target: HTMLElement | null) => {
       if (!body || !tree || tree.kind !== "el") return;
-      // Walk up to nearest element with data-spidey-id.
       let el: HTMLElement | null = target;
       while (el && !el.hasAttribute?.("data-spidey-id")) {
         el = el.parentElement;
@@ -254,9 +226,8 @@ export function Tile({
 
     const isInsertTool = tool === "rect" || tool === "text" || tool === "image";
 
-    /** Tear down a drag — restore the source element's styles, remove the
-     *  indicator + cursor label, and optionally dispatch the move. Used by
-     *  both the normal-drop branch and the inactive-tile fallback. */
+    /** Tear down a drag — restore styles, remove indicator + label, and
+     *  optionally dispatch the move. */
     const finishDrag = (dispatchDrop: boolean) => {
       const drag = dragRef.current;
       if (!drag) return;
@@ -281,16 +252,11 @@ export function Tile({
       }
     };
 
-    /** Minimal CSS.escape polyfill substitute — node ids are short
-     *  alphanumerics so we just need the brackets/quotes to be safe. */
     const cssEscape = (s: string) =>
       typeof CSS !== "undefined" && CSS.escape ? CSS.escape(s) : s.replace(/"/g, '\\"');
 
     /** Resolve the SpideyNode element that should receive a newly-inserted
-     *  primitive given the user's click target. Walks up to the nearest
-     *  data-spidey-id ancestor; falls back to the tile root when the click
-     *  was on the empty body. Always returns an `el`-kind node (text leaves
-     *  can't have children). */
+     *  primitive given the user's click target. */
     const parentForInsert = (
       target: HTMLElement | null,
       root: SpideyNode & { kind: "el" },
@@ -316,10 +282,10 @@ export function Tile({
       if (tool !== "select") return;
       const el = isInsideContent(path);
       if (!el) {
-        onHoverNode(null);
+        setHoveredNodeId(null);
         return;
       }
-      onHoverNode(el.getAttribute("data-spidey-id"));
+      setHoveredNodeId(el.getAttribute("data-spidey-id"));
     };
     const onMouseOut = (e: MouseEvent) => {
       if (!active) return;
@@ -330,7 +296,7 @@ export function Tile({
         return;
       }
       if (tool !== "select") return;
-      onHoverNode(null);
+      setHoveredNodeId(null);
     };
     const onMouseDown = (e: MouseEvent) => {
       if (tool === "hand") return; // let canvas pan
@@ -348,7 +314,6 @@ export function Tile({
       const dy = e.clientY - start.y;
       const dist = Math.sqrt(dx * dx + dy * dy);
 
-      // Begin drag once we're past the click threshold.
       if (!dragRef.current && dist > CLICK_DIST_PX) {
         const indicator = document.createElement("div");
         indicator.dataset.spideyDropIndicator = "1";
@@ -356,7 +321,6 @@ export function Tile({
           "position:absolute; pointer-events:none; z-index:100000; box-sizing:border-box; transition: top 80ms ease, left 80ms ease, width 80ms ease, height 80ms ease, background-color 120ms ease;";
         body.appendChild(indicator);
 
-        // Ghost the source element so the user sees what they grabbed.
         const sourceEl = body.querySelector(
           `[data-spidey-id="${cssEscape(start.nodeId)}"]`,
         ) as HTMLElement | null;
@@ -367,8 +331,6 @@ export function Tile({
           sourceEl.style.outlineOffset = "2px";
         }
 
-        // Floating cursor label, attached to document.body so it isn't
-        // clipped by the shadow host's overflow.
         const tagLabel =
           (sourceEl?.getAttribute("data-spidey-component") &&
             `<${sourceEl.getAttribute("data-spidey-component")}>`) ||
@@ -392,13 +354,11 @@ export function Tile({
       const drag = dragRef.current;
       if (!drag) return;
 
-      // Pin the floating label to the cursor.
       if (drag.label) {
         drag.label.style.left = `${e.clientX}px`;
         drag.label.style.top = `${e.clientY}px`;
       }
 
-      // Hit-test inside the shadow root.
       const hit = (root as ShadowRoot).elementFromPoint(
         e.clientX,
         e.clientY,
@@ -410,7 +370,6 @@ export function Tile({
       const draggedNode = findById(tree, drag.nodeId);
       const targetId = target?.getAttribute("data-spidey-id") ?? null;
 
-      // Reject self / descendants / non-element drops.
       const invalid =
         !target ||
         !targetId ||
@@ -429,11 +388,6 @@ export function Tile({
       const px = (clientX: number) => (clientX - bRect.left) / sx;
       const py = (clientY: number) => (clientY - bRect.top) / sy;
 
-      // Gap-aware drop detection: if the cursor is over a target with
-      // data-spidey-id children but NOT inside any of them (i.e. in the
-      // parent's whitespace / gap), show an insertion line between the two
-      // adjacent children with the correct index instead of falling back to
-      // "drop-as-child at end".
       const childEls: HTMLElement[] = Array.from(target.children).filter(
         (c): c is HTMLElement =>
           c instanceof HTMLElement &&
@@ -454,9 +408,6 @@ export function Tile({
       drag.indicator.style.display = "block";
 
       if (childEls.length > 0 && !cursorInsideAnyChild) {
-        // Cursor is in the parent's whitespace / between children. Detect
-        // layout direction (any two children with overlapping Y ranges =>
-        // horizontal flow) and find the insertion gap.
         const rects = childEls.map((c) => c.getBoundingClientRect());
         const horizontal = rects.some((r, i) => {
           if (i === 0) return false;
@@ -471,8 +422,6 @@ export function Tile({
         }
         if (gapIndex < 0) gapIndex = childEls.length;
 
-        // Draw a thin line spanning the gap between the upper/left and
-        // lower/right neighbours (or the start/end edge when at the bounds).
         const upper = childEls[gapIndex - 1];
         const lower = childEls[gapIndex];
         const tRect = target.getBoundingClientRect();
@@ -512,10 +461,6 @@ export function Tile({
           drag.indicator.style.height = "2px";
         }
 
-        // Translate the visible-children gap index into the absolute
-        // SpideyNode children index. childEls excluded the dragged node, so
-        // we need to bump the index when the dragged node sits before the
-        // gap in the original child list.
         const targetNode = findById(tree, targetId);
         if (targetNode && targetNode.kind === "el") {
           const orig = targetNode.children;
@@ -532,9 +477,6 @@ export function Tile({
         return;
       }
 
-      // Otherwise: cursor is directly inside the target's box (a leaf, or a
-      // child of the target was hit). Use the 25/50/25 heuristic to choose
-      // sibling-above / sibling-below / drop-as-child.
       const tRect = target.getBoundingClientRect();
       const yLocal = (e.clientY - tRect.top) / tRect.height;
       let mode: "above" | "below" | "child";
@@ -543,7 +485,6 @@ export function Tile({
       else mode = "child";
 
       const parentInfo = findParent(tree, targetId);
-      // If the target is the tile root, fall back to "child".
       if (!parentInfo && (mode === "above" || mode === "below"))
         mode = "child";
 
@@ -584,18 +525,14 @@ export function Tile({
       const dt = Date.now() - start.t;
       const wasClick = dist <= CLICK_DIST_PX && dt <= CLICK_TIME_MS;
 
-      // Activation gate: any pointer up on a non-active tile activates it
-      // and stops further interpretation.
       if (!active) {
-        if (wasClick) onActivate();
+        if (wasClick) setActiveTileId(page.id);
         if (dragRef.current) {
           finishDrag(/* dispatchDrop */ false);
         }
         return;
       }
 
-      // Drag-to-rearrange dispatch. If a drag was active, this supersedes
-      // the click-select path below. The reducer's moveNode is cycle-safe.
       if (dragRef.current) {
         finishDrag(/* dispatchDrop */ true);
         return;
@@ -603,12 +540,6 @@ export function Tile({
 
       const target = e.composedPath()[0] as HTMLElement | null;
 
-      // Insert tools (text/box/image): the new node becomes a child of the
-      // element the user clicked on (in document flow, no absolute
-      // positioning), appended as the last child so existing siblings keep
-      // their order. Falls back to the tile root for clicks on the empty
-      // body. Re-uses the same parent-hit-test as the hover indicator so
-      // visual highlight and actual drop target always match.
       if (
         wasClick &&
         (tool === "rect" || tool === "text" || tool === "image") &&
@@ -627,7 +558,7 @@ export function Tile({
           index: parent.children.length,
           node,
         });
-        onSelectNode(node.id);
+        setSelectedNodeId(node.id);
         clearInsertHover();
         return;
       }
@@ -636,7 +567,6 @@ export function Tile({
         const el = isInsideContent(target);
         const id = el?.getAttribute("data-spidey-id") ?? null;
 
-        // Detect double-click to enter inline text edit.
         const now = Date.now();
         const isDouble = now - lastClickAt.current < DBL_CLICK_MS;
         lastClickAt.current = now;
@@ -654,7 +584,7 @@ export function Tile({
           return;
         }
 
-        onSelectNode(id);
+        setSelectedNodeId(id);
       }
     };
 
@@ -674,7 +604,17 @@ export function Tile({
       clearInsertHover();
       if (dragRef.current) finishDrag(false);
     };
-  }, [active, tool, tree, page.id, onActivate, onSelectNode, onHoverNode, dispatch]);
+  }, [
+    active,
+    tool,
+    tree,
+    page.id,
+    page.kind,
+    setActiveTileId,
+    setSelectedNodeId,
+    setHoveredNodeId,
+    dispatch,
+  ]);
 
   const headerHeight = 36;
   const isErr = page.status === "error";
@@ -742,14 +682,13 @@ export function Tile({
               <SelectionOverlay
                 tileBody={bodyWrapperRef.current}
                 synthBody={synthBodyRef.current}
-                selectedNodeId={selectedNodeId}
-                hoveredNodeId={hoveredNodeId}
+                selectedNodeId={tileSelectedNodeId}
+                hoveredNodeId={tileHoveredNodeId}
                 altPressed={altPressed}
                 rev={rev}
                 tool={tool}
                 tileId={page.id}
                 tree={tree}
-                dispatch={dispatch}
               />
             )}
           </>
@@ -813,15 +752,11 @@ function maybeStartTextEdit(
   target: HTMLElement,
   tree: SpideyNode,
   tileId: string,
-  dispatch: (action: EditAction) => void,
+  dispatch: (action: import("./editor/state").EditAction) => void,
 ): void {
   const node = findById(tree, nodeId);
   if (!node || node.kind !== "el") return;
 
-  // Find a text-only element to edit. Walk up if necessary: if the clicked
-  // target is a deep child without text, prefer the nearest text-only
-  // ancestor inside this same node. Keep it simple: only handle the case
-  // where the clicked element directly contains exactly one text child.
   const textChildren = node.children.filter((c) => c.kind === "text");
   if (textChildren.length === 0 || textChildren.length !== node.children.length) {
     return;
@@ -829,7 +764,6 @@ function maybeStartTextEdit(
   const textNode = textChildren[0];
 
   target.setAttribute("contenteditable", "true");
-  // Select the contents so the user can immediately overtype.
   try {
     const range = document.createRange();
     range.selectNodeContents(target);
@@ -854,7 +788,6 @@ function maybeStartTextEdit(
   };
   const onKey = (e: KeyboardEvent) => {
     if (e.key === "Escape") {
-      // revert
       target.textContent = textNode.value;
       target.blur();
     } else if (e.key === "Enter" && !e.shiftKey) {

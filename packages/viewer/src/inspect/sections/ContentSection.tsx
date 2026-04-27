@@ -27,10 +27,10 @@ export function ContentSection({
 
   return (
     <div className="border-b border-border">
-      <div className="text-[10px] uppercase tracking-[0.6px] text-muted-foreground/70 px-3 pt-3 pb-1">
+      <div className="text-[12px] font-semibold text-foreground px-4 pt-3 pb-1.5">
         Content
       </div>
-      <div className="px-3 pb-3 flex flex-col gap-1.5">
+      <div className="px-4 pb-3 flex flex-col gap-1.5">
         {textChildren.map((t) => (
           <TextRow
             key={t.id}

@@ -3,7 +3,8 @@ import type { SpideyNode } from "@spidey/shared";
 import { measureDistance, type Rect } from "./inspect/distance";
 import { findElementById } from "./editor/render";
 import { findById } from "./editor/tree";
-import type { EditAction, Tool } from "./editor/state";
+import type { Tool } from "./editor/state";
+import { useEditorDispatch } from "./context";
 
 type Props = {
   /** The wrapper <div> the host renders into. Used as the geometric origin
@@ -18,7 +19,6 @@ type Props = {
   tool: Tool;
   tileId: string;
   tree: SpideyNode | null;
-  dispatch: (action: EditAction) => void;
 };
 
 type DragMode =
@@ -44,8 +44,8 @@ export function SelectionOverlay({
   tool,
   tileId,
   tree,
-  dispatch,
 }: Props) {
+  const dispatch = useEditorDispatch();
   const [selRect, setSelRect] = useState<Rect | null>(null);
   const [hovRect, setHovRect] = useState<Rect | null>(null);
   const [dragging, setDragging] = useState(false);

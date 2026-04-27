@@ -54,10 +54,10 @@ export function SpacingSection({
 
   return (
     <div className="border-b border-border">
-      <div className="text-[10px] uppercase tracking-[0.6px] text-muted-foreground/70 px-3 pt-3 pb-1">
+      <div className="text-[12px] font-semibold text-foreground px-4 pt-3 pb-1.5">
         Spacing
       </div>
-      <div className="px-3 pb-4 pt-1">
+      <div className="px-4 pb-4 pt-1">
         <Ring
           label="margin"
           tint="amber"

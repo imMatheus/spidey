@@ -13,7 +13,7 @@ export function FillSection({
   const inline = node.style;
   return (
     <Section title="Fill">
-      <FieldRow label="background">
+      <FieldRow label="Color">
         <ColorInput
           value={inline["background-color"] ?? inline.background ?? ""}
           computed={computed?.getPropertyValue("background-color") || ""}

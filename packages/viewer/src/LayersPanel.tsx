@@ -25,36 +25,34 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  useEditorDispatch,
+  useEditorRev,
+  useSelection,
+  useSelectionActions,
+  useTileTree,
+} from "./context";
 
 type Props = {
   /** id of the active tile, used to scope dispatched actions */
   tileId: string;
-  /** raw SpideyNode tree of the active tile (drives buildTree + drag-drop) */
-  tree: SpideyNode | null;
-  selectedId: string | null;
-  /** monotonic editor rev — invalidates buildTree memo on edits */
-  rev: number;
-  onSelect: (id: string | null) => void;
-  /** Hover a row → highlight that node in the canvas. */
-  onHover: (id: string | null) => void;
-  dispatch: (action: EditAction) => void;
 };
 
 /**
  * Breadcrumb + scrollable layers tree + context menu, lifted out of the
  * Inspector into the left sidebar. Owns its own context-menu state and
- * drag-drop reparenting; selection/hover/edit go up via callbacks so the
- * canvas stays in sync.
+ * drag-drop reparenting; selection/hover/edit are read from / written to
+ * SelectionContext so the canvas stays in sync.
  */
-export function LayersPanel({
-  tileId,
-  tree,
-  selectedId,
-  rev,
-  onSelect,
-  onHover,
-  dispatch,
-}: Props) {
+export function LayersPanel({ tileId }: Props) {
+  const tree = useTileTree(tileId);
+  const rev = useEditorRev();
+  const { selectedNodeId } = useSelection();
+  const { setSelectedNodeId, setHoveredNodeId } = useSelectionActions();
+  const dispatch = useEditorDispatch();
+  const selectedId = selectedNodeId;
+  const onSelect = setSelectedNodeId;
+  const onHover = setHoveredNodeId;
   const trees = useMemo(() => buildTree(tree), [tree, rev]);
   const found = useMemo(
     () => (selectedId ? findNode(trees, selectedId) : null),

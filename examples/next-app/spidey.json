@@ -1047,7 +1047,8 @@
                     "tag": "h1",
                     "attrs": {},
                     "style": {
-                      "margin-bottom": "160px"
+                      "margin-bottom": "-11px",
+                      "font-size": "64px"
                     },
                     "children": [
                       {
@@ -1696,7 +1697,13 @@
                   "data-spidey-component": "InnerLayoutRouter",
                   "data-spidey-props": "{\"parallelRouterKey\":\"children\",\"url\":\"/blog/example\",\"tree\":[[\"slug\",\"example\",\"d\"],{}],\"childNodes\":{},\"segmentPath\":[\"children\",\"blog\",\"children\",[\"slug\",\"example\",\"d\"],\"children\"],\"cacheKey\":\"__PAGE__\",\"isActive\":true}"
                 },
-                "style": {},
+                "style": {
+                  "text-align": "left",
+                  "display": "flex",
+                  "flex-direction": "row",
+                  "justify-content": "space-between",
+                  "align-items": "center"
+                },
                 "children": [
                   {
                     "id": "t4-n12",
@@ -1817,7 +1824,7 @@
               {
                 "id": "t4-n28",
                 "kind": "text",
-                "value": "© Globex · next.js app router"
+                "value": "© Globex · next.js app"
               }
             ]
           },
@@ -4186,5 +4193,5 @@
       }
     }
   ],
-  "editedAt": "2026-04-27T05:57:29.550Z"
+  "editedAt": "2026-04-27T06:44:48.545Z"
 }

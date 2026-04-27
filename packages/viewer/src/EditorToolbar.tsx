@@ -17,14 +17,9 @@ import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Separator } from "@/components/ui/separator";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
+import { useEditorDispatch, useEditorState, useUndoRedo } from "./context";
 
 type Props = {
-  tool: Tool;
-  onSetTool: (tool: Tool) => void;
-  canUndo: boolean;
-  canRedo: boolean;
-  onUndo: () => void;
-  onRedo: () => void;
   saveStatus: SaveStatus;
 };
 
@@ -42,22 +37,17 @@ const TOOLS: { tool: Tool; key: string; Icon: LucideIcon; label: string }[] = [
   { tool: "image", key: "I", Icon: ImageIcon, label: "Image" },
 ];
 
-export function EditorToolbar({
-  tool,
-  onSetTool,
-  canUndo,
-  canRedo,
-  onUndo,
-  onRedo,
-  saveStatus,
-}: Props) {
+export function EditorToolbar({ saveStatus }: Props) {
+  const dispatch = useEditorDispatch();
+  const tool = useEditorState().tool;
+  const { canUndo, canRedo, undo, redo } = useUndoRedo();
   return (
     <div className="flex items-center gap-1 bg-card border border-border rounded-md p-1 shadow-lg">
       <ToggleGroup
         type="single"
         size="sm"
         value={tool}
-        onValueChange={(v) => v && onSetTool(v as Tool)}
+        onValueChange={(v) => v && dispatch({ type: "setTool", tool: v as Tool })}
       >
         {TOOLS.map((t) => {
           const Icon = t.Icon;
@@ -92,7 +82,7 @@ export function EditorToolbar({
           <Button
             variant="ghost"
             size="icon-sm"
-            onClick={onUndo}
+            onClick={undo}
             disabled={!canUndo}
           >
             <Undo2 size={16} strokeWidth={2} />
@@ -105,7 +95,7 @@ export function EditorToolbar({
           <Button
             variant="ghost"
             size="icon-sm"
-            onClick={onRedo}
+            onClick={redo}
             disabled={!canRedo}
           >
             <Redo2 size={16} strokeWidth={2} />
@@ -146,7 +136,7 @@ function SaveBadge({ status }: { status: SaveStatus }) {
   const Icon = icon;
   return (
     <span
-      className={`px-2 text-[11px] font-mono whitespace-nowrap inline-flex items-center gap-1 ${cls}`}
+      className={`px-2 text-[12px] whitespace-nowrap inline-flex items-center gap-1 ${cls}`}
       title={status.kind === "error" ? status.message : undefined}
     >
       <Icon

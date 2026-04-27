@@ -31,7 +31,7 @@ export function PositionSection({
 
   return (
     <Section title="Position">
-      <FieldRow label="position">
+      <FieldRow label="Position">
         <SelectInput
           value={inline.position ?? ""}
           computed={computed?.getPropertyValue("position") || ""}
@@ -39,7 +39,7 @@ export function PositionSection({
           onChange={(next) => setStyle("position", next || null)}
         />
       </FieldRow>
-      <FieldRow label="offsets">
+      <FieldRow label="Offsets">
         <FourSideInput
           props={["top", "right", "bottom", "left"]}
           inline={inline}
@@ -48,7 +48,7 @@ export function PositionSection({
           disabled={isStatic}
         />
       </FieldRow>
-      <FieldRow label="z-index">
+      <FieldRow label="Z-index">
         <NumberInput
           value={inline["z-index"] ?? ""}
           computed={computed?.getPropertyValue("z-index") || ""}

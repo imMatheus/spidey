@@ -7,29 +7,17 @@ import {
   type ReactNode,
 } from "react";
 import { Maximize2, ZoomIn, ZoomOut } from "lucide-react";
-import type { SpideyNode, SpideyTile } from "@spidey/shared";
 import { Tile } from "./Tile";
-import type { EditAction, Tool } from "./editor/state";
 import { Button } from "@/components/ui/button";
+import {
+  useEditorState,
+  useProject,
+  useSelectionActions,
+  VIEWPORTS,
+} from "./context";
 
 type Props = {
-  tiles: SpideyTile[];
-  tileTrees: Record<string, SpideyNode | null>;
-  viewport: { width: number; height: number };
-  focusId: string | null;
-  onClearFocus: () => void;
-  activeTileId: string | null;
-  selectedNodeId: string | null;
-  hoveredNodeId: string | null;
-  altPressed: boolean;
-  tool: Tool;
-  rev: number;
-  onActivateTile: (id: string | null) => void;
-  onSelectNode: (id: string | null) => void;
-  onHoverNode: (id: string | null) => void;
-  onBodyReady: (tileId: string, body: HTMLElement) => void;
   onScaleChange: (scale: number) => void;
-  dispatch: (action: EditAction) => void;
 };
 
 type Transform = { x: number; y: number; k: number };
@@ -41,25 +29,17 @@ const MIN_K = 0.05;
 const MAX_K = 2;
 const CLICK_DIST_PX = 5;
 
-export function Canvas({
-  tiles,
-  tileTrees,
-  viewport,
-  focusId,
-  onClearFocus,
-  activeTileId,
-  selectedNodeId,
-  hoveredNodeId,
-  altPressed,
-  tool,
-  rev,
-  onActivateTile,
-  onSelectNode,
-  onHoverNode,
-  onBodyReady,
-  onScaleChange,
-  dispatch,
-}: Props) {
+export function Canvas({ onScaleChange }: Props) {
+  const { doc, viewport, focusId, setFocusId } = useProject();
+  // Selection state itself is consumed by Tile; Canvas only needs setters
+  // to clear-on-canvas-click.
+  const { setActiveTileId, setSelectedNodeId } = useSelectionActions();
+  const editor = useEditorState();
+  const tool = editor.tool;
+
+  const tiles = doc?.tiles ?? [];
+  const dims = VIEWPORTS[viewport];
+
   const containerRef = useRef<HTMLDivElement>(null);
   const [size, setSize] = useState({ w: 0, h: 0 });
   const [t, setT] = useState<Transform>({ x: 0, y: 0, k: 0.4 });
@@ -85,7 +65,7 @@ export function Canvas({
   }, [t.k, onScaleChange]);
 
   const positions = useMemo(() => {
-    const tileW = viewport.width;
+    const tileW = dims.width;
     const map = new Map<
       string,
       { x: number; y: number; w: number; h: number }
@@ -95,16 +75,15 @@ export function Canvas({
     const components = tiles.filter((p) => p.kind === "component");
 
     // Column-packed layout for routes: each tile drops into the shortest
-    // column. Heights come from containerSize (full document height,
-    // measured at capture time) so a long blog post sits in one column
-    // without stretching the rest of the row.
+    // column. Heights come from containerSize so a long blog post sits in
+    // one column without stretching the rest of the row.
     const colY: number[] = new Array(TILES_PER_ROW).fill(0);
     for (const p of routes) {
       let col = 0;
       for (let i = 1; i < TILES_PER_ROW; i++) {
         if (colY[i] < colY[col]) col = i;
       }
-      const h = p.containerSize?.height ?? viewport.height;
+      const h = p.containerSize?.height ?? dims.height;
       const x = col * (tileW + GAP);
       const y = colY[col];
       map.set(p.id, { x, y, w: tileW, h });
@@ -123,7 +102,7 @@ export function Canvas({
     }
 
     return map;
-  }, [tiles, viewport]);
+  }, [tiles, dims]);
 
   const positionsList = useMemo(
     () => Array.from(positions.values()),
@@ -166,8 +145,7 @@ export function Canvas({
   // wheel zoom / pan — Figma-style sensitivity. Trackpad pinch fires wheel
   // events with ctrlKey:true and small per-frame deltaY; mouse wheel ticks
   // come in much bigger chunks. Use one multiplier per source so trackpad
-  // pinches feel smooth without making mouse-wheel zoom violent. Each delta
-  // is also clamped so a fast flick can't blow past MIN/MAX_K in one event.
+  // pinches feel smooth without making mouse-wheel zoom violent.
   useEffect(() => {
     const el = containerRef.current;
     if (!el) return;
@@ -182,8 +160,6 @@ export function Canvas({
             e.deltaMode !== 0 || Math.abs(e.deltaY) >= 50;
           const factor = isMouseWheel ? 0.002 : 0.01;
           const raw = -e.deltaY * factor;
-          // Cap per-event log change so a single fast tick can't slam from
-          // min to max zoom — keeps the gesture incremental.
           const delta = Math.max(-0.5, Math.min(0.5, raw));
           const newK = Math.max(
             MIN_K,
@@ -218,11 +194,7 @@ export function Canvas({
     const canPan = (onTile: boolean) => {
       const t = panToolRef.current;
       if (t === "hand") return true;
-      // Tile-internal drags belong to the Tile (selection/insertion). Pan
-      // only when starting from empty canvas.
       if (onTile) return false;
-      // In primitive tools, the canvas background should also stay still so
-      // the user can only ever interact with tiles.
       if (t === "text" || t === "rect" || t === "image") return false;
       return true;
     };
@@ -246,7 +218,6 @@ export function Canvas({
       if (!down.panning) {
         if (Math.sqrt(dx * dx + dy * dy) < CLICK_DIST_PX) return;
         if (!canPan(!!down.onTile)) {
-          // Stop tracking — the gesture belongs to a tile or is forbidden.
           down = null;
           return;
         }
@@ -266,9 +237,9 @@ export function Canvas({
       down = null;
 
       if (wasClick && !startedOnTile) {
-        onActivateTile(null);
-        onSelectNode(null);
-        onClearFocus();
+        setActiveTileId(null);
+        setSelectedNodeId(null);
+        setFocusId(null);
       }
     };
 
@@ -280,7 +251,7 @@ export function Canvas({
       window.removeEventListener("mousemove", onMove);
       window.removeEventListener("mouseup", onUp);
     };
-  }, [onActivateTile, onClearFocus, onSelectNode]);
+  }, [setActiveTileId, setSelectedNodeId, setFocusId]);
 
   const zoomTo = (factor: number) => {
     setT((prev) => {
@@ -307,7 +278,7 @@ export function Canvas({
       y: (size.h - maxY * clamped) / 2,
       k: clamped,
     });
-    onClearFocus();
+    setFocusId(null);
   };
 
   return (
@@ -332,29 +303,15 @@ export function Canvas({
         {tiles.map((tile) => {
           const pos = positions.get(tile.id);
           if (!pos) return null;
-          const active = activeTileId === tile.id;
-          const tree = tileTrees[tile.id] ?? tile.tree ?? null;
           return (
             <Tile
               key={tile.id}
               page={tile}
-              tree={tree}
               x={pos.x}
               y={pos.y}
               width={pos.w}
               height={pos.h}
-              active={active}
               scale={t.k}
-              selectedNodeId={active ? selectedNodeId : null}
-              hoveredNodeId={active ? hoveredNodeId : null}
-              altPressed={altPressed}
-              tool={tool}
-              rev={rev}
-              onActivate={() => onActivateTile(tile.id)}
-              onSelectNode={onSelectNode}
-              onHoverNode={onHoverNode}
-              onBodyReady={onBodyReady}
-              dispatch={dispatch}
             />
           );
         })}
