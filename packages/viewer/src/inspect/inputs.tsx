@@ -1,5 +1,5 @@
 import { useEffect, useState, type ReactNode } from "react";
-import { Link2, Link2Off } from "lucide-react";
+import { ChevronDown, Link2, Link2Off } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -10,6 +10,11 @@ import {
 } from "@/components/ui/select";
 import { Toggle } from "@/components/ui/toggle";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 
 const INPUT_CLASS = "h-7 px-1.5 py-1 text-[11px] font-mono rounded-md";
 
@@ -36,23 +41,55 @@ export function FieldRow({
   );
 }
 
-/** Section wrapper used by every section component. */
-export function Section({
+/**
+ * Collapsible shell used by every section component. The header is the
+ * trigger; content collapses below. Keep `defaultOpen` true for parity
+ * with the previous always-open layout.
+ */
+export function CollapsibleSection({
   title,
   children,
+  defaultOpen = true,
+  contentClassName,
 }: {
   title: string;
   children: ReactNode;
+  defaultOpen?: boolean;
+  contentClassName?: string;
 }) {
   return (
-    <div className="border-b border-border">
-      <div className="text-[12px] font-semibold text-foreground px-4 pt-3 pb-1.5">
-        {title}
-      </div>
+    <Collapsible defaultOpen={defaultOpen} className="border-b border-border">
+      <CollapsibleTrigger className="group w-full flex items-center justify-between text-[12px] font-semibold text-foreground px-4 pt-3 pb-1.5 hover:bg-muted/40 transition-colors">
+        <span>{title}</span>
+        <ChevronDown
+          size={14}
+          strokeWidth={2}
+          className="text-muted-foreground transition-transform duration-150 group-data-[state=closed]:-rotate-90"
+        />
+      </CollapsibleTrigger>
+      <CollapsibleContent className={contentClassName}>
+        {children}
+      </CollapsibleContent>
+    </Collapsible>
+  );
+}
+
+/** Section wrapper used by every grid-based section component. */
+export function Section({
+  title,
+  children,
+  defaultOpen,
+}: {
+  title: string;
+  children: ReactNode;
+  defaultOpen?: boolean;
+}) {
+  return (
+    <CollapsibleSection title={title} defaultOpen={defaultOpen}>
       <div className="grid grid-cols-[88px_1fr] gap-x-2 gap-y-1.5 px-4 pb-3 text-[11px] items-center">
         {children}
       </div>
-    </div>
+    </CollapsibleSection>
   );
 }
 

@@ -1,6 +1,7 @@
 import type { SpideyNode } from "@spidey/shared";
 import { Textarea } from "@/components/ui/textarea";
 import type { EditAction } from "../../editor/state";
+import { CollapsibleSection } from "../inputs";
 
 /**
  * Editable text content for the selected element. Lists every direct
@@ -26,10 +27,7 @@ export function ContentSection({
   if (textChildren.length === 0) return null;
 
   return (
-    <div className="border-b border-border">
-      <div className="text-[12px] font-semibold text-foreground px-4 pt-3 pb-1.5">
-        Content
-      </div>
+    <CollapsibleSection title="Content">
       <div className="px-4 pb-3 flex flex-col gap-1.5">
         {textChildren.map((t) => (
           <TextRow
@@ -41,7 +39,7 @@ export function ContentSection({
           />
         ))}
       </div>
-    </div>
+    </CollapsibleSection>
   );
 }
 

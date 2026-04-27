@@ -1,6 +1,6 @@
 import type { SpideyDocument, SpideyNode } from "@spidey/shared";
 import type { GestureRecord, TileMeta } from "./state";
-import { findById } from "./tree";
+import { findById, findParent } from "./tree";
 
 /* ------------------------------------------------------------------ */
 /*  Types                                                             */
@@ -196,12 +196,71 @@ export function summarize(
     byComponent: Array.from(byComponent.values()),
     byTile: Array.from(byTile.values()),
     primitives,
-    totalCount:
-      Array.from(byComponent.values()).reduce((n, c) => n + c.changes.length, 0) +
-      Array.from(byTile.values()).reduce((n, t) => n + t.changes.length, 0) +
-      primitives.length,
+    totalCount: countNodesTouched(raw, baseline, current),
     baselineMissing: options.baselineMissing,
   };
+}
+
+/** "How many nodes did the user change?" — collapses multiple edits on the
+ *  same logical node to one. Rules:
+ *
+ *  - style / attr / move / remove key by `(tileId, nodeId)` — multiple
+ *    properties on the same node, or moving + restyling, count as 1.
+ *  - text edits target a kind:"text" leaf in the SpideyNode tree, but the
+ *    user's mental model is "I changed the heading", so we dedupe text
+ *    leaves up to their parent element. Editing text + the parent's style
+ *    counts as 1.
+ *  - insert exposes the new node's id (`node.id`), so insert + style of
+ *    the new node counts as 1.
+ *  - duplicate keys by the SOURCE node id. The reducer-generated dup id
+ *    is not threaded through the gesture log, so a follow-up edit on the
+ *    duplicated node is counted separately (acceptable trade-off).
+ *  - paste has no new-child id at the action level either, so each paste
+ *    is one discrete event; an immediate edit on the pasted node counts
+ *    separately.
+ *
+ *  Pure no-op gestures (insert+remove of the same node, move+move-back)
+ *  are NOT cancelled here — the squash arrays still have both entries,
+ *  this function just dedupes the count to the touched-node set. */
+function countNodesTouched(
+  raw: SquashedChange[],
+  baseline: Record<string, SpideyNode | null>,
+  current: Record<string, SpideyNode | null>,
+): number {
+  const seen = new Set<string>();
+  let pasteCount = 0;
+  for (const c of raw) {
+    let key: string | undefined;
+    switch (c.kind) {
+      case "text": {
+        // Walk text leaf → parent element so text+style on the same
+        // element collapse. Try current first; fall back to baseline for
+        // text edits on now-removed nodes.
+        const tree = current[c.tileId] ?? baseline[c.tileId];
+        const parent = tree ? findParent(tree, c.nodeId) : null;
+        key = parent ? parent.parent.id : c.nodeId;
+        break;
+      }
+      case "style":
+      case "attr":
+      case "move":
+      case "remove":
+        key = c.nodeId;
+        break;
+      case "insert":
+        key = c.node.id;
+        break;
+      case "duplicate":
+        key = c.sourceNodeId;
+        break;
+      case "paste":
+        // No stable new-child id available; count each paste as 1.
+        pasteCount += 1;
+        continue;
+    }
+    if (key) seen.add(`${c.tileId}::${key}`);
+  }
+  return seen.size + pasteCount;
 }
 
 const PROMPT_CAP = 50;

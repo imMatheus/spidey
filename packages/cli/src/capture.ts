@@ -63,7 +63,57 @@ export async function captureAll({
           throw new Error(`HTTP ${response.status()} ${response.statusText()}`);
         }
 
-        await page.waitForTimeout(500);
+        // Initial settle so React can commit the post-goto effects.
+        await page.waitForTimeout(800);
+
+        // Wait for any in-flight fetch() requests kicked off in effects to
+        // resolve. networkidle on goto fires too early for apps that fetch
+        // *after* hydration (Products page hits dummyjson in useEffect →
+        // we'd otherwise capture skeletons). 5s cap so a stuck endpoint
+        // doesn't break the whole run.
+        try {
+          await page.waitForLoadState("networkidle", { timeout: 5_000 });
+        } catch {
+          // ignore — capture what we have
+        }
+
+        // Block on image decode so <img src="…cdn…"> tiles don't capture
+        // empty boxes. Cap per-image at 3s.
+        try {
+          await page.evaluate(async () => {
+            const imgs = Array.from(document.images);
+            await Promise.all(
+              imgs.map((img) => {
+                if (img.complete && img.naturalWidth > 0) return null;
+                return new Promise<void>((resolve) => {
+                  const t = setTimeout(resolve, 3_000);
+                  img.addEventListener(
+                    "load",
+                    () => {
+                      clearTimeout(t);
+                      resolve();
+                    },
+                    { once: true },
+                  );
+                  img.addEventListener(
+                    "error",
+                    () => {
+                      clearTimeout(t);
+                      resolve();
+                    },
+                    { once: true },
+                  );
+                });
+              }),
+            );
+          });
+        } catch {
+          // ignore — capture what we have
+        }
+
+        // Final settle: any state changes triggered by image-load handlers
+        // or the post-fetch render need a frame to commit.
+        await page.waitForTimeout(300);
 
         captured.title = await page.title();
 

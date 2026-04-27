@@ -50,6 +50,7 @@ start(
     "view",
     "examples/next-app/spidey.json",
     "examples/vite-app/spidey.json",
+    "examples/complex-app/spidey.json",
     "--port",
     BACKEND_PORT,
     "--no-open",

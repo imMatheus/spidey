@@ -113,7 +113,25 @@ export function Tile({ page, width, height, x, y, scale }: Props) {
         overflow: auto;
       }
       body { position: relative; }
-      [data-spidey-id][contenteditable="true"] { outline: 2px solid rgba(91,140,255,0.7); outline-offset: 1px; cursor: text; }
+      /* Pause autoplaying animations + transitions in editor — distracting
+         while designing, and burns CPU per-tile. Each ::before/::after
+         is paused too so spinners/skeletons freeze at their first frame. */
+      *, *::before, *::after {
+        animation-play-state: paused !important;
+        animation-delay: 0s !important;
+        transition: none !important;
+      }
+      /* Default cursor everywhere; the editor decides hover semantics
+         via its own select/insert tools. Prevents text-cursor + pointer-on-
+         button mismatches that confuse the click target. */
+      *, *::before, *::after { cursor: default !important; }
+      /* Defang hover-only color/shadow transitions visually being pre-
+         applied: nothing to do — transition:none above already handles it. */
+      [data-spidey-id][contenteditable="true"] {
+        outline: 2px solid rgba(91,140,255,0.7);
+        outline-offset: 1px;
+        cursor: text !important;
+      }
     `;
     shadow.appendChild(reset);
 
@@ -162,6 +180,41 @@ export function Tile({ page, width, height, x, y, scale }: Props) {
     body.querySelectorAll("form").forEach((f) => {
       f.addEventListener("submit", (e) => e.preventDefault());
     });
+
+    // Form inputs: native typing would mutate the live DOM but never
+    // persist into the SpideyNode tree, so the value snaps back on the
+    // next re-render. Mark them readonly/disabled so the only edit path
+    // is the inspector's ValueSection. We keep `tabindex=-1` too so
+    // clicks don't trap focus inside an input the user can't actually
+    // change here.
+    body
+      .querySelectorAll<HTMLInputElement>(
+        "input:not([type=checkbox]):not([type=radio]):not([type=range])",
+      )
+      .forEach((i) => {
+        i.setAttribute("readonly", "");
+        i.tabIndex = -1;
+      });
+    body.querySelectorAll<HTMLTextAreaElement>("textarea").forEach((t) => {
+      t.setAttribute("readonly", "");
+      t.tabIndex = -1;
+    });
+    body.querySelectorAll<HTMLSelectElement>("select").forEach((s) => {
+      s.setAttribute("disabled", "");
+      s.tabIndex = -1;
+    });
+    // Checkbox/radio/range: keep clickable so toggling/dragging shows
+    // visual state, but reset on each re-render anyway since the change
+    // doesn't persist. Block via preventDefault so the visual state
+    // matches what's captured.
+    body
+      .querySelectorAll<HTMLInputElement>(
+        "input[type=checkbox], input[type=radio]",
+      )
+      .forEach((i) => {
+        i.addEventListener("click", (e) => e.preventDefault());
+        i.tabIndex = -1;
+      });
   }, [tree, page.id]);
 
   // ----- Pointer/keyboard handlers in shadow root -----
@@ -616,56 +669,71 @@ export function Tile({ page, width, height, x, y, scale }: Props) {
     dispatch,
   ]);
 
-  const headerHeight = 36;
   const isErr = page.status === "error";
 
   // Ring width is in canvas-local pixels; the canvas is then CSS-scaled.
   // Compensate so the ring always reads ~2 viewport px regardless of zoom.
   const ringPx = Math.max(1, 2 / Math.max(scale, 0.05));
 
+  // Floating Figma-style label above the tile. Font size scales inversely
+  // with zoom so the label reads at ~12px regardless of canvas scale.
+  const labelFontPx = Math.max(8, 12 / Math.max(scale, 0.05));
+  const labelGapPx = labelFontPx * 0.6;
+
+  const labelText =
+    page.kind === "component"
+      ? `<${page.component?.name ?? "Component"}>`
+      : page.route ?? "";
+
   return (
     <div
-      className={[
-        "tile absolute rounded-md overflow-hidden border transition-shadow transition-colors duration-150",
-        isErr ? "bg-[#2c1f1f]" : "bg-white",
-        active ? "border-primary" : "border-border",
-      ].join(" ")}
-      style={{
-        left: x,
-        top: y,
-        width,
-        height: height + headerHeight,
-        boxShadow: active
-          ? `0 4px 24px rgba(0,0,0,0.4), 0 0 0 ${ringPx}px rgba(91,140,255,0.45)`
-          : "0 4px 24px rgba(0,0,0,0.4)",
-      }}
+      className="tile absolute"
+      style={{ left: x, top: y, width, height }}
     >
-      <div
-        className="bg-muted text-foreground px-3 py-2 text-xs font-medium flex justify-between items-center gap-2"
-        style={{ height: headerHeight }}
+      <button
+        type="button"
+        onClick={() => setActiveTileId(page.id)}
+        className={[
+          "absolute left-0 font-mono whitespace-nowrap bg-transparent border-0 p-0 m-0 cursor-default flex items-center gap-1.5 hover:opacity-80 transition-opacity",
+          active ? "text-primary" : "text-muted-foreground",
+          isErr ? "text-destructive" : "",
+        ].join(" ")}
+        // Deliberately NOT constraining maxWidth to the tile width —
+        // Figma-style frame labels overflow the frame so component names
+        // like "AlertIcon" stay readable on a 48-px icon tile. The
+        // label's stacking is fine because tiles are spaced apart on the
+        // canvas; touching is rare.
+        style={{
+          bottom: "100%",
+          paddingBottom: labelGapPx,
+          fontSize: labelFontPx,
+          lineHeight: 1.2,
+        }}
       >
-        {page.kind === "component" ? (
-          <span className="font-mono text-primary whitespace-nowrap overflow-hidden text-ellipsis">
-            {`<${page.component?.name ?? "Component"}>`}
-          </span>
-        ) : (
-          <span className="font-mono whitespace-nowrap overflow-hidden text-ellipsis">
-            {page.route}
+        <span>{labelText}</span>
+        {isErr && (
+          <span
+            className="bg-destructive/20 text-destructive uppercase tracking-[0.5px] rounded-xs px-1 py-px"
+            style={{ fontSize: Math.max(7, labelFontPx * 0.75) }}
+          >
+            error
           </span>
         )}
-        <div className="flex items-center gap-1.5 shrink-0">
-          {page.kind === "component" && (
-            <span className="text-[10px] px-1.5 py-0.5 rounded-xs bg-primary/15 text-primary uppercase tracking-[0.5px]">
-              component
-            </span>
-          )}
-          {isErr && (
-            <span className="text-[10px] px-1.5 py-0.5 rounded-xs bg-destructive/20 text-destructive uppercase tracking-[0.5px]">
-              error
-            </span>
-          )}
-        </div>
-      </div>
+      </button>
+      <div
+        className={[
+          "rounded-md overflow-hidden border transition-shadow transition-colors duration-150",
+          isErr ? "bg-[#2c1f1f]" : "bg-white",
+          active ? "border-primary" : "border-border",
+        ].join(" ")}
+        style={{
+          width,
+          height,
+          boxShadow: active
+            ? `0 4px 24px rgba(0,0,0,0.4), 0 0 0 ${ringPx}px rgba(91,140,255,0.45)`
+            : "0 4px 24px rgba(0,0,0,0.4)",
+        }}
+      >
       <div
         ref={bodyWrapperRef}
         className="relative bg-white overflow-hidden"
@@ -693,6 +761,7 @@ export function Tile({ page, width, height, x, y, scale }: Props) {
             )}
           </>
         )}
+      </div>
       </div>
     </div>
   );

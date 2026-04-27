@@ -1,8 +1,9 @@
 import { useEffect, useState, useMemo } from "react";
-import { Lock, PenSquare } from "lucide-react";
+import { Lock, MousePointer2, PenSquare } from "lucide-react";
 import type { SpideyNode, SpideyTile } from "@spidey/shared";
 import { findById, findInstanceAncestor } from "./editor/tree";
 import type { EditAction } from "./editor/state";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { PositionSection } from "./inspect/sections/PositionSection";
 import { LayoutSection } from "./inspect/sections/LayoutSection";
@@ -12,6 +13,8 @@ import { StrokeSection } from "./inspect/sections/StrokeSection";
 import { EffectsSection } from "./inspect/sections/EffectsSection";
 import { SpacingSection } from "./inspect/sections/SpacingSection";
 import { ContentSection } from "./inspect/sections/ContentSection";
+import { ValueSection } from "./inspect/sections/ValueSection";
+import { PseudoSection } from "./inspect/sections/PseudoSection";
 import {
   useEditorDispatch,
   useEditorRev,
@@ -83,10 +86,13 @@ export function Inspector() {
   if (!activeTileId || !tree) {
     return (
       <aside className={ASIDE}>
-        <div className="grid place-items-center h-full text-muted-foreground text-center text-xs">
-          <div>
-            <div className="text-foreground text-sm mb-1">No tile selected</div>
-            <div>Click a screen to inspect it</div>
+        <div className="grid place-items-center h-full text-center px-6">
+          <div className="flex flex-col items-center gap-2 text-muted-foreground">
+            <MousePointer2 size={20} strokeWidth={1.5} />
+            <div className="text-foreground text-[13px] font-medium">
+              No tile selected
+            </div>
+            <div className="text-[12px]">Click a screen to inspect it</div>
           </div>
         </div>
       </aside>
@@ -308,24 +314,27 @@ function StylePanels({
           <SelectedComponentPanel name={componentName} props={runtimeProps} />
         )}
         <div className="px-4 py-3 border-b border-border">
-          <div className="font-mono text-[13px] text-foreground font-semibold mb-1.5">
+          <div className="font-mono text-[13px] text-foreground font-semibold">
             &lt;{tag}&gt;
-            {domId && <span className="text-amber-500 ml-1 font-normal">#{domId}</span>}
+            {domId && (
+              <span className="text-amber-500 ml-1 font-normal">#{domId}</span>
+            )}
           </div>
           {classes.length > 0 && (
-            <div className="flex flex-wrap gap-1 mb-1.5">
+            <div className="flex flex-wrap gap-1 mt-2">
               {classes.map((c) => (
-                <span
+                <Badge
                   key={c}
-                  className="bg-muted border border-border text-muted-foreground font-mono text-[11px] px-1.5 py-px rounded-xs"
+                  variant="outline"
+                  className="font-mono text-[10px] text-muted-foreground rounded-sm"
                 >
                   .{c}
-                </span>
+                </Badge>
               ))}
             </div>
           )}
           {textPreview && (
-            <div className="text-[11px] text-muted-foreground italic mt-1.5 whitespace-nowrap overflow-hidden text-ellipsis">
+            <div className="text-[11px] text-muted-foreground italic mt-2 whitespace-nowrap overflow-hidden text-ellipsis">
               "{textPreview}"
             </div>
           )}
@@ -334,12 +343,14 @@ function StylePanels({
         {!locked && node && (
           <>
             <ContentSection node={node} tileId={tileId} dispatch={dispatch} />
+            <ValueSection node={node} tileId={tileId} dispatch={dispatch} />
             <PositionSection node={node} computed={computed} setStyle={setStyle} />
             <LayoutSection node={node} computed={computed} setStyle={setStyle} />
             <TypographySection node={node} computed={computed} setStyle={setStyle} />
             <FillSection node={node} computed={computed} setStyle={setStyle} />
             <StrokeSection node={node} computed={computed} setStyle={setStyle} />
             <EffectsSection node={node} computed={computed} setStyle={setStyle} />
+            <PseudoSection el={el} />
           </>
         )}
       </div>

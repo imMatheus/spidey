@@ -31,13 +31,17 @@ export function useEditorKeyboard() {
     const onDown = (e: KeyboardEvent) => {
       if (e.key === "Alt") setAltPressed(true);
 
-      const tag =
-        (document.activeElement as HTMLElement | null)?.tagName ?? "";
+      // Walk through shadow roots — when the user types into an input
+      // inside a captured tile, document.activeElement returns the host
+      // <div>, not the input. Without this descent, Backspace would
+      // delete the selected node instead of editing text.
+      const focused = deepActiveElement();
+      const tag = focused?.tagName ?? "";
       const inField =
         tag === "INPUT" ||
         tag === "TEXTAREA" ||
         tag === "SELECT" ||
-        (document.activeElement as HTMLElement | null)?.isContentEditable;
+        focused?.isContentEditable === true;
 
       // Undo / redo work even when typing in an input — the editor reducer
       // owns this history (browsers' native undo is per-input only).
@@ -173,4 +177,13 @@ export function useEditorKeyboard() {
     setActiveTileId,
     setAltPressed,
   ]);
+}
+
+/** Walk through nested shadow roots to find the actually-focused element. */
+function deepActiveElement(): HTMLElement | null {
+  let active: Element | null = document.activeElement;
+  while (active && (active as HTMLElement).shadowRoot?.activeElement) {
+    active = (active as HTMLElement).shadowRoot!.activeElement;
+  }
+  return active instanceof HTMLElement ? active : null;
 }

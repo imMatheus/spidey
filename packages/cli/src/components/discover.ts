@@ -11,6 +11,12 @@ const IGNORE_DIRS = new Set([
   "dist",
   "build",
   ".git",
+  // App-level pages/routes are too coupled to data + routing context to
+  // render meaningfully as standalone master tiles. The route capture
+  // already shows them in their full route context. Skip the directory
+  // names that conventionally hold route/page modules.
+  "pages",
+  "routes",
 ]);
 
 /** Substring match used to ignore our own auto-generated preview files. */
@@ -382,6 +388,38 @@ function typeToSpec(
       of: typeToSpec(elementType, checker, depth + 1, false),
       optional,
     };
+  }
+
+  // Intersection — common pattern in React typings is a literal-union
+  // intersected with `string & {}` (autocomplete-friendly fallback). If any
+  // member is a primitive, surface as that primitive kind so we don't end
+  // up walking String.prototype as if it were object fields.
+  if (type.isIntersection()) {
+    for (const t of type.types) {
+      const tf = t.getFlags();
+      if (tf & ts.TypeFlags.String) return { kind: "string", optional };
+      if (tf & ts.TypeFlags.Number) return { kind: "number", optional };
+      if (tf & ts.TypeFlags.Boolean) return { kind: "boolean", optional };
+    }
+  }
+
+  // Assignability fallback — catches `string & {}` patterns and other
+  // primitive-derived types whose `getProperties()` would be the boxed
+  // wrapper's methods (toString, charAt, …). Without this, `role`,
+  // `htmlInputTypeAttribute`, `AriaRole` etc. become bogus objects with
+  // function-shaped fields, then crash render with
+  // "Cannot convert object to primitive value".
+  const stringType = (checker as any).getStringType?.();
+  const numberType = (checker as any).getNumberType?.();
+  const boolType = (checker as any).getBooleanType?.();
+  if (stringType && checker.isTypeAssignableTo(type, stringType)) {
+    return { kind: "string", optional };
+  }
+  if (numberType && checker.isTypeAssignableTo(type, numberType)) {
+    return { kind: "number", optional };
+  }
+  if (boolType && checker.isTypeAssignableTo(type, boolType)) {
+    return { kind: "boolean", optional };
   }
 
   // Object

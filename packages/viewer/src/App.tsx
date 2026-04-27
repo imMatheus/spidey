@@ -5,6 +5,7 @@ import { Canvas } from "./Canvas";
 import { Inspector } from "./Inspector";
 import { EditorToolbar } from "./EditorToolbar";
 import { HandoffBar } from "./HandoffBar";
+import { CommandPalette } from "./CommandPalette";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import {
   EditorProvider,
@@ -84,6 +85,7 @@ function Workspace() {
       <Toolbar scale={scale} />
       <Canvas onScaleChange={setScale} />
       <Inspector />
+      <CommandPalette />
       {/* Bottom-center floating panel: gesture-handoff bar above the editor
           toolbar, wrapped in a tinted frame so the section reads as one
           unit and stands out against the canvas. */}

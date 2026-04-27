@@ -1701,8 +1701,7 @@
                   "text-align": "left",
                   "display": "flex",
                   "flex-direction": "row",
-                  "justify-content": "space-between",
-                  "align-items": "center"
+                  "justify-content": "flex-end"
                 },
                 "children": [
                   {
@@ -2485,34 +2484,6 @@
                         ]
                       },
                       {
-                        "id": "t5-n89",
-                        "kind": "el",
-                        "tag": "li",
-                        "attrs": {},
-                        "style": {},
-                        "children": [
-                          {
-                            "id": "t5-n87",
-                            "kind": "el",
-                            "tag": "strong",
-                            "attrs": {},
-                            "style": {},
-                            "children": [
-                              {
-                                "id": "t5-n86",
-                                "kind": "text",
-                                "value": "Write the on-call runbook before you ship."
-                              }
-                            ]
-                          },
-                          {
-                            "id": "t5-n88",
-                            "kind": "text",
-                            "value": " If you can't describe the failure modes in advance, you don't understand the service well enough to have built it."
-                          }
-                        ]
-                      },
-                      {
                         "id": "t5-n93",
                         "kind": "el",
                         "tag": "li",
@@ -2537,6 +2508,34 @@
                             "id": "t5-n92",
                             "kind": "text",
                             "value": " A single rotation gets exhausted and starts paging the wrong team."
+                          }
+                        ]
+                      },
+                      {
+                        "id": "t5-n89",
+                        "kind": "el",
+                        "tag": "li",
+                        "attrs": {},
+                        "style": {},
+                        "children": [
+                          {
+                            "id": "t5-n87",
+                            "kind": "el",
+                            "tag": "strong",
+                            "attrs": {},
+                            "style": {},
+                            "children": [
+                              {
+                                "id": "t5-n86",
+                                "kind": "text",
+                                "value": "Write the on-call runbook before you ship."
+                              }
+                            ]
+                          },
+                          {
+                            "id": "t5-n88",
+                            "kind": "text",
+                            "value": " If you can't describe the failure modes in advance, you don't understand the service well enough to have built it."
                           }
                         ]
                       }
@@ -4193,5 +4192,5 @@
       }
     }
   ],
-  "editedAt": "2026-04-27T06:44:48.545Z"
+  "editedAt": "2026-04-27T07:03:11.947Z"
 }

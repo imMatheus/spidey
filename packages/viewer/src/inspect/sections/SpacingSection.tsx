@@ -1,6 +1,7 @@
 import { useEffect, useState, type ReactNode } from "react";
 import type { SpideyNode } from "@spidey/shared";
 import { Input } from "@/components/ui/input";
+import { CollapsibleSection } from "../inputs";
 
 const PADDING = [
   "padding-top",
@@ -53,10 +54,7 @@ export function SpacingSection({
   const h = roundDim(computed?.getPropertyValue("height") || "");
 
   return (
-    <div className="border-b border-border">
-      <div className="text-[12px] font-semibold text-foreground px-4 pt-3 pb-1.5">
-        Spacing
-      </div>
+    <CollapsibleSection title="Spacing">
       <div className="px-4 pb-4 pt-1">
         <Ring
           label="margin"
@@ -89,7 +87,7 @@ export function SpacingSection({
           </Ring>
         </Ring>
       </div>
-    </div>
+    </CollapsibleSection>
   );
 }
 
