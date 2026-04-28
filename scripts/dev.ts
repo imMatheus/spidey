@@ -51,6 +51,7 @@ start(
     "examples/next-app/spidey.json",
     "examples/vite-app/spidey.json",
     "examples/complex-app/spidey.json",
+    "examples/supabase/apps/www/spidey.json",
     "--port",
     BACKEND_PORT,
     "--no-open",

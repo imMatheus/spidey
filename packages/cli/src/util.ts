@@ -55,10 +55,19 @@ export function readJsonSafe(p: string): any {
 }
 
 export function detectPackageManager(root: string): "bun" | "npm" | "pnpm" | "yarn" {
-  if (fileExists(path.join(root, "bun.lockb")) || fileExists(path.join(root, "bun.lock")))
-    return "bun";
-  if (fileExists(path.join(root, "pnpm-lock.yaml"))) return "pnpm";
-  if (fileExists(path.join(root, "yarn.lock"))) return "yarn";
+  // Walk up to handle monorepos where the lockfile lives at the workspace
+  // root, not next to the project's package.json. Stop at the first hit.
+  let dir = path.resolve(root);
+  for (let i = 0; i < 8; i++) {
+    if (fileExists(path.join(dir, "bun.lockb")) || fileExists(path.join(dir, "bun.lock")))
+      return "bun";
+    if (fileExists(path.join(dir, "pnpm-lock.yaml"))) return "pnpm";
+    if (fileExists(path.join(dir, "yarn.lock"))) return "yarn";
+    if (fileExists(path.join(dir, "package-lock.json"))) return "npm";
+    const parent = path.dirname(dir);
+    if (parent === dir) break;
+    dir = parent;
+  }
   return "npm";
 }
 

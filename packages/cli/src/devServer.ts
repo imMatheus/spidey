@@ -8,9 +8,32 @@ export type RunningDevServer = {
   stop: () => Promise<void>;
 };
 
-const STARTUP_TIMEOUT_MS = 60_000;
+// Big monorepo apps (Next.js with content-build, transpilePackages, MDX
+// pipelines) can take 60s+ to print their dev URL on a cold start. Stay
+// generous — false positives waste the user's time more than waiting.
+const STARTUP_TIMEOUT_MS = 180_000;
 
 export async function startDevServer(root: string): Promise<RunningDevServer> {
+  // The dev server's port can sit in TIME_WAIT for ~30s after the previous
+  // process exited (especially when a browser keepalive held the connection
+  // open). Retry on EADDRINUSE rather than failing the run.
+  let lastErr: unknown = null;
+  for (let attempt = 0; attempt < 6; attempt++) {
+    try {
+      return await startDevServerOnce(root);
+    } catch (e: any) {
+      const msg = String(e?.message ?? e);
+      if (!/EADDRINUSE|address already in use|port busy/i.test(msg)) throw e;
+      lastErr = e;
+      const wait = 5_000;
+      log.warn(`dev server port busy; retrying in ${wait / 1000}s…`);
+      await sleep(wait);
+    }
+  }
+  throw lastErr;
+}
+
+async function startDevServerOnce(root: string): Promise<RunningDevServer> {
   const pm = detectPackageManager(root);
   log.dim(`package manager: ${pm}`);
 
@@ -50,9 +73,16 @@ export async function startDevServer(root: string): Promise<RunningDevServer> {
   const start = Date.now();
   while (!detected) {
     if (proc.exitCode != null) {
+      // EADDRINUSE: the previous dev server's port is still in TIME_WAIT
+      // because a client (browser keepalive) is holding the connection open
+      // on the other side. Wait a bit and let the caller retry with a fresh
+      // call. We don't loop here because the spawn machinery is already
+      // wired up; the caller has the lifecycle.
+      const tail = (stderrBuf || stdoutBuf).slice(-2000);
+      const portBusy = /EADDRINUSE|address already in use/i.test(tail);
       throw new Error(
-        `dev server exited before becoming ready (code ${proc.exitCode}).\n` +
-          (stderrBuf || stdoutBuf).slice(-2000),
+        `dev server exited before becoming ready (code ${proc.exitCode})${portBusy ? " — port busy (TIME_WAIT?)" : ""}.\n` +
+          tail,
       );
     }
     if (Date.now() - start > STARTUP_TIMEOUT_MS) {

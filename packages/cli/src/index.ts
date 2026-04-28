@@ -7,7 +7,8 @@ const HELP = `
 spidey — turn a local Vite or Next.js app into a Figma-style canvas of every screen
 
 USAGE
-  spidey generate <path> [--output spidey.json] [--no-components] [--force]
+  spidey generate <path> [--output spidey.json] [--no-components]
+                          [--max-components N] [--force]
   spidey view <spidey.json> [<spidey.json>...] [--port 4321] [--no-open]
 
 COMMANDS
@@ -16,13 +17,15 @@ COMMANDS
   view        Serve the canvas viewer pointed at a spidey.json
 
 OPTIONS
-  --output, -o    Output path for generate (default: spidey.json)
-  --no-components Skip the components pipeline (faster; routes only)
-  --force, -f     Skip the prompt that warns when overwriting a doc with
-                  unsaved viewer edits
-  --port, -p      Port for view (default: 4321)
-  --no-open       Don't auto-open the browser when starting the viewer
-  --help, -h      Show this help
+  --output, -o          Output path for generate (default: spidey.json)
+  --no-components       Skip the components pipeline (faster; routes only)
+  --max-components, -m  Cap component captures at N (workspace packages
+                        come first; alphabetical within each group)
+  --force, -f           Skip the prompt that warns when overwriting a doc
+                        with unsaved viewer edits
+  --port, -p            Port for view (default: 4321)
+  --no-open             Don't auto-open the browser when starting the viewer
+  --help, -h            Show this help
 
 EXAMPLES
   spidey generate ./my-app
@@ -102,10 +105,23 @@ async function main() {
           path.resolve("spidey.json");
         const components = flags.components !== false;
         const force = flags.force === true || flags.f === true;
+        const maxComponentsRaw =
+          flags["max-components"] ?? flags.m ?? undefined;
+        const maxComponents =
+          typeof maxComponentsRaw === "string"
+            ? Number(maxComponentsRaw)
+            : undefined;
+        if (maxComponents !== undefined && !Number.isFinite(maxComponents)) {
+          log.err(
+            `--max-components: expected a number, got ${JSON.stringify(maxComponentsRaw)}`,
+          );
+          process.exit(2);
+        }
         await runGenerate({
           projectPath,
           outputPath: output,
           components,
+          maxComponents,
           force,
         });
         break;

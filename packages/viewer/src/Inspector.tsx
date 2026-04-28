@@ -15,6 +15,8 @@ import { SpacingSection } from "./inspect/sections/SpacingSection";
 import { ContentSection } from "./inspect/sections/ContentSection";
 import { ValueSection } from "./inspect/sections/ValueSection";
 import { PseudoSection } from "./inspect/sections/PseudoSection";
+import { PropsSection, type PropsSectionMode } from "./inspect/sections/PropsSection";
+import { useRecapture } from "./hooks/useRecapture";
 import {
   useEditorDispatch,
   useEditorRev,
@@ -131,6 +133,12 @@ export function Inspector() {
           node={selectedNode && selectedNode.kind === "el" ? selectedNode : null}
           locked={!!instanceLock}
           dispatch={dispatch}
+          masterComponent={componentInfo}
+          masterPropsUsed={
+            componentInfo
+              ? (activeTile?.component?.propsUsed ?? null)
+              : null
+          }
         />
       ) : (
         <div className="px-4 py-3 text-muted-foreground text-[12px]">
@@ -171,38 +179,6 @@ function InstanceLockBanner({
         <PenSquare />
         Edit master
       </Button>
-    </div>
-  );
-}
-
-function SelectedComponentPanel({
-  name,
-  props,
-}: {
-  name: string;
-  props: Record<string, unknown> | null;
-}) {
-  const entries = props
-    ? Object.entries(props).filter(
-        ([, v]) => v !== "__spidey_noop__" && typeof v !== "function",
-      )
-    : [];
-  return (
-    <div className="border-b border-border px-4 py-3">
-      <div className="font-mono text-foreground text-[13px] font-semibold">
-        {`<${name}>`}
-      </div>
-      {entries.length > 0 ? (
-        <div className="mt-2 grid grid-cols-[max-content_1fr] gap-x-2 gap-y-1 text-[11px]">
-          {entries.map(([k, v]) => (
-            <PropRow key={k} name={k} value={v} />
-          ))}
-        </div>
-      ) : (
-        <div className="mt-2 text-[11px] text-muted-foreground/70 italic">
-          {props ? "no data props" : "no captured props"}
-        </div>
-      )}
     </div>
   );
 }
@@ -270,6 +246,8 @@ function StylePanels({
   node,
   locked,
   dispatch,
+  masterComponent,
+  masterPropsUsed,
 }: {
   el: HTMLElement;
   rev: number;
@@ -278,6 +256,15 @@ function StylePanels({
   node: (SpideyNode & { kind: "el" }) | null;
   locked: boolean;
   dispatch: (a: EditAction) => void;
+  /** When non-null, the active tile is a component master; this is its
+   *  component info (name/file/propsUsed). Used together with the
+   *  selection check below to decide whether the props section runs in
+   *  master-mode (recapture-on-edit) or instance-mode (attribute-edit). */
+  masterComponent: { name: string; file: string; propsUsed: Record<string, unknown> } | null;
+  /** Latest propsUsed from the doc (separate from masterComponent so it
+   *  re-reads after an optimistic update without rebuilding the whole
+   *  componentInfo object). */
+  masterPropsUsed: Record<string, unknown> | null;
 }) {
   // getComputedStyle is reactive only via element identity / rev — recompute
   // when either changes so the inputs' placeholders mirror the live cascade.
@@ -285,6 +272,8 @@ function StylePanels({
   useEffect(() => {
     setComputed(getComputedStyle(el));
   }, [el, rev]);
+
+  const { recapture, pending, error } = useRecapture();
 
   // Component-instance panel: surface name + props
   const componentName = el.getAttribute("data-spidey-component");
@@ -298,6 +287,60 @@ function StylePanels({
     }
   }
 
+  // Master-mode applies when the active tile is a master AND the
+  // selected element is the topmost match for its component. Nested
+  // instances (e.g. a <Button> inside a <Card> master tile) fall back
+  // to instance-mode — those edits target the inner data-spidey-props,
+  // not the master's propsUsed.
+  const isMasterRoot = (() => {
+    if (!masterComponent || !componentName) return false;
+    if (componentName !== masterComponent.name) return false;
+    let p = el.parentElement;
+    while (p) {
+      if (p.getAttribute?.("data-spidey-component") === componentName)
+        return false;
+      p = p.parentElement;
+    }
+    return true;
+  })();
+
+  const propsMode: PropsSectionMode | null = !componentName
+    ? null
+    : isMasterRoot
+      ? {
+          kind: "master",
+          onCommit: (next) => {
+            void recapture(tileId, next);
+          },
+          pending,
+          error,
+        }
+      : {
+          kind: "instance",
+          onCommit: (next) =>
+            dispatch({
+              type: "setAttr",
+              tileId,
+              nodeId,
+              name: "data-spidey-props",
+              value: JSON.stringify(next),
+            }),
+          onRawCommit: (text) =>
+            dispatch({
+              type: "setAttr",
+              tileId,
+              nodeId,
+              name: "data-spidey-props",
+              value: text,
+            }),
+        };
+
+  // For master-mode, parsed props come from the doc (live, mutable).
+  // For instance-mode, they come from the captured attribute on the
+  // selected element (read-only DOM, but the gesture log persists edits
+  // to data-spidey-props on dispatch).
+  const parsedProps = isMasterRoot ? masterPropsUsed : runtimeProps;
+
   const setStyle = (prop: string, value: string | null) =>
     dispatch({ type: "setStyle", tileId, nodeId, prop, value });
 
@@ -310,8 +353,13 @@ function StylePanels({
   return (
     <>
       <div className="flex-1 min-h-0 overflow-y-auto pb-4">
-        {componentName && (
-          <SelectedComponentPanel name={componentName} props={runtimeProps} />
+        {componentName && propsMode && (
+          <PropsSection
+            name={componentName}
+            rawAttr={propsAttr}
+            parsed={parsedProps}
+            mode={propsMode}
+          />
         )}
         <div className="px-4 py-3 border-b border-border">
           <div className="font-mono text-[13px] text-foreground font-semibold">

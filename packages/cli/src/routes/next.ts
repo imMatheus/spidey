@@ -8,36 +8,66 @@ export type DiscoveredRoute = {
   url: string;
 };
 
-const PAGE_FILENAMES = new Set([
+const APP_PAGE_FILENAMES = new Set([
   "page.tsx",
   "page.ts",
   "page.jsx",
   "page.js",
+  "page.mdx",
+  "page.md",
 ]);
 
+// Files inside a Pages Router directory that are not routes themselves.
+const PAGES_ROUTER_RESERVED = new Set([
+  "_app",
+  "_document",
+  "_error",
+  "_middleware",
+  "404",
+  "500",
+  "middleware",
+  "instrumentation",
+]);
+
+const PAGES_ROUTER_EXTS = [".tsx", ".ts", ".jsx", ".js", ".mdx", ".md"];
+
 /**
- * Walk the Next.js app/ directory and return one route per page.* file.
- * Group segments "(group)" are stripped, parallel routes "@slot" are skipped,
- * private segments "_foo" are skipped, catch-all segments are skipped in v0.
+ * Walk the Next.js project and return one route per page file.
+ *
+ * Supports both routers:
+ *  - App Router (`app/`, `src/app/`): page.tsx files; group segments
+ *    "(group)" stripped, parallel routes "@slot" skipped, private segments
+ *    "_foo" skipped, catch-all skipped in v0.
+ *  - Pages Router (`pages/`, `src/pages/`): file-based routes; `_app`,
+ *    `_document`, `404`, `500`, `api/` skipped; catch-all skipped in v0.
+ *
+ * When both routers define the same URL the App Router entry wins (matches
+ * the production Next behavior — App Router takes precedence on conflicts).
  */
 export function discoverNextRoutes(root: string): DiscoveredRoute[] {
   const appDirs = [path.join(root, "app"), path.join(root, "src/app")].filter(
     dirExists,
   );
-  if (appDirs.length === 0) return [];
+  const pagesDirs = [
+    path.join(root, "pages"),
+    path.join(root, "src/pages"),
+  ].filter(dirExists);
 
-  const routes: DiscoveredRoute[] = [];
+  const appRoutes: DiscoveredRoute[] = [];
+  for (const dir of appDirs) walkAppRouter(dir, [], appRoutes, root);
 
-  for (const appDir of appDirs) {
-    walk(appDir, [], routes);
-  }
+  const pageRoutes: DiscoveredRoute[] = [];
+  for (const dir of pagesDirs) walkPagesRouter(dir, [], pageRoutes, root);
 
-  // dedupe by pattern, sort by depth then alpha
-  const seen = new Set<string>();
+  // App Router wins on conflict (production Next behavior).
+  const seenPattern = new Set<string>();
+  const seenUrl = new Set<string>();
   const out: DiscoveredRoute[] = [];
-  for (const r of routes) {
-    if (seen.has(r.pattern)) continue;
-    seen.add(r.pattern);
+  for (const r of [...appRoutes, ...pageRoutes]) {
+    if (seenPattern.has(r.pattern)) continue;
+    if (seenUrl.has(r.url)) continue;
+    seenPattern.add(r.pattern);
+    seenUrl.add(r.url);
     out.push(r);
   }
   out.sort((a, b) => {
@@ -49,10 +79,11 @@ export function discoverNextRoutes(root: string): DiscoveredRoute[] {
   return out;
 }
 
-function walk(
+function walkAppRouter(
   dir: string,
   segments: string[],
   out: DiscoveredRoute[],
+  projectRoot: string,
 ): void {
   let entries: fs.Dirent[];
   try {
@@ -61,15 +92,16 @@ function walk(
     return;
   }
 
-  // Has page in this dir?
-  const hasPage = entries.some((e) => e.isFile() && PAGE_FILENAMES.has(e.name));
+  const hasPage = entries.some(
+    (e) => e.isFile() && APP_PAGE_FILENAMES.has(e.name),
+  );
   if (hasPage) {
     const pattern = "/" + segments.filter((s) => s !== "").join("/");
     const cleanPattern = pattern === "//" ? "/" : pattern;
     if (!isCatchAll(cleanPattern)) {
       out.push({
         pattern: cleanPattern,
-        url: substitutePlaceholders(cleanPattern),
+        url: substitutePlaceholders(cleanPattern, projectRoot),
       });
     }
   }
@@ -77,21 +109,85 @@ function walk(
   for (const e of entries) {
     if (!e.isDirectory()) continue;
     const name = e.name;
-    // Skip private segments and parallel/intercepting route slots in v0
     if (name.startsWith("_")) continue;
     if (name.startsWith("@")) continue;
     if (name.startsWith("(.)") || name.startsWith("(..)")) continue;
 
     let segment: string;
     if (name.startsWith("(") && name.endsWith(")")) {
-      // route group → no segment contribution
-      segment = "";
+      segment = ""; // route group → no segment contribution
     } else if (name.startsWith("[") && name.endsWith("]")) {
-      segment = name; // dynamic, kept as-is in pattern
+      segment = name; // dynamic, kept as-is
     } else {
       segment = name;
     }
 
-    walk(path.join(dir, name), [...segments, segment], out);
+    walkAppRouter(
+      path.join(dir, name),
+      [...segments, segment],
+      out,
+      projectRoot,
+    );
+  }
+}
+
+function walkPagesRouter(
+  dir: string,
+  segments: string[],
+  out: DiscoveredRoute[],
+  projectRoot: string,
+): void {
+  let entries: fs.Dirent[];
+  try {
+    entries = fs.readdirSync(dir, { withFileTypes: true });
+  } catch {
+    return;
+  }
+
+  for (const e of entries) {
+    const name = e.name;
+
+    if (e.isDirectory()) {
+      // API routes are server-only; skip the whole subtree.
+      if (segments.length === 0 && name === "api") continue;
+      // Hidden / private subtrees.
+      if (name.startsWith(".")) continue;
+
+      let seg: string;
+      if (name.startsWith("[") && name.endsWith("]")) seg = name;
+      else seg = name;
+
+      walkPagesRouter(
+        path.join(dir, name),
+        [...segments, seg],
+        out,
+        projectRoot,
+      );
+      continue;
+    }
+
+    if (!e.isFile()) continue;
+    const ext = path.extname(name);
+    if (!PAGES_ROUTER_EXTS.includes(ext)) continue;
+    const base = name.slice(0, -ext.length);
+    if (PAGES_ROUTER_RESERVED.has(base)) continue;
+    // Tests / type-tests adjacent to pages.
+    if (/\.(test|spec)$/.test(base)) continue;
+
+    let routeSegments: string[];
+    if (base === "index") {
+      routeSegments = [...segments];
+    } else {
+      routeSegments = [...segments, base];
+    }
+
+    const pattern =
+      routeSegments.length === 0 ? "/" : "/" + routeSegments.join("/");
+    if (isCatchAll(pattern)) continue;
+
+    out.push({
+      pattern,
+      url: substitutePlaceholders(pattern, projectRoot),
+    });
   }
 }

@@ -90,6 +90,14 @@ export type EditAction =
       baselineTrees?: Record<string, SpideyNode | null>;
     }
   | { type: "setTool"; tool: Tool }
+  | {
+      /** Replace a tile's whole tree atomically — used by the recapture
+       *  flow when a master tile is re-rendered with new propsUsed.
+       *  Recorded in history so undo restores the prior tree. */
+      type: "replaceTileTree";
+      tileId: string;
+      tree: SpideyNode;
+    }
   | { type: "setText"; tileId: string; nodeId: string; text: string }
   | {
       type: "setAttr";
@@ -181,6 +189,18 @@ export function reducer(state: EditorState, action: EditAction): EditorState {
         return { ...n, value: action.text };
       });
       return commitChanges(state, [{ tileId: action.tileId, prev, next }], action);
+    }
+
+    case "replaceTileTree": {
+      const prev = state.tileTrees[action.tileId];
+      // First-time replacement on a tile we don't have yet (shouldn't
+      // happen in practice — recapture is master-only — but be safe).
+      if (prev === action.tree) return state;
+      return commitChanges(
+        state,
+        [{ tileId: action.tileId, prev: prev ?? null, next: action.tree }],
+        action,
+      );
     }
 
     case "setAttr":

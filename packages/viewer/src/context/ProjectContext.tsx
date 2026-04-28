@@ -39,6 +39,18 @@ type ProjectContextValue = {
   setActiveProjectId: (id: string | null) => void;
   /** Replace the in-memory doc (used after a successful save). */
   setDoc: (doc: SpideyDocument) => void;
+  /** Update a single tile in the in-memory doc. The mutator receives
+   *  the prior tile and returns the next one. Used by the recapture
+   *  flow to swap a master tile's freshly-rendered tree + propsUsed
+   *  without rewriting the whole doc. autosave watches editor.dirty —
+   *  so callers must also dispatch a reducer action that flips dirty
+   *  (e.g. replaceTileTree) for the save to fire. */
+  updateTile: (
+    tileId: string,
+    update: (
+      prev: import("@spidey/shared").SpideyTile,
+    ) => import("@spidey/shared").SpideyTile,
+  ) => void;
   viewport: ViewportPreset;
   setViewport: (v: ViewportPreset) => void;
   focusId: string | null;
@@ -163,6 +175,28 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
   // another reload.
   const setDocStable = useCallback((next: SpideyDocument) => setDoc(next), []);
 
+  const updateTile = useCallback(
+    (
+      tileId: string,
+      update: (
+        prev: import("@spidey/shared").SpideyTile,
+      ) => import("@spidey/shared").SpideyTile,
+    ) => {
+      setDoc((prev) => {
+        if (!prev) return prev;
+        const tiles = prev.tiles ?? [];
+        const idx = tiles.findIndex((t) => t.id === tileId);
+        if (idx < 0) return prev;
+        const next = update(tiles[idx]);
+        if (next === tiles[idx]) return prev;
+        const nextTiles = tiles.slice();
+        nextTiles[idx] = next;
+        return { ...prev, tiles: nextTiles };
+      });
+    },
+    [],
+  );
+
   const value = useMemo<ProjectContextValue>(
     () => ({
       status,
@@ -172,6 +206,7 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
       activeProjectId,
       setActiveProjectId,
       setDoc: setDocStable,
+      updateTile,
       viewport,
       setViewport,
       focusId,
@@ -184,6 +219,7 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
       projects,
       activeProjectId,
       setDocStable,
+      updateTile,
       viewport,
       focusId,
     ],

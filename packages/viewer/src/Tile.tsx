@@ -8,6 +8,7 @@ import {
   useEditorDispatch,
   useEditorRev,
   useEditorState,
+  useProject,
   useRegisterTileBody,
   useSelection,
   useSelectionActions,
@@ -43,6 +44,49 @@ function applyAttrs(
   }
 }
 
+/**
+ * Rewrite asset URLs captured at dev time so they survive after the user's
+ * dev server has stopped. Capture absolutizes relative paths to the
+ * dev-server origin (e.g. `http://localhost:3000/images/foo.svg`); we
+ * route those through the view-server's `/_spidey-static/<projectId>/...`
+ * proxy, which serves directly from the project's `public/` directory.
+ *
+ * Special-case `/_next/image?url=ENCODED&w=…&q=…` since Next's resizer
+ * can't be replayed without a live dev server — we extract the underlying
+ * `url` and serve that static file.
+ *
+ * Returns the input unchanged when no rewrite applies (e.g. external CDN,
+ * data URI, blob).
+ */
+function makeAssetRewriter(projectId: string | null) {
+  if (!projectId) return (s: string) => s;
+  const STATIC_BASE = `/_spidey-static/${encodeURIComponent(projectId)}`;
+  // Match dev-server-absolute `http(s)://localhost:PORT/<rest>` and any
+  // `127.0.0.1` / `0.0.0.0` variant we might capture.
+  const DEV_ORIGIN = /^(https?:)?\/\/(?:localhost|127\.0\.0\.1|0\.0\.0\.0):\d+(\/.*)?$/;
+  return function rewrite(value: string): string {
+    if (!value) return value;
+    const m = value.match(DEV_ORIGIN);
+    if (!m) return value;
+    const path = m[2] ?? "/";
+    if (path.startsWith("/_next/image")) {
+      const q = path.slice("/_next/image".length);
+      const params = new URLSearchParams(q.startsWith("?") ? q.slice(1) : q);
+      const inner = params.get("url");
+      if (inner && inner.startsWith("/")) {
+        return STATIC_BASE + inner;
+      }
+      // External (`?url=https://cdn...`) — leave alone, browser will fetch.
+      if (inner) return inner;
+      return value;
+    }
+    // `/_next/static/...` is bundled output; not in `public/`. Leave the
+    // dev-origin URL so it loads while dev is up; harmless 404 otherwise.
+    if (path.startsWith("/_next/")) return value;
+    return STATIC_BASE + path;
+  };
+}
+
 export function Tile({ page, width, height, x, y, scale }: Props) {
   const dispatch = useEditorDispatch();
   const rev = useEditorRev();
@@ -53,6 +97,7 @@ export function Tile({ page, width, height, x, y, scale }: Props) {
   const { setActiveTileId, setSelectedNodeId, setHoveredNodeId } =
     useSelectionActions();
   const registerBody = useRegisterTileBody();
+  const { activeProjectId } = useProject();
 
   const active = activeTileId === page.id;
   const tileSelectedNodeId = active ? selectedNodeId : null;
@@ -137,9 +182,18 @@ export function Tile({ page, width, height, x, y, scale }: Props) {
 
     if (page.css) {
       const style = document.createElement("style");
+      const rewriteAsset = makeAssetRewriter(activeProjectId);
       // `:root` doesn't match inside a shadow root — rewrite to `:host` so
-      // CSS-variable declarations and theme rules continue to apply.
-      style.textContent = page.css.replace(/:root\b/g, ":host");
+      // CSS-variable declarations and theme rules continue to apply. Also
+      // rewrite `url(http://localhost:3000/...)` references to the
+      // view-server's static-asset proxy so background-image / mask-image
+      // assets keep loading after the dev server has stopped.
+      style.textContent = page.css
+        .replace(/:root\b/g, ":host")
+        .replace(/url\(\s*(['"]?)([^'")]+)\1\s*\)/g, (_m, q, raw) => {
+          const rewritten = rewriteAsset(raw.trim());
+          return `url(${q}${rewritten}${q})`;
+        });
       shadow.appendChild(style);
     }
 
@@ -156,7 +210,14 @@ export function Tile({ page, width, height, x, y, scale }: Props) {
     // from deps. Including it would re-fire on every render of the
     // provider and wipe the body unnecessarily.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [page.id, page.status, page.css, page.bodyAttrs, page.htmlAttrs]);
+  }, [
+    page.id,
+    page.status,
+    page.css,
+    page.bodyAttrs,
+    page.htmlAttrs,
+    activeProjectId,
+  ]);
 
   // ----- Tree mount (tree reference changed) -----
   useEffect(() => {
@@ -169,6 +230,41 @@ export function Tile({ page, width, height, x, y, scale }: Props) {
     // synthesized body so we don't end up with a body-inside-body.
     for (const child of tree.children) {
       body.appendChild(renderNode(child));
+    }
+
+    // Rewrite asset URLs to flow through the view-server's static proxy.
+    // Without this, every <img src="http://localhost:3000/..."> 404s as
+    // soon as the user's dev server stops. Done after renderNode mounts
+    // the tree so we walk the actual rendered DOM (including SVG) once.
+    {
+      const rewriteAsset = makeAssetRewriter(activeProjectId);
+      const ATTRS = ["src", "poster"] as const;
+      body.querySelectorAll<HTMLElement>("[src], [poster], [srcset]").forEach(
+        (el) => {
+          for (const a of ATTRS) {
+            const v = el.getAttribute(a);
+            if (v) {
+              const next = rewriteAsset(v);
+              if (next !== v) el.setAttribute(a, next);
+            }
+          }
+          const ss = el.getAttribute("srcset");
+          if (ss) {
+            const rewritten = ss
+              .split(",")
+              .map((part) => {
+                const trimmed = part.trim();
+                if (!trimmed) return "";
+                const m = trimmed.match(/^(\S+)(\s.*)?$/);
+                if (!m) return trimmed;
+                return rewriteAsset(m[1]) + (m[2] ?? "");
+              })
+              .filter(Boolean)
+              .join(", ");
+            if (rewritten !== ss) el.setAttribute("srcset", rewritten);
+          }
+        },
+      );
     }
 
     // Defang anchors so clicks don't navigate; forms so submits don't reload.
@@ -215,7 +311,7 @@ export function Tile({ page, width, height, x, y, scale }: Props) {
         i.addEventListener("click", (e) => e.preventDefault());
         i.tabIndex = -1;
       });
-  }, [tree, page.id]);
+  }, [tree, page.id, activeProjectId]);
 
   // ----- Pointer/keyboard handlers in shadow root -----
   useEffect(() => {
@@ -676,8 +772,9 @@ export function Tile({ page, width, height, x, y, scale }: Props) {
   const ringPx = Math.max(1, 2 / Math.max(scale, 0.05));
 
   // Floating Figma-style label above the tile. Font size scales inversely
-  // with zoom so the label reads at ~12px regardless of canvas scale.
-  const labelFontPx = Math.max(8, 12 / Math.max(scale, 0.05));
+  // with zoom so the label reads at ~10px on-screen regardless of canvas
+  // scale.
+  const labelFontPx = Math.max(7, 10 / Math.max(scale, 0.05));
   const labelGapPx = labelFontPx * 0.6;
 
   const labelText =

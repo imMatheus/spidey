@@ -81,7 +81,10 @@ export function discoverViteRoutes(root: string): DiscoveredRoute[] {
   }
 
   const out = Array.from(patterns)
-    .map((pattern) => ({ pattern, url: substitutePlaceholders(pattern) }))
+    .map((pattern) => ({
+      pattern,
+      url: substitutePlaceholders(pattern, root),
+    }))
     .sort((a, b) => {
       const da = a.pattern.split("/").length;
       const db = b.pattern.split("/").length;

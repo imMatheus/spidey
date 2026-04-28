@@ -1,8 +1,57 @@
-import { chromium, type Browser } from "playwright";
+import { chromium, type Browser, type Page, type Response } from "playwright";
 import type { SpideyTile, SpideyNode } from "@spidey/shared";
-import { log } from "./util.js";
+import { log, sleep } from "./util.js";
 
 const VIEWPORT = { width: 1280, height: 800 };
+
+const GOTO_TIMEOUT_MS = 60_000;
+const TRANSIENT_PATTERNS = [
+  /ERR_CONNECTION_REFUSED/,
+  /ERR_EMPTY_RESPONSE/,
+  /ERR_CONNECTION_RESET/,
+  /ECONNREFUSED/,
+  /ECONNRESET/,
+  /Timeout \d+ms exceeded/,
+];
+
+/**
+ * Goto with one retry on transient errors. Heavy dev servers (Next.js
+ * compiling a complex page on first request) sometimes drop the connection
+ * mid-compile or return ECONNREFUSED if the previous request stalled them.
+ * A short pause + one retry recovers most of these without changing the
+ * happy-path latency.
+ */
+/**
+ * Cheap probe of a base URL — returns true if anything answers within 3s.
+ * Used to distinguish "dev server is just slow" from "dev server is dead"
+ * after a goto failure.
+ */
+async function isReachable(baseUrl: string): Promise<boolean> {
+  try {
+    const ctl = new AbortController();
+    const t = setTimeout(() => ctl.abort(), 3_000);
+    try {
+      const res = await fetch(baseUrl, { method: "GET", signal: ctl.signal });
+      return res.status > 0;
+    } finally {
+      clearTimeout(t);
+    }
+  } catch {
+    return false;
+  }
+}
+
+async function gotoWithRetry(page: Page, url: string): Promise<Response | null> {
+  try {
+    return await page.goto(url, { waitUntil: "load", timeout: GOTO_TIMEOUT_MS });
+  } catch (e: any) {
+    const msg = String(e?.message ?? e);
+    const transient = TRANSIENT_PATTERNS.some((re) => re.test(msg));
+    if (!transient) throw e;
+    await sleep(2_000);
+    return await page.goto(url, { waitUntil: "load", timeout: GOTO_TIMEOUT_MS });
+  }
+}
 
 export type CaptureTarget = {
   /** Stable id for the resulting tile */
@@ -19,27 +68,50 @@ export type CaptureTarget = {
 export type CaptureOptions = {
   baseUrl: string;
   targets: CaptureTarget[];
+  /** Optional pre-launched browser. When provided, captureAll does not
+   *  close it on exit — caller owns the lifecycle. Used by the view
+   *  server's recapture path so we don't pay browser-cold-start on
+   *  every prop edit. */
+  browser?: Browser;
+  /** Called after each tile is captured. Lets the caller persist progress
+   *  incrementally so a long run can be inspected mid-flight or recover
+   *  from a crash without losing what's already been captured. */
+  onTile?: (tile: SpideyTile, allSoFar: SpideyTile[]) => void | Promise<void>;
+  /** Called when capture detects the dev server has stopped responding
+   *  (e.g. crashed under memory pressure). Should restart the dev server
+   *  and return its new base URL. If omitted, capture marks the remaining
+   *  tiles as errors and continues. */
+  onDevServerDeath?: () => Promise<string>;
 };
 
 export async function captureAll({
   baseUrl,
   targets,
+  browser: externalBrowser,
+  onTile,
+  onDevServerDeath,
 }: CaptureOptions): Promise<{ tiles: SpideyTile[]; viewport: typeof VIEWPORT }> {
-  let browser: Browser | null = null;
-  try {
-    browser = await chromium.launch({ headless: true });
-  } catch (e: any) {
-    throw new Error(
-      `Failed to launch Chromium. You may need to run:\n  bunx playwright install chromium\n\nOriginal: ${e?.message ?? e}`,
-    );
+  let browser: Browser | null = externalBrowser ?? null;
+  const ownsBrowser = !externalBrowser;
+  if (!browser) {
+    try {
+      browser = await chromium.launch({ headless: true });
+    } catch (e: any) {
+      throw new Error(
+        `Failed to launch Chromium. You may need to run:\n  bunx playwright install chromium\n\nOriginal: ${e?.message ?? e}`,
+      );
+    }
   }
   const ctx = await browser.newContext({ viewport: VIEWPORT });
   const out: SpideyTile[] = [];
 
+  // Mutable so we can swap in a new dev-server URL after a restart.
+  let currentBaseUrl = baseUrl;
+
   try {
     for (let i = 0; i < targets.length; i++) {
       const t = targets[i];
-      const url = baseUrl.replace(/\/$/, "") + t.url;
+      const url = currentBaseUrl.replace(/\/$/, "") + t.url;
       log.step(`capturing [${i + 1}/${targets.length}] ${t.label} → ${url}`);
 
       const page = await ctx.newPage();
@@ -54,10 +126,47 @@ export async function captureAll({
       };
 
       try {
-        const response = await page.goto(url, {
-          waitUntil: "networkidle",
-          timeout: 30_000,
-        });
+        // `load` (not `networkidle`) for goto — dev-server HMR sockets,
+        // analytics beacons, Sentry, posthog and similar long-poll
+        // connections keep `networkidle` from ever firing on real apps,
+        // so we wait only for the load event and then settle explicitly.
+        // 60s timeout because Next.js dev mode can take ~30s on the first
+        // compile of a heavy route.
+        let response: Response | null;
+        try {
+          response = await gotoWithRetry(page, url);
+        } catch (gotoErr: any) {
+          // Connection-refused / empty-response after retry usually means
+          // the dev server crashed (typically OOM under heavy compile
+          // load). Probe the base URL; if dead, ask the caller to restart
+          // and retry the goto once against the new URL.
+          const msg = String(gotoErr?.message ?? gotoErr);
+          const looksDead =
+            /ERR_CONNECTION_REFUSED|ERR_EMPTY_RESPONSE|ERR_CONNECTION_RESET/.test(
+              msg,
+            );
+          if (looksDead && onDevServerDeath) {
+            const alive = await isReachable(currentBaseUrl);
+            if (!alive) {
+              log.warn(
+                `dev server appears dead (${msg.split("\n")[0]}); restarting…`,
+              );
+              try {
+                currentBaseUrl = await onDevServerDeath();
+              } catch (restartErr: any) {
+                throw new Error(
+                  `dev server restart failed: ${restartErr?.message ?? restartErr}`,
+                );
+              }
+              const newUrl = currentBaseUrl.replace(/\/$/, "") + t.url;
+              response = await gotoWithRetry(page, newUrl);
+            } else {
+              throw gotoErr;
+            }
+          } else {
+            throw gotoErr;
+          }
+        }
         if (!response) throw new Error("no response from page.goto");
         if (response.status() >= 400) {
           throw new Error(`HTTP ${response.status()} ${response.statusText()}`);
@@ -66,11 +175,10 @@ export async function captureAll({
         // Initial settle so React can commit the post-goto effects.
         await page.waitForTimeout(800);
 
-        // Wait for any in-flight fetch() requests kicked off in effects to
-        // resolve. networkidle on goto fires too early for apps that fetch
-        // *after* hydration (Products page hits dummyjson in useEffect →
-        // we'd otherwise capture skeletons). 5s cap so a stuck endpoint
-        // doesn't break the whole run.
+        // Best-effort networkidle wait so any post-hydration `fetch` calls
+        // have a chance to resolve. Capped tight (5s) — many production
+        // apps maintain long-poll/websocket connections that would block
+        // forever otherwise.
         try {
           await page.waitForLoadState("networkidle", { timeout: 5_000 });
         } catch {
@@ -368,6 +476,44 @@ export async function captureAll({
             return out;
           }
 
+          // Rewrite root-relative URLs (`/foo.svg`) to absolute URLs against
+          // the dev server origin. Captured tiles render inside the viewer's
+          // shadow DOM at a different origin, so without this every <img>,
+          // <source>, and CSS background-image referenced by relative path
+          // 404s. Skip protocol-relative URLs (`//cdn.example.com/x.png`),
+          // already-absolute URLs, data: URIs, and bare URI-fragment refs.
+          const ORIGIN = location.origin;
+          function absolutize(value: string | null | undefined): string {
+            if (!value) return value ?? "";
+            const v = value.trim();
+            if (
+              !v ||
+              v.startsWith("//") ||
+              v.startsWith("data:") ||
+              v.startsWith("blob:") ||
+              v.startsWith("#") ||
+              /^[a-z]+:/i.test(v)
+            ) {
+              return value!;
+            }
+            if (v.startsWith("/")) return ORIGIN + v;
+            return value!;
+          }
+          function absolutizeSrcset(value: string): string {
+            // srcset is a comma-separated list of `<url> <descriptor>` pairs.
+            return value
+              .split(",")
+              .map((part) => {
+                const trimmed = part.trim();
+                if (!trimmed) return "";
+                const m = trimmed.match(/^(\S+)(\s.*)?$/);
+                if (!m) return trimmed;
+                return absolutize(m[1]) + (m[2] ?? "");
+              })
+              .filter(Boolean)
+              .join(", ");
+          }
+
           function buildNode(el: Element): any {
             const tag = el.tagName.toLowerCase();
             if (SKIP.has(tag)) return null;
@@ -385,6 +531,14 @@ export async function captureAll({
               }
               if (name === "style") {
                 style = parseInlineStyle(a.value);
+                continue;
+              }
+              if (name === "src" || name === "poster") {
+                attrs[a.name] = absolutize(a.value);
+                continue;
+              }
+              if (name === "srcset" || name === "imagesrcset") {
+                attrs[a.name] = absolutizeSrcset(a.value);
                 continue;
               }
               attrs[a.name] = a.value;
@@ -447,9 +601,35 @@ export async function captureAll({
             }
           }
 
+          // Same root-relative → absolute fix for `url(/foo.svg)` references
+          // inside captured CSS. background-image / mask-image etc. live
+          // here and would 404 in the viewer's shadow DOM otherwise.
+          function absolutizeCssUrls(s: string): string {
+            return s.replace(
+              /url\(\s*(['"]?)([^'")]+)\1\s*\)/g,
+              (_m, quote, raw) => {
+                const trimmed = raw.trim();
+                if (
+                  !trimmed ||
+                  trimmed.startsWith("//") ||
+                  trimmed.startsWith("data:") ||
+                  trimmed.startsWith("blob:") ||
+                  trimmed.startsWith("#") ||
+                  /^[a-z]+:/i.test(trimmed)
+                ) {
+                  return `url(${quote}${raw}${quote})`;
+                }
+                if (trimmed.startsWith("/")) {
+                  return `url(${quote}${ORIGIN + trimmed}${quote})`;
+                }
+                return `url(${quote}${raw}${quote})`;
+              },
+            );
+          }
+
           return {
             tree,
-            css: rewriteViewportUnits(cssChunks.join("\n")),
+            css: absolutizeCssUrls(rewriteViewportUnits(cssChunks.join("\n"))),
             containerSize: measuredSize,
             bodyAttrs,
             htmlAttrs,
@@ -473,10 +653,17 @@ export async function captureAll({
       }
 
       out.push(captured);
+      if (onTile) {
+        try {
+          await onTile(captured, out);
+        } catch (e: any) {
+          log.warn(`onTile callback threw: ${e?.message ?? e}`);
+        }
+      }
     }
   } finally {
     await ctx.close();
-    await browser.close();
+    if (ownsBrowser) await browser.close();
   }
 
   return { tiles: out, viewport: VIEWPORT };

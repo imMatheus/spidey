@@ -11,6 +11,11 @@ import {
   HandoffError,
   type AgentName,
 } from "./handoff.js";
+import {
+  RecaptureError,
+  disposeAll as disposeRecaptureRuntimes,
+  recaptureMasterTile,
+} from "./recapture.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -266,6 +271,81 @@ export async function startViewer({
       return;
     }
 
+    // Recapture: POST /spidey-projects/:id/recapture — re-render a
+    // component master tile with new propsUsed and return the freshly
+    // captured tile. The viewer's autosave still owns persisting the
+    // doc; we just hand back the tile for the editor to swap in.
+    const recaptureMatch = pathname.match(
+      /^\/spidey-projects\/([^/]+)\/recapture$/,
+    );
+    if (recaptureMatch && req.method === "POST") {
+      const id = recaptureMatch[1];
+      const project = projects.find((p) => p.id === id);
+      if (!project) {
+        res.statusCode = 404;
+        res.end("project not found");
+        return;
+      }
+      const chunks: Buffer[] = [];
+      let total = 0;
+      const MAX = 5 * 1024 * 1024;
+      req.on("data", (c) => {
+        total += c.length;
+        if (total > MAX) {
+          res.statusCode = 413;
+          res.end("body too large");
+          req.destroy();
+          return;
+        }
+        chunks.push(c);
+      });
+      req.on("end", async () => {
+        try {
+          const body = Buffer.concat(chunks).toString("utf8");
+          const parsed = JSON.parse(body) as {
+            tileId?: string;
+            propsUsed?: Record<string, unknown>;
+          };
+          if (typeof parsed.tileId !== "string" || !parsed.tileId) {
+            res.statusCode = 400;
+            res.end("tileId is required");
+            return;
+          }
+          if (
+            !parsed.propsUsed ||
+            typeof parsed.propsUsed !== "object" ||
+            Array.isArray(parsed.propsUsed)
+          ) {
+            res.statusCode = 400;
+            res.end("propsUsed must be a plain object");
+            return;
+          }
+          const result = await recaptureMasterTile({
+            projectId: project.id,
+            docPath: project.absPath,
+            tileId: parsed.tileId,
+            propsUsed: parsed.propsUsed,
+          });
+          res.setHeader("content-type", MIME[".json"]);
+          res.statusCode = 200;
+          res.end(JSON.stringify(result));
+        } catch (e) {
+          if (e instanceof RecaptureError) {
+            res.statusCode = e.statusCode;
+            res.end(e.message);
+          } else {
+            res.statusCode = 500;
+            res.end(`recapture failed: ${(e as Error)?.message ?? e}`);
+          }
+        }
+      });
+      req.on("error", (e) => {
+        res.statusCode = 500;
+        res.end(String(e));
+      });
+      return;
+    }
+
     // Per-project JSON, e.g. /spidey-projects/next-app.json
     const m = pathname.match(/^\/spidey-projects\/([^/]+)\.json$/);
     if (m) {
@@ -335,6 +415,68 @@ export async function startViewer({
       return;
     }
 
+    // Static asset proxy: GET /_spidey-static/:projectId/<path>. Serves
+    // files from the project's `public/` directory so tiles render with
+    // their images even after the user's dev server has stopped. Path
+    // traversal is rejected by `path.relative` going outside the public
+    // root. We don't proxy `/_next/image` resizes (those need a live
+    // dev server) — `_next/image?url=X` URLs in tiles are unwrapped to
+    // the underlying static path on the viewer side before they hit us.
+    const staticMatch = pathname.match(
+      /^\/_spidey-static\/([^/]+)\/(.+)$/,
+    );
+    if (staticMatch) {
+      const id = staticMatch[1];
+      const project = projects.find((p) => p.id === id);
+      if (!project) {
+        res.statusCode = 404;
+        res.end("project not found");
+        return;
+      }
+      let projectRoot: string | null = null;
+      try {
+        const doc = JSON.parse(fs.readFileSync(project.absPath, "utf8"));
+        if (doc?.project?.root && typeof doc.project.root === "string") {
+          projectRoot = doc.project.root;
+        }
+      } catch {
+        // fall through to 404
+      }
+      if (!projectRoot) {
+        res.statusCode = 404;
+        res.end("project root unknown");
+        return;
+      }
+      const publicDir = path.join(projectRoot, "public");
+      const requested = path.join(publicDir, staticMatch[2]);
+      const rel = path.relative(publicDir, requested);
+      if (rel.startsWith("..") || path.isAbsolute(rel)) {
+        res.statusCode = 403;
+        res.end("forbidden");
+        return;
+      }
+      if (!fileExists(requested)) {
+        res.statusCode = 404;
+        res.end("asset not found");
+        return;
+      }
+      const ext = path.extname(requested).toLowerCase();
+      res.setHeader(
+        "content-type",
+        MIME[ext] ?? "application/octet-stream",
+      );
+      // Cache for the session. Dev assets shouldn't change while the
+      // viewer is open, and a max-age makes the second-hit zero-cost.
+      res.setHeader("cache-control", "max-age=300");
+      fs.createReadStream(requested)
+        .on("error", (e) => {
+          res.statusCode = 500;
+          res.end(String(e));
+        })
+        .pipe(res);
+      return;
+    }
+
     // Backwards-compat: serve the first project at /spidey.json
     if (pathname === "/spidey.json") {
       res.setHeader("content-type", MIME[".json"]);
@@ -384,7 +526,12 @@ export async function startViewer({
   if (open) openBrowser(viewerUrl);
 
   const shutdown = () => {
-    server.close(() => process.exit(0));
+    server.close(() => {
+      // Best-effort: tear down any cached dev servers / browsers so we
+      // don't leave detached child processes after the view server
+      // exits. The 500ms hard timeout below caps how long we wait.
+      disposeRecaptureRuntimes().finally(() => process.exit(0));
+    });
     setTimeout(() => process.exit(0), 500).unref();
   };
   process.on("SIGINT", shutdown);

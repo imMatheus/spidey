@@ -1,6 +1,6 @@
 {
   "version": 3,
-  "generatedAt": "2026-04-27T00:50:30.385Z",
+  "generatedAt": "2026-04-27T19:21:13.528Z",
   "project": {
     "name": "spidey-example-vite",
     "framework": "vite",
@@ -338,7 +338,7 @@
         ]
       },
       "css": "* { box-sizing: border-box; }\nhtml, body { margin: 0px; padding: 0px; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; color: rgb(26, 26, 26); background: rgb(250, 250, 250); }\n.page { min-height: 800px; display: flex; flex-direction: column; }\n.nav { display: flex; gap: 20px; align-items: center; padding: 16px 32px; background: white; border-bottom: 1px solid rgb(234, 234, 234); }\n.nav a { color: rgb(68, 68, 68); text-decoration: none; font-size: 14px; }\n.nav a:hover { color: rgb(0, 112, 243); }\n.nav .brand { font-weight: 700; font-size: 18px; color: rgb(26, 26, 26); margin-right: auto; }\n.main { flex: 1 1 0%; padding: 48px 32px; max-width: 960px; width: 100%; margin: 0px auto; }\n.main h1 { font-size: 36px; margin: 0px 0px 16px; }\n.main h2 { font-size: 22px; margin: 0px; }\n.main .lead { font-size: 18px; color: rgb(85, 85, 85); margin-bottom: 32px; }\n.card-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }\n.card { background: white; border: 1px solid rgb(234, 234, 234); border-radius: 8px; padding: 24px; }\n.card h3 { margin: 0px 0px 8px; font-size: 16px; }\n.card p { margin: 0px; color: rgb(102, 102, 102); font-size: 14px; }\n.tbl { width: 100%; border-collapse: collapse; background: white; border: 1px solid rgb(234, 234, 234); border-radius: 8px; overflow: hidden; }\n.tbl th, .tbl td { padding: 12px 16px; text-align: left; }\n.tbl thead { background: rgb(244, 244, 244); font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; color: rgb(85, 85, 85); }\n.tbl tbody tr { border-top: 1px solid rgb(234, 234, 234); }\n.profile { display: flex; gap: 20px; align-items: center; background: white; padding: 24px; border: 1px solid rgb(234, 234, 234); border-radius: 8px; }\n.avatar { width: 64px; height: 64px; border-radius: 50%; background: linear-gradient(135deg, rgb(110, 142, 251), rgb(167, 119, 227)); color: white; font-size: 24px; font-weight: 700; display: grid; place-items: center; }\n.dim { color: rgb(136, 136, 136); }\n.footer { padding: 16px 32px; color: rgb(136, 136, 136); font-size: 12px; border-top: 1px solid rgb(234, 234, 234); background: white; }\n.longread { max-width: 720px; margin: 0px auto; font-family: Georgia, \"Times New Roman\", serif; color: rgb(26, 26, 26); }\n.longread h1, .longread h2, .longread h3, .longread h4 { font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; letter-spacing: -0.01em; }\n.lr-eyebrow { text-transform: uppercase; letter-spacing: 0.12em; font-size: 12px; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; color: rgb(107, 107, 107); margin: 0px 0px 14px; }\n.longread h1 { font-size: 44px; line-height: 1.15; margin: 0px 0px 18px; }\n.longread h2 { font-size: 26px; line-height: 1.3; margin: 56px 0px 14px; }\n.longread h3 { font-size: 19px; line-height: 1.4; margin: 36px 0px 10px; }\n.longread h4 { font-size: 15px; margin: 0px 0px 8px; }\n.lr-lede { font-size: 22px; line-height: 1.55; color: rgb(42, 42, 42); font-style: italic; margin: 0px 0px 24px; }\n.longread p { font-size: 18px; line-height: 1.75; color: rgb(42, 42, 42); margin: 0px 0px 20px; }\n.lr-byline { display: flex; justify-content: space-between; align-items: center; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; font-size: 13px; color: rgb(107, 107, 107); border-top: 1px solid rgb(238, 238, 238); border-bottom: 1px solid rgb(238, 238, 238); padding: 14px 0px; margin: 0px 0px 36px; }\n.lr-figure { margin: 36px 0px; }\n.lr-figure-img { background: linear-gradient(135deg, rgb(42, 63, 106), rgb(91, 140, 255) 60%, rgb(201, 163, 255)); border-radius: 6px; height: 320px; display: grid; place-items: center; color: rgba(255, 255, 255, 0.5); font-family: monospace; font-size: 11px; text-transform: uppercase; letter-spacing: 0.2em; }\n.lr-figure figcaption { margin-top: 10px; font-size: 13px; color: rgb(107, 107, 107); font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; }\n.longread ul, .longread ol { padding-left: 1.4em; margin: 0px 0px 24px; }\n.longread li { font-size: 17px; line-height: 1.7; color: rgb(42, 42, 42); margin-bottom: 10px; }\n.longread blockquote { margin: 32px 0px; padding: 0px 0px 0px 22px; border-left: 3px solid rgb(91, 140, 255); }\n.longread blockquote p { font-size: 22px; font-style: italic; line-height: 1.55; color: rgb(26, 26, 26); }\n.longread blockquote cite { display: block; font-size: 13px; color: rgb(107, 107, 107); font-style: normal; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; margin-top: 6px; }\n.longread pre { background: rgb(14, 17, 23); color: rgb(226, 232, 240); padding: 18px 20px; border-radius: 6px; font-size: 13px; line-height: 1.6; overflow-x: auto; margin: 0px 0px 28px; }\n.longread code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }\n.lr-callout { background: rgb(240, 244, 255); border: 1px solid rgb(214, 224, 255); border-radius: 8px; padding: 18px 22px; margin: 32px 0px; }\n.lr-callout h4 { font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; font-size: 13px; text-transform: uppercase; letter-spacing: 0.1em; color: rgb(91, 140, 255); margin: 0px 0px 8px; }\n.lr-callout p { font-size: 16px; margin: 0px; }\n.lr-table { width: 100%; border-collapse: collapse; margin: 0px 0px 28px; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; }\n.lr-table th, .lr-table td { padding: 10px 12px; text-align: left; border-bottom: 1px solid rgb(238, 238, 238); font-size: 14px; }\n.lr-table th { color: rgb(107, 107, 107); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; }\n.lr-link { color: rgb(91, 140, 255); text-decoration: underline; text-underline-offset: 2px; }\n.lr-divider { border-width: 1px 0px 0px; border-style: solid none none; border-color: rgb(238, 238, 238) currentcolor currentcolor; border-image: initial; margin: 48px 0px; }\n.lr-footer { font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; }\n.lr-tags { display: flex; gap: 8px; margin: 0px 0px 16px; }\n.lr-tag { background: rgb(244, 246, 250); border: 1px solid rgb(230, 233, 239); border-radius: 999px; padding: 4px 12px; font-size: 12px; color: rgb(68, 68, 68); }\n.lr-also { font-size: 14px; color: rgb(107, 107, 107); }",
-      "capturedAt": "2026-04-27T00:50:20.569Z",
+      "capturedAt": "2026-04-27T19:21:01.158Z",
       "viewport": {
         "width": 1280,
         "height": 800
@@ -359,14 +359,14 @@
       "id": "route:about",
       "status": "ok",
       "tree": {
-        "id": "t1-n27",
+        "id": "t1-n29",
         "kind": "el",
         "tag": "body",
         "attrs": {},
         "style": {},
         "children": [
           {
-            "id": "t1-n26",
+            "id": "t1-n28",
             "kind": "el",
             "tag": "div",
             "attrs": {
@@ -375,7 +375,7 @@
             "style": {},
             "children": [
               {
-                "id": "t1-n25",
+                "id": "t1-n27",
                 "kind": "el",
                 "tag": "div",
                 "attrs": {
@@ -488,7 +488,7 @@
                     ]
                   },
                   {
-                    "id": "t1-n22",
+                    "id": "t1-n24",
                     "kind": "el",
                     "tag": "main",
                     "attrs": {
@@ -546,20 +546,6 @@
                             ]
                           },
                           {
-                            "id": "t1-n20",
-                            "kind": "el",
-                            "tag": "li",
-                            "attrs": {},
-                            "style": {},
-                            "children": [
-                              {
-                                "id": "t1-n19",
-                                "kind": "text",
-                                "value": "Specializes in stress-testing canvas viewers"
-                              }
-                            ]
-                          },
-                          {
                             "id": "t1-n18",
                             "kind": "el",
                             "tag": "li",
@@ -572,13 +558,57 @@
                                 "value": "Headquartered nowhere"
                               }
                             ]
+                          },
+                          {
+                            "id": "t1-n20",
+                            "kind": "el",
+                            "tag": "li",
+                            "attrs": {},
+                            "style": {},
+                            "children": [
+                              {
+                                "id": "t1-n19",
+                                "kind": "text",
+                                "value": "Specializes in stress-testing canvas viewers"
+                              }
+                            ]
+                          }
+                        ]
+                      },
+                      {
+                        "id": "t1-n23",
+                        "kind": "el",
+                        "tag": "div",
+                        "attrs": {
+                          "data-spidey-component": "ColorBox",
+                          "data-spidey-props": "{\"variant\":\"blue\",\"text\":\"matheus tester\"}"
+                        },
+                        "style": {
+                          "width": "100px",
+                          "height": "100px",
+                          "background": "rgb(34, 197, 94)",
+                          "color": "white",
+                          "display": "flex",
+                          "align-items": "center",
+                          "justify-content": "center",
+                          "text-align": "center",
+                          "font-size": "12px",
+                          "font-weight": "600",
+                          "padding": "4px",
+                          "box-sizing": "border-box"
+                        },
+                        "children": [
+                          {
+                            "id": "t1-n22",
+                            "kind": "text",
+                            "value": "matheus tester"
                           }
                         ]
                       }
                     ]
                   },
                   {
-                    "id": "t1-n24",
+                    "id": "t1-n26",
                     "kind": "el",
                     "tag": "footer",
                     "attrs": {
@@ -587,7 +617,7 @@
                     "style": {},
                     "children": [
                       {
-                        "id": "t1-n23",
+                        "id": "t1-n25",
                         "kind": "text",
                         "value": "© Acme · vite + react-router"
                       }
@@ -600,7 +630,7 @@
         ]
       },
       "css": "* { box-sizing: border-box; }\nhtml, body { margin: 0px; padding: 0px; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; color: rgb(26, 26, 26); background: rgb(250, 250, 250); }\n.page { min-height: 800px; display: flex; flex-direction: column; }\n.nav { display: flex; gap: 20px; align-items: center; padding: 16px 32px; background: white; border-bottom: 1px solid rgb(234, 234, 234); }\n.nav a { color: rgb(68, 68, 68); text-decoration: none; font-size: 14px; }\n.nav a:hover { color: rgb(0, 112, 243); }\n.nav .brand { font-weight: 700; font-size: 18px; color: rgb(26, 26, 26); margin-right: auto; }\n.main { flex: 1 1 0%; padding: 48px 32px; max-width: 960px; width: 100%; margin: 0px auto; }\n.main h1 { font-size: 36px; margin: 0px 0px 16px; }\n.main h2 { font-size: 22px; margin: 0px; }\n.main .lead { font-size: 18px; color: rgb(85, 85, 85); margin-bottom: 32px; }\n.card-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }\n.card { background: white; border: 1px solid rgb(234, 234, 234); border-radius: 8px; padding: 24px; }\n.card h3 { margin: 0px 0px 8px; font-size: 16px; }\n.card p { margin: 0px; color: rgb(102, 102, 102); font-size: 14px; }\n.tbl { width: 100%; border-collapse: collapse; background: white; border: 1px solid rgb(234, 234, 234); border-radius: 8px; overflow: hidden; }\n.tbl th, .tbl td { padding: 12px 16px; text-align: left; }\n.tbl thead { background: rgb(244, 244, 244); font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; color: rgb(85, 85, 85); }\n.tbl tbody tr { border-top: 1px solid rgb(234, 234, 234); }\n.profile { display: flex; gap: 20px; align-items: center; background: white; padding: 24px; border: 1px solid rgb(234, 234, 234); border-radius: 8px; }\n.avatar { width: 64px; height: 64px; border-radius: 50%; background: linear-gradient(135deg, rgb(110, 142, 251), rgb(167, 119, 227)); color: white; font-size: 24px; font-weight: 700; display: grid; place-items: center; }\n.dim { color: rgb(136, 136, 136); }\n.footer { padding: 16px 32px; color: rgb(136, 136, 136); font-size: 12px; border-top: 1px solid rgb(234, 234, 234); background: white; }\n.longread { max-width: 720px; margin: 0px auto; font-family: Georgia, \"Times New Roman\", serif; color: rgb(26, 26, 26); }\n.longread h1, .longread h2, .longread h3, .longread h4 { font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; letter-spacing: -0.01em; }\n.lr-eyebrow { text-transform: uppercase; letter-spacing: 0.12em; font-size: 12px; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; color: rgb(107, 107, 107); margin: 0px 0px 14px; }\n.longread h1 { font-size: 44px; line-height: 1.15; margin: 0px 0px 18px; }\n.longread h2 { font-size: 26px; line-height: 1.3; margin: 56px 0px 14px; }\n.longread h3 { font-size: 19px; line-height: 1.4; margin: 36px 0px 10px; }\n.longread h4 { font-size: 15px; margin: 0px 0px 8px; }\n.lr-lede { font-size: 22px; line-height: 1.55; color: rgb(42, 42, 42); font-style: italic; margin: 0px 0px 24px; }\n.longread p { font-size: 18px; line-height: 1.75; color: rgb(42, 42, 42); margin: 0px 0px 20px; }\n.lr-byline { display: flex; justify-content: space-between; align-items: center; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; font-size: 13px; color: rgb(107, 107, 107); border-top: 1px solid rgb(238, 238, 238); border-bottom: 1px solid rgb(238, 238, 238); padding: 14px 0px; margin: 0px 0px 36px; }\n.lr-figure { margin: 36px 0px; }\n.lr-figure-img { background: linear-gradient(135deg, rgb(42, 63, 106), rgb(91, 140, 255) 60%, rgb(201, 163, 255)); border-radius: 6px; height: 320px; display: grid; place-items: center; color: rgba(255, 255, 255, 0.5); font-family: monospace; font-size: 11px; text-transform: uppercase; letter-spacing: 0.2em; }\n.lr-figure figcaption { margin-top: 10px; font-size: 13px; color: rgb(107, 107, 107); font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; }\n.longread ul, .longread ol { padding-left: 1.4em; margin: 0px 0px 24px; }\n.longread li { font-size: 17px; line-height: 1.7; color: rgb(42, 42, 42); margin-bottom: 10px; }\n.longread blockquote { margin: 32px 0px; padding: 0px 0px 0px 22px; border-left: 3px solid rgb(91, 140, 255); }\n.longread blockquote p { font-size: 22px; font-style: italic; line-height: 1.55; color: rgb(26, 26, 26); }\n.longread blockquote cite { display: block; font-size: 13px; color: rgb(107, 107, 107); font-style: normal; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; margin-top: 6px; }\n.longread pre { background: rgb(14, 17, 23); color: rgb(226, 232, 240); padding: 18px 20px; border-radius: 6px; font-size: 13px; line-height: 1.6; overflow-x: auto; margin: 0px 0px 28px; }\n.longread code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }\n.lr-callout { background: rgb(240, 244, 255); border: 1px solid rgb(214, 224, 255); border-radius: 8px; padding: 18px 22px; margin: 32px 0px; }\n.lr-callout h4 { font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; font-size: 13px; text-transform: uppercase; letter-spacing: 0.1em; color: rgb(91, 140, 255); margin: 0px 0px 8px; }\n.lr-callout p { font-size: 16px; margin: 0px; }\n.lr-table { width: 100%; border-collapse: collapse; margin: 0px 0px 28px; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; }\n.lr-table th, .lr-table td { padding: 10px 12px; text-align: left; border-bottom: 1px solid rgb(238, 238, 238); font-size: 14px; }\n.lr-table th { color: rgb(107, 107, 107); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; }\n.lr-link { color: rgb(91, 140, 255); text-decoration: underline; text-underline-offset: 2px; }\n.lr-divider { border-width: 1px 0px 0px; border-style: solid none none; border-color: rgb(238, 238, 238) currentcolor currentcolor; border-image: initial; margin: 48px 0px; }\n.lr-footer { font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; }\n.lr-tags { display: flex; gap: 8px; margin: 0px 0px 16px; }\n.lr-tag { background: rgb(244, 246, 250); border: 1px solid rgb(230, 233, 239); border-radius: 999px; padding: 4px 12px; font-size: 12px; color: rgb(68, 68, 68); }\n.lr-also { font-size: 14px; color: rgb(107, 107, 107); }",
-      "capturedAt": "2026-04-27T00:50:21.742Z",
+      "capturedAt": "2026-04-27T19:21:02.425Z",
       "viewport": {
         "width": 1280,
         "height": 800
@@ -1087,7 +1117,7 @@
                                   {
                                     "id": "t2-n51",
                                     "kind": "text",
-                                    "value": " Projects without a specific person I could imagine using them died fastest. My mom counts. A specific Slack channel counts. A vague"
+                                    "value": " Projects without a specific person I could imagine using them died fastest. My mom counts. A specific Slack channel counts. A vague "
                                   },
                                   {
                                     "id": "t2-n53",
@@ -1106,7 +1136,7 @@
                                   {
                                     "id": "t2-n54",
                                     "kind": "text",
-                                    "value": " doesn't."
+                                    "value": "doesn't."
                                   }
                                 ]
                               }
@@ -1136,7 +1166,7 @@
                               {
                                 "id": "t2-n59",
                                 "kind": "text",
-                                "value": "Here's what I noticed only when I made the list: my completion rate jumped sharply after I switched to platforms with essentially zero deploy friction. From 8% before 2020 to 27% after. The technology change wasn't the cause — the cause was that the gap between “I want to make a small change” and “the change is live” collapsed from"
+                                "value": "Here's what I noticed only when I made the list: my completion rate jumped sharply after I switched to platforms with essentially zero deploy friction. From 8% before 2020 to 27% after. The technology change wasn't the cause — the cause was that the gap between “I want to make a small change” and “the change is live” collapsed from "
                               },
                               {
                                 "id": "t2-n61",
@@ -1155,7 +1185,7 @@
                               {
                                 "id": "t2-n62",
                                 "kind": "text",
-                                "value": " to "
+                                "value": " to"
                               },
                               {
                                 "id": "t2-n64",
@@ -1388,7 +1418,7 @@
                                   {
                                     "id": "t2-n94",
                                     "kind": "text",
-                                    "value": "The corollary is: "
+                                    "value": "The corollary is:"
                                   },
                                   {
                                     "id": "t2-n96",
@@ -1407,7 +1437,7 @@
                                   {
                                     "id": "t2-n97",
                                     "kind": "text",
-                                    "value": " who isn't you, and you can't name them, you're probably building the wrong thing. Sometimes it's fine to be wrong."
+                                    "value": "who isn't you, and you can't name them, you're probably building the wrong thing. Sometimes it's fine to be wrong."
                                   }
                                 ]
                               }
@@ -2362,7 +2392,7 @@
                               {
                                 "id": "t2-n229",
                                 "kind": "text",
-                                "value": "If you have a side project that's been sitting at 80% done for two months, the answer is probably either"
+                                "value": "If you have a side project that's been sitting at 80% done for two months, the answer is probably either "
                               },
                               {
                                 "id": "t2-n231",
@@ -2381,7 +2411,7 @@
                               {
                                 "id": "t2-n232",
                                 "kind": "text",
-                                "value": " or "
+                                "value": " or"
                               },
                               {
                                 "id": "t2-n234",
@@ -2579,7 +2609,7 @@
         ]
       },
       "css": "* { box-sizing: border-box; }\nhtml, body { margin: 0px; padding: 0px; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; color: rgb(26, 26, 26); background: rgb(250, 250, 250); }\n.page { min-height: 800px; display: flex; flex-direction: column; }\n.nav { display: flex; gap: 20px; align-items: center; padding: 16px 32px; background: white; border-bottom: 1px solid rgb(234, 234, 234); }\n.nav a { color: rgb(68, 68, 68); text-decoration: none; font-size: 14px; }\n.nav a:hover { color: rgb(0, 112, 243); }\n.nav .brand { font-weight: 700; font-size: 18px; color: rgb(26, 26, 26); margin-right: auto; }\n.main { flex: 1 1 0%; padding: 48px 32px; max-width: 960px; width: 100%; margin: 0px auto; }\n.main h1 { font-size: 36px; margin: 0px 0px 16px; }\n.main h2 { font-size: 22px; margin: 0px; }\n.main .lead { font-size: 18px; color: rgb(85, 85, 85); margin-bottom: 32px; }\n.card-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }\n.card { background: white; border: 1px solid rgb(234, 234, 234); border-radius: 8px; padding: 24px; }\n.card h3 { margin: 0px 0px 8px; font-size: 16px; }\n.card p { margin: 0px; color: rgb(102, 102, 102); font-size: 14px; }\n.tbl { width: 100%; border-collapse: collapse; background: white; border: 1px solid rgb(234, 234, 234); border-radius: 8px; overflow: hidden; }\n.tbl th, .tbl td { padding: 12px 16px; text-align: left; }\n.tbl thead { background: rgb(244, 244, 244); font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; color: rgb(85, 85, 85); }\n.tbl tbody tr { border-top: 1px solid rgb(234, 234, 234); }\n.profile { display: flex; gap: 20px; align-items: center; background: white; padding: 24px; border: 1px solid rgb(234, 234, 234); border-radius: 8px; }\n.avatar { width: 64px; height: 64px; border-radius: 50%; background: linear-gradient(135deg, rgb(110, 142, 251), rgb(167, 119, 227)); color: white; font-size: 24px; font-weight: 700; display: grid; place-items: center; }\n.dim { color: rgb(136, 136, 136); }\n.footer { padding: 16px 32px; color: rgb(136, 136, 136); font-size: 12px; border-top: 1px solid rgb(234, 234, 234); background: white; }\n.longread { max-width: 720px; margin: 0px auto; font-family: Georgia, \"Times New Roman\", serif; color: rgb(26, 26, 26); }\n.longread h1, .longread h2, .longread h3, .longread h4 { font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; letter-spacing: -0.01em; }\n.lr-eyebrow { text-transform: uppercase; letter-spacing: 0.12em; font-size: 12px; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; color: rgb(107, 107, 107); margin: 0px 0px 14px; }\n.longread h1 { font-size: 44px; line-height: 1.15; margin: 0px 0px 18px; }\n.longread h2 { font-size: 26px; line-height: 1.3; margin: 56px 0px 14px; }\n.longread h3 { font-size: 19px; line-height: 1.4; margin: 36px 0px 10px; }\n.longread h4 { font-size: 15px; margin: 0px 0px 8px; }\n.lr-lede { font-size: 22px; line-height: 1.55; color: rgb(42, 42, 42); font-style: italic; margin: 0px 0px 24px; }\n.longread p { font-size: 18px; line-height: 1.75; color: rgb(42, 42, 42); margin: 0px 0px 20px; }\n.lr-byline { display: flex; justify-content: space-between; align-items: center; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; font-size: 13px; color: rgb(107, 107, 107); border-top: 1px solid rgb(238, 238, 238); border-bottom: 1px solid rgb(238, 238, 238); padding: 14px 0px; margin: 0px 0px 36px; }\n.lr-figure { margin: 36px 0px; }\n.lr-figure-img { background: linear-gradient(135deg, rgb(42, 63, 106), rgb(91, 140, 255) 60%, rgb(201, 163, 255)); border-radius: 6px; height: 320px; display: grid; place-items: center; color: rgba(255, 255, 255, 0.5); font-family: monospace; font-size: 11px; text-transform: uppercase; letter-spacing: 0.2em; }\n.lr-figure figcaption { margin-top: 10px; font-size: 13px; color: rgb(107, 107, 107); font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; }\n.longread ul, .longread ol { padding-left: 1.4em; margin: 0px 0px 24px; }\n.longread li { font-size: 17px; line-height: 1.7; color: rgb(42, 42, 42); margin-bottom: 10px; }\n.longread blockquote { margin: 32px 0px; padding: 0px 0px 0px 22px; border-left: 3px solid rgb(91, 140, 255); }\n.longread blockquote p { font-size: 22px; font-style: italic; line-height: 1.55; color: rgb(26, 26, 26); }\n.longread blockquote cite { display: block; font-size: 13px; color: rgb(107, 107, 107); font-style: normal; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; margin-top: 6px; }\n.longread pre { background: rgb(14, 17, 23); color: rgb(226, 232, 240); padding: 18px 20px; border-radius: 6px; font-size: 13px; line-height: 1.6; overflow-x: auto; margin: 0px 0px 28px; }\n.longread code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }\n.lr-callout { background: rgb(240, 244, 255); border: 1px solid rgb(214, 224, 255); border-radius: 8px; padding: 18px 22px; margin: 32px 0px; }\n.lr-callout h4 { font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; font-size: 13px; text-transform: uppercase; letter-spacing: 0.1em; color: rgb(91, 140, 255); margin: 0px 0px 8px; }\n.lr-callout p { font-size: 16px; margin: 0px; }\n.lr-table { width: 100%; border-collapse: collapse; margin: 0px 0px 28px; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; }\n.lr-table th, .lr-table td { padding: 10px 12px; text-align: left; border-bottom: 1px solid rgb(238, 238, 238); font-size: 14px; }\n.lr-table th { color: rgb(107, 107, 107); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; }\n.lr-link { color: rgb(91, 140, 255); text-decoration: underline; text-underline-offset: 2px; }\n.lr-divider { border-width: 1px 0px 0px; border-style: solid none none; border-color: rgb(238, 238, 238) currentcolor currentcolor; border-image: initial; margin: 48px 0px; }\n.lr-footer { font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; }\n.lr-tags { display: flex; gap: 8px; margin: 0px 0px 16px; }\n.lr-tag { background: rgb(244, 246, 250); border: 1px solid rgb(230, 233, 239); border-radius: 999px; padding: 4px 12px; font-size: 12px; color: rgb(68, 68, 68); }\n.lr-also { font-size: 14px; color: rgb(107, 107, 107); }",
-      "capturedAt": "2026-04-27T00:50:22.811Z",
+      "capturedAt": "2026-04-27T19:21:03.603Z",
       "viewport": {
         "width": 1280,
         "height": 800
@@ -2864,16 +2894,14 @@
                                           "data-spidey-props": "{\"label\":\"ok\",\"tone\":\"ok\"}"
                                         },
                                         "style": {
-                                          "display": "flex",
+                                          "display": "inline-block",
                                           "background": "rgb(220, 246, 227)",
                                           "color": "rgb(16, 122, 59)",
                                           "padding": "2px 10px",
                                           "border-radius": "999px",
                                           "font-size": "12px",
                                           "font-weight": "600",
-                                          "letter-spacing": "0.3px",
-                                          "align-items": "center",
-                                          "justify-content": "center"
+                                          "letter-spacing": "0.3px"
                                         },
                                         "children": [
                                           {
@@ -2938,16 +2966,14 @@
                                           "data-spidey-props": "{\"label\":\"warn\",\"tone\":\"warn\"}"
                                         },
                                         "style": {
-                                          "display": "flex",
+                                          "display": "inline-block",
                                           "background": "rgb(255, 243, 205)",
                                           "color": "rgb(138, 99, 0)",
                                           "padding": "2px 10px",
                                           "border-radius": "999px",
                                           "font-size": "12px",
                                           "font-weight": "600",
-                                          "letter-spacing": "0.3px",
-                                          "align-items": "center",
-                                          "justify-content": "center"
+                                          "letter-spacing": "0.3px"
                                         },
                                         "children": [
                                           {
@@ -3012,16 +3038,14 @@
                                           "data-spidey-props": "{\"label\":\"info\",\"tone\":\"info\"}"
                                         },
                                         "style": {
-                                          "display": "flex",
+                                          "display": "inline-block",
                                           "background": "rgb(230, 239, 255)",
                                           "color": "rgb(26, 85, 196)",
                                           "padding": "2px 10px",
                                           "border-radius": "999px",
                                           "font-size": "12px",
                                           "font-weight": "600",
-                                          "letter-spacing": "0.3px",
-                                          "align-items": "center",
-                                          "justify-content": "center"
+                                          "letter-spacing": "0.3px"
                                         },
                                         "children": [
                                           {
@@ -3078,7 +3102,7 @@
         ]
       },
       "css": "* { box-sizing: border-box; }\nhtml, body { margin: 0px; padding: 0px; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; color: rgb(26, 26, 26); background: rgb(250, 250, 250); }\n.page { min-height: 800px; display: flex; flex-direction: column; }\n.nav { display: flex; gap: 20px; align-items: center; padding: 16px 32px; background: white; border-bottom: 1px solid rgb(234, 234, 234); }\n.nav a { color: rgb(68, 68, 68); text-decoration: none; font-size: 14px; }\n.nav a:hover { color: rgb(0, 112, 243); }\n.nav .brand { font-weight: 700; font-size: 18px; color: rgb(26, 26, 26); margin-right: auto; }\n.main { flex: 1 1 0%; padding: 48px 32px; max-width: 960px; width: 100%; margin: 0px auto; }\n.main h1 { font-size: 36px; margin: 0px 0px 16px; }\n.main h2 { font-size: 22px; margin: 0px; }\n.main .lead { font-size: 18px; color: rgb(85, 85, 85); margin-bottom: 32px; }\n.card-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }\n.card { background: white; border: 1px solid rgb(234, 234, 234); border-radius: 8px; padding: 24px; }\n.card h3 { margin: 0px 0px 8px; font-size: 16px; }\n.card p { margin: 0px; color: rgb(102, 102, 102); font-size: 14px; }\n.tbl { width: 100%; border-collapse: collapse; background: white; border: 1px solid rgb(234, 234, 234); border-radius: 8px; overflow: hidden; }\n.tbl th, .tbl td { padding: 12px 16px; text-align: left; }\n.tbl thead { background: rgb(244, 244, 244); font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; color: rgb(85, 85, 85); }\n.tbl tbody tr { border-top: 1px solid rgb(234, 234, 234); }\n.profile { display: flex; gap: 20px; align-items: center; background: white; padding: 24px; border: 1px solid rgb(234, 234, 234); border-radius: 8px; }\n.avatar { width: 64px; height: 64px; border-radius: 50%; background: linear-gradient(135deg, rgb(110, 142, 251), rgb(167, 119, 227)); color: white; font-size: 24px; font-weight: 700; display: grid; place-items: center; }\n.dim { color: rgb(136, 136, 136); }\n.footer { padding: 16px 32px; color: rgb(136, 136, 136); font-size: 12px; border-top: 1px solid rgb(234, 234, 234); background: white; }\n.longread { max-width: 720px; margin: 0px auto; font-family: Georgia, \"Times New Roman\", serif; color: rgb(26, 26, 26); }\n.longread h1, .longread h2, .longread h3, .longread h4 { font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; letter-spacing: -0.01em; }\n.lr-eyebrow { text-transform: uppercase; letter-spacing: 0.12em; font-size: 12px; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; color: rgb(107, 107, 107); margin: 0px 0px 14px; }\n.longread h1 { font-size: 44px; line-height: 1.15; margin: 0px 0px 18px; }\n.longread h2 { font-size: 26px; line-height: 1.3; margin: 56px 0px 14px; }\n.longread h3 { font-size: 19px; line-height: 1.4; margin: 36px 0px 10px; }\n.longread h4 { font-size: 15px; margin: 0px 0px 8px; }\n.lr-lede { font-size: 22px; line-height: 1.55; color: rgb(42, 42, 42); font-style: italic; margin: 0px 0px 24px; }\n.longread p { font-size: 18px; line-height: 1.75; color: rgb(42, 42, 42); margin: 0px 0px 20px; }\n.lr-byline { display: flex; justify-content: space-between; align-items: center; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; font-size: 13px; color: rgb(107, 107, 107); border-top: 1px solid rgb(238, 238, 238); border-bottom: 1px solid rgb(238, 238, 238); padding: 14px 0px; margin: 0px 0px 36px; }\n.lr-figure { margin: 36px 0px; }\n.lr-figure-img { background: linear-gradient(135deg, rgb(42, 63, 106), rgb(91, 140, 255) 60%, rgb(201, 163, 255)); border-radius: 6px; height: 320px; display: grid; place-items: center; color: rgba(255, 255, 255, 0.5); font-family: monospace; font-size: 11px; text-transform: uppercase; letter-spacing: 0.2em; }\n.lr-figure figcaption { margin-top: 10px; font-size: 13px; color: rgb(107, 107, 107); font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; }\n.longread ul, .longread ol { padding-left: 1.4em; margin: 0px 0px 24px; }\n.longread li { font-size: 17px; line-height: 1.7; color: rgb(42, 42, 42); margin-bottom: 10px; }\n.longread blockquote { margin: 32px 0px; padding: 0px 0px 0px 22px; border-left: 3px solid rgb(91, 140, 255); }\n.longread blockquote p { font-size: 22px; font-style: italic; line-height: 1.55; color: rgb(26, 26, 26); }\n.longread blockquote cite { display: block; font-size: 13px; color: rgb(107, 107, 107); font-style: normal; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; margin-top: 6px; }\n.longread pre { background: rgb(14, 17, 23); color: rgb(226, 232, 240); padding: 18px 20px; border-radius: 6px; font-size: 13px; line-height: 1.6; overflow-x: auto; margin: 0px 0px 28px; }\n.longread code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }\n.lr-callout { background: rgb(240, 244, 255); border: 1px solid rgb(214, 224, 255); border-radius: 8px; padding: 18px 22px; margin: 32px 0px; }\n.lr-callout h4 { font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; font-size: 13px; text-transform: uppercase; letter-spacing: 0.1em; color: rgb(91, 140, 255); margin: 0px 0px 8px; }\n.lr-callout p { font-size: 16px; margin: 0px; }\n.lr-table { width: 100%; border-collapse: collapse; margin: 0px 0px 28px; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; }\n.lr-table th, .lr-table td { padding: 10px 12px; text-align: left; border-bottom: 1px solid rgb(238, 238, 238); font-size: 14px; }\n.lr-table th { color: rgb(107, 107, 107); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; }\n.lr-link { color: rgb(91, 140, 255); text-decoration: underline; text-underline-offset: 2px; }\n.lr-divider { border-width: 1px 0px 0px; border-style: solid none none; border-color: rgb(238, 238, 238) currentcolor currentcolor; border-image: initial; margin: 48px 0px; }\n.lr-footer { font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; }\n.lr-tags { display: flex; gap: 8px; margin: 0px 0px 16px; }\n.lr-tag { background: rgb(244, 246, 250); border: 1px solid rgb(230, 233, 239); border-radius: 999px; padding: 4px 12px; font-size: 12px; color: rgb(68, 68, 68); }\n.lr-also { font-size: 14px; color: rgb(107, 107, 107); }",
-      "capturedAt": "2026-04-27T00:50:23.880Z",
+      "capturedAt": "2026-04-27T19:21:04.799Z",
       "viewport": {
         "width": 1280,
         "height": 800
@@ -3341,16 +3365,14 @@
                                       "data-spidey-props": "{\"label\":\"Active member\",\"tone\":\"ok\"}"
                                     },
                                     "style": {
-                                      "display": "flex",
+                                      "display": "inline-block",
                                       "background": "rgb(220, 246, 227)",
                                       "color": "rgb(16, 122, 59)",
                                       "padding": "2px 10px",
                                       "border-radius": "999px",
                                       "font-size": "12px",
                                       "font-weight": "600",
-                                      "letter-spacing": "0.3px",
-                                      "align-items": "center",
-                                      "justify-content": "center"
+                                      "letter-spacing": "0.3px"
                                     },
                                     "children": [
                                       {
@@ -3391,7 +3413,7 @@
         ]
       },
       "css": "* { box-sizing: border-box; }\nhtml, body { margin: 0px; padding: 0px; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; color: rgb(26, 26, 26); background: rgb(250, 250, 250); }\n.page { min-height: 800px; display: flex; flex-direction: column; }\n.nav { display: flex; gap: 20px; align-items: center; padding: 16px 32px; background: white; border-bottom: 1px solid rgb(234, 234, 234); }\n.nav a { color: rgb(68, 68, 68); text-decoration: none; font-size: 14px; }\n.nav a:hover { color: rgb(0, 112, 243); }\n.nav .brand { font-weight: 700; font-size: 18px; color: rgb(26, 26, 26); margin-right: auto; }\n.main { flex: 1 1 0%; padding: 48px 32px; max-width: 960px; width: 100%; margin: 0px auto; }\n.main h1 { font-size: 36px; margin: 0px 0px 16px; }\n.main h2 { font-size: 22px; margin: 0px; }\n.main .lead { font-size: 18px; color: rgb(85, 85, 85); margin-bottom: 32px; }\n.card-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }\n.card { background: white; border: 1px solid rgb(234, 234, 234); border-radius: 8px; padding: 24px; }\n.card h3 { margin: 0px 0px 8px; font-size: 16px; }\n.card p { margin: 0px; color: rgb(102, 102, 102); font-size: 14px; }\n.tbl { width: 100%; border-collapse: collapse; background: white; border: 1px solid rgb(234, 234, 234); border-radius: 8px; overflow: hidden; }\n.tbl th, .tbl td { padding: 12px 16px; text-align: left; }\n.tbl thead { background: rgb(244, 244, 244); font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; color: rgb(85, 85, 85); }\n.tbl tbody tr { border-top: 1px solid rgb(234, 234, 234); }\n.profile { display: flex; gap: 20px; align-items: center; background: white; padding: 24px; border: 1px solid rgb(234, 234, 234); border-radius: 8px; }\n.avatar { width: 64px; height: 64px; border-radius: 50%; background: linear-gradient(135deg, rgb(110, 142, 251), rgb(167, 119, 227)); color: white; font-size: 24px; font-weight: 700; display: grid; place-items: center; }\n.dim { color: rgb(136, 136, 136); }\n.footer { padding: 16px 32px; color: rgb(136, 136, 136); font-size: 12px; border-top: 1px solid rgb(234, 234, 234); background: white; }\n.longread { max-width: 720px; margin: 0px auto; font-family: Georgia, \"Times New Roman\", serif; color: rgb(26, 26, 26); }\n.longread h1, .longread h2, .longread h3, .longread h4 { font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; letter-spacing: -0.01em; }\n.lr-eyebrow { text-transform: uppercase; letter-spacing: 0.12em; font-size: 12px; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; color: rgb(107, 107, 107); margin: 0px 0px 14px; }\n.longread h1 { font-size: 44px; line-height: 1.15; margin: 0px 0px 18px; }\n.longread h2 { font-size: 26px; line-height: 1.3; margin: 56px 0px 14px; }\n.longread h3 { font-size: 19px; line-height: 1.4; margin: 36px 0px 10px; }\n.longread h4 { font-size: 15px; margin: 0px 0px 8px; }\n.lr-lede { font-size: 22px; line-height: 1.55; color: rgb(42, 42, 42); font-style: italic; margin: 0px 0px 24px; }\n.longread p { font-size: 18px; line-height: 1.75; color: rgb(42, 42, 42); margin: 0px 0px 20px; }\n.lr-byline { display: flex; justify-content: space-between; align-items: center; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; font-size: 13px; color: rgb(107, 107, 107); border-top: 1px solid rgb(238, 238, 238); border-bottom: 1px solid rgb(238, 238, 238); padding: 14px 0px; margin: 0px 0px 36px; }\n.lr-figure { margin: 36px 0px; }\n.lr-figure-img { background: linear-gradient(135deg, rgb(42, 63, 106), rgb(91, 140, 255) 60%, rgb(201, 163, 255)); border-radius: 6px; height: 320px; display: grid; place-items: center; color: rgba(255, 255, 255, 0.5); font-family: monospace; font-size: 11px; text-transform: uppercase; letter-spacing: 0.2em; }\n.lr-figure figcaption { margin-top: 10px; font-size: 13px; color: rgb(107, 107, 107); font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; }\n.longread ul, .longread ol { padding-left: 1.4em; margin: 0px 0px 24px; }\n.longread li { font-size: 17px; line-height: 1.7; color: rgb(42, 42, 42); margin-bottom: 10px; }\n.longread blockquote { margin: 32px 0px; padding: 0px 0px 0px 22px; border-left: 3px solid rgb(91, 140, 255); }\n.longread blockquote p { font-size: 22px; font-style: italic; line-height: 1.55; color: rgb(26, 26, 26); }\n.longread blockquote cite { display: block; font-size: 13px; color: rgb(107, 107, 107); font-style: normal; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; margin-top: 6px; }\n.longread pre { background: rgb(14, 17, 23); color: rgb(226, 232, 240); padding: 18px 20px; border-radius: 6px; font-size: 13px; line-height: 1.6; overflow-x: auto; margin: 0px 0px 28px; }\n.longread code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }\n.lr-callout { background: rgb(240, 244, 255); border: 1px solid rgb(214, 224, 255); border-radius: 8px; padding: 18px 22px; margin: 32px 0px; }\n.lr-callout h4 { font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; font-size: 13px; text-transform: uppercase; letter-spacing: 0.1em; color: rgb(91, 140, 255); margin: 0px 0px 8px; }\n.lr-callout p { font-size: 16px; margin: 0px; }\n.lr-table { width: 100%; border-collapse: collapse; margin: 0px 0px 28px; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; }\n.lr-table th, .lr-table td { padding: 10px 12px; text-align: left; border-bottom: 1px solid rgb(238, 238, 238); font-size: 14px; }\n.lr-table th { color: rgb(107, 107, 107); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; }\n.lr-link { color: rgb(91, 140, 255); text-decoration: underline; text-underline-offset: 2px; }\n.lr-divider { border-width: 1px 0px 0px; border-style: solid none none; border-color: rgb(238, 238, 238) currentcolor currentcolor; border-image: initial; margin: 48px 0px; }\n.lr-footer { font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; }\n.lr-tags { display: flex; gap: 8px; margin: 0px 0px 16px; }\n.lr-tag { background: rgb(244, 246, 250); border: 1px solid rgb(230, 233, 239); border-radius: 999px; padding: 4px 12px; font-size: 12px; color: rgb(68, 68, 68); }\n.lr-also { font-size: 14px; color: rgb(107, 107, 107); }",
-      "capturedAt": "2026-04-27T00:50:24.943Z",
+      "capturedAt": "2026-04-27T19:21:05.985Z",
       "viewport": {
         "width": 1280,
         "height": 800
@@ -3423,12 +3445,17 @@
             "kind": "el",
             "tag": "div",
             "attrs": {
-              "data-spidey-component-root": "true"
+              "data-spidey-component-root": "true",
+              "data-spidey-component": "Router",
+              "data-spidey-props": "{\"basename\":null,\"location\":{\"pathname\":\"/\",\"search\":\"\",\"hash\":\"\",\"state\":null,\"key\":\"default\"},\"navigationType\":\"POP\",\"navigator\":{\"index\":0,\"action\":\"POP\",\"location\":{\"pathname\":\"/\",\"search\":\"\",\"hash\":\"\",\"state\":null,\"key\":\"default\"}},\"future\":null}"
             },
             "style": {
               "display": "inline-block",
               "padding": "16px",
-              "background": "white"
+              "background": "white",
+              "color": "rgb(15, 23, 42)",
+              "max-width": "480px",
+              "box-sizing": "border-box"
             },
             "children": [
               {
@@ -3437,18 +3464,18 @@
                 "tag": "div",
                 "attrs": {
                   "data-spidey-component": "Avatar",
-                  "data-spidey-props": "{\"name\":\"Patty Littel V\",\"src\":\"https://loremflickr.com/2537/907?lock=2395851884064673\",\"size\":83}"
+                  "data-spidey-props": "{\"name\":\"Patty Littel V\",\"src\":\"https://loremflickr.com/662/2537?lock=3353850638439566\"}"
                 },
                 "style": {
-                  "width": "83px",
-                  "height": "83px",
+                  "width": "56px",
+                  "height": "56px",
                   "border-radius": "50%",
                   "overflow": "hidden",
                   "background": "linear-gradient(135deg, rgb(110, 142, 251), rgb(167, 119, 227))",
                   "display": "grid",
                   "place-items": "center",
                   "color": "white",
-                  "font-size": "34.86px",
+                  "font-size": "23.52px",
                   "font-weight": "700"
                 },
                 "children": [
@@ -3457,7 +3484,7 @@
                     "kind": "el",
                     "tag": "img",
                     "attrs": {
-                      "src": "https://loremflickr.com/2537/907?lock=2395851884064673",
+                      "src": "https://loremflickr.com/662/2537?lock=3353850638439566",
                       "alt": "Patty Littel V"
                     },
                     "style": {
@@ -3473,8 +3500,8 @@
           }
         ]
       },
-      "css": "html, body { margin: 0px; padding: 0px; background: white; }",
-      "capturedAt": "2026-04-27T00:50:26.005Z",
+      "css": "html, body { margin: 0px; padding: 0px; background: white; }\n* { box-sizing: border-box; }\nhtml, body { margin: 0px; padding: 0px; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; color: rgb(26, 26, 26); background: rgb(250, 250, 250); }\n.page { min-height: 800px; display: flex; flex-direction: column; }\n.nav { display: flex; gap: 20px; align-items: center; padding: 16px 32px; background: white; border-bottom: 1px solid rgb(234, 234, 234); }\n.nav a { color: rgb(68, 68, 68); text-decoration: none; font-size: 14px; }\n.nav a:hover { color: rgb(0, 112, 243); }\n.nav .brand { font-weight: 700; font-size: 18px; color: rgb(26, 26, 26); margin-right: auto; }\n.main { flex: 1 1 0%; padding: 48px 32px; max-width: 960px; width: 100%; margin: 0px auto; }\n.main h1 { font-size: 36px; margin: 0px 0px 16px; }\n.main h2 { font-size: 22px; margin: 0px; }\n.main .lead { font-size: 18px; color: rgb(85, 85, 85); margin-bottom: 32px; }\n.card-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }\n.card { background: white; border: 1px solid rgb(234, 234, 234); border-radius: 8px; padding: 24px; }\n.card h3 { margin: 0px 0px 8px; font-size: 16px; }\n.card p { margin: 0px; color: rgb(102, 102, 102); font-size: 14px; }\n.tbl { width: 100%; border-collapse: collapse; background: white; border: 1px solid rgb(234, 234, 234); border-radius: 8px; overflow: hidden; }\n.tbl th, .tbl td { padding: 12px 16px; text-align: left; }\n.tbl thead { background: rgb(244, 244, 244); font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; color: rgb(85, 85, 85); }\n.tbl tbody tr { border-top: 1px solid rgb(234, 234, 234); }\n.profile { display: flex; gap: 20px; align-items: center; background: white; padding: 24px; border: 1px solid rgb(234, 234, 234); border-radius: 8px; }\n.avatar { width: 64px; height: 64px; border-radius: 50%; background: linear-gradient(135deg, rgb(110, 142, 251), rgb(167, 119, 227)); color: white; font-size: 24px; font-weight: 700; display: grid; place-items: center; }\n.dim { color: rgb(136, 136, 136); }\n.footer { padding: 16px 32px; color: rgb(136, 136, 136); font-size: 12px; border-top: 1px solid rgb(234, 234, 234); background: white; }\n.longread { max-width: 720px; margin: 0px auto; font-family: Georgia, \"Times New Roman\", serif; color: rgb(26, 26, 26); }\n.longread h1, .longread h2, .longread h3, .longread h4 { font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; letter-spacing: -0.01em; }\n.lr-eyebrow { text-transform: uppercase; letter-spacing: 0.12em; font-size: 12px; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; color: rgb(107, 107, 107); margin: 0px 0px 14px; }\n.longread h1 { font-size: 44px; line-height: 1.15; margin: 0px 0px 18px; }\n.longread h2 { font-size: 26px; line-height: 1.3; margin: 56px 0px 14px; }\n.longread h3 { font-size: 19px; line-height: 1.4; margin: 36px 0px 10px; }\n.longread h4 { font-size: 15px; margin: 0px 0px 8px; }\n.lr-lede { font-size: 22px; line-height: 1.55; color: rgb(42, 42, 42); font-style: italic; margin: 0px 0px 24px; }\n.longread p { font-size: 18px; line-height: 1.75; color: rgb(42, 42, 42); margin: 0px 0px 20px; }\n.lr-byline { display: flex; justify-content: space-between; align-items: center; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; font-size: 13px; color: rgb(107, 107, 107); border-top: 1px solid rgb(238, 238, 238); border-bottom: 1px solid rgb(238, 238, 238); padding: 14px 0px; margin: 0px 0px 36px; }\n.lr-figure { margin: 36px 0px; }\n.lr-figure-img { background: linear-gradient(135deg, rgb(42, 63, 106), rgb(91, 140, 255) 60%, rgb(201, 163, 255)); border-radius: 6px; height: 320px; display: grid; place-items: center; color: rgba(255, 255, 255, 0.5); font-family: monospace; font-size: 11px; text-transform: uppercase; letter-spacing: 0.2em; }\n.lr-figure figcaption { margin-top: 10px; font-size: 13px; color: rgb(107, 107, 107); font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; }\n.longread ul, .longread ol { padding-left: 1.4em; margin: 0px 0px 24px; }\n.longread li { font-size: 17px; line-height: 1.7; color: rgb(42, 42, 42); margin-bottom: 10px; }\n.longread blockquote { margin: 32px 0px; padding: 0px 0px 0px 22px; border-left: 3px solid rgb(91, 140, 255); }\n.longread blockquote p { font-size: 22px; font-style: italic; line-height: 1.55; color: rgb(26, 26, 26); }\n.longread blockquote cite { display: block; font-size: 13px; color: rgb(107, 107, 107); font-style: normal; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; margin-top: 6px; }\n.longread pre { background: rgb(14, 17, 23); color: rgb(226, 232, 240); padding: 18px 20px; border-radius: 6px; font-size: 13px; line-height: 1.6; overflow-x: auto; margin: 0px 0px 28px; }\n.longread code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }\n.lr-callout { background: rgb(240, 244, 255); border: 1px solid rgb(214, 224, 255); border-radius: 8px; padding: 18px 22px; margin: 32px 0px; }\n.lr-callout h4 { font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; font-size: 13px; text-transform: uppercase; letter-spacing: 0.1em; color: rgb(91, 140, 255); margin: 0px 0px 8px; }\n.lr-callout p { font-size: 16px; margin: 0px; }\n.lr-table { width: 100%; border-collapse: collapse; margin: 0px 0px 28px; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; }\n.lr-table th, .lr-table td { padding: 10px 12px; text-align: left; border-bottom: 1px solid rgb(238, 238, 238); font-size: 14px; }\n.lr-table th { color: rgb(107, 107, 107); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; }\n.lr-link { color: rgb(91, 140, 255); text-decoration: underline; text-underline-offset: 2px; }\n.lr-divider { border-width: 1px 0px 0px; border-style: solid none none; border-color: rgb(238, 238, 238) currentcolor currentcolor; border-image: initial; margin: 48px 0px; }\n.lr-footer { font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; }\n.lr-tags { display: flex; gap: 8px; margin: 0px 0px 16px; }\n.lr-tag { background: rgb(244, 246, 250); border: 1px solid rgb(230, 233, 239); border-radius: 999px; padding: 4px 12px; font-size: 12px; color: rgb(68, 68, 68); }\n.lr-also { font-size: 14px; color: rgb(107, 107, 107); }",
+      "capturedAt": "2026-04-27T19:21:07.162Z",
       "viewport": {
         "width": 1280,
         "height": 800
@@ -3485,14 +3512,99 @@
         "file": "src/components/Avatar.tsx",
         "propsUsed": {
           "name": "Patty Littel V",
-          "src": "https://loremflickr.com/2537/907?lock=2395851884064673",
-          "size": 83
+          "src": "https://loremflickr.com/662/2537?lock=3353850638439566"
         }
       },
       "title": "Spidey preview",
       "containerSize": {
-        "width": 115,
-        "height": 115
+        "width": 88,
+        "height": 88
+      },
+      "htmlAttrs": {
+        "lang": "en"
+      }
+    },
+    {
+      "id": "component:ColorBox-ef9473",
+      "status": "ok",
+      "tree": {
+        "id": "t6-n3",
+        "kind": "el",
+        "tag": "body",
+        "attrs": {},
+        "style": {},
+        "children": [
+          {
+            "id": "t6-n2",
+            "kind": "el",
+            "tag": "div",
+            "attrs": {
+              "data-spidey-component-root": "true",
+              "data-spidey-component": "Router",
+              "data-spidey-props": "{\"basename\":null,\"location\":{\"pathname\":\"/\",\"search\":\"\",\"hash\":\"\",\"state\":null,\"key\":\"default\"},\"navigationType\":\"POP\",\"navigator\":{\"index\":0,\"action\":\"POP\",\"location\":{\"pathname\":\"/\",\"search\":\"\",\"hash\":\"\",\"state\":null,\"key\":\"default\"}},\"future\":null}"
+            },
+            "style": {
+              "display": "inline-block",
+              "padding": "16px",
+              "background": "white",
+              "color": "rgb(15, 23, 42)",
+              "max-width": "480px",
+              "box-sizing": "border-box"
+            },
+            "children": [
+              {
+                "id": "t6-n1",
+                "kind": "el",
+                "tag": "div",
+                "attrs": {
+                  "data-spidey-component": "ColorBox",
+                  "data-spidey-props": "{\"variant\":\"green\",\"text\":\"Turpis succedo trepide utpote testimonium quidem varius adsidue calculus.\"}"
+                },
+                "style": {
+                  "width": "100px",
+                  "height": "100px",
+                  "background": "rgb(34, 197, 94)",
+                  "color": "white",
+                  "display": "flex",
+                  "align-items": "center",
+                  "justify-content": "center",
+                  "text-align": "center",
+                  "font-size": "12px",
+                  "font-weight": "600",
+                  "padding": "4px",
+                  "box-sizing": "border-box"
+                },
+                "children": [
+                  {
+                    "id": "t6-n0",
+                    "kind": "text",
+                    "value": "Turpis succedo trepide utpote testimonium quidem varius adsidue calculus."
+                  }
+                ]
+              }
+            ]
+          }
+        ]
+      },
+      "css": "html, body { margin: 0px; padding: 0px; background: white; }\n* { box-sizing: border-box; }\nhtml, body { margin: 0px; padding: 0px; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; color: rgb(26, 26, 26); background: rgb(250, 250, 250); }\n.page { min-height: 800px; display: flex; flex-direction: column; }\n.nav { display: flex; gap: 20px; align-items: center; padding: 16px 32px; background: white; border-bottom: 1px solid rgb(234, 234, 234); }\n.nav a { color: rgb(68, 68, 68); text-decoration: none; font-size: 14px; }\n.nav a:hover { color: rgb(0, 112, 243); }\n.nav .brand { font-weight: 700; font-size: 18px; color: rgb(26, 26, 26); margin-right: auto; }\n.main { flex: 1 1 0%; padding: 48px 32px; max-width: 960px; width: 100%; margin: 0px auto; }\n.main h1 { font-size: 36px; margin: 0px 0px 16px; }\n.main h2 { font-size: 22px; margin: 0px; }\n.main .lead { font-size: 18px; color: rgb(85, 85, 85); margin-bottom: 32px; }\n.card-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }\n.card { background: white; border: 1px solid rgb(234, 234, 234); border-radius: 8px; padding: 24px; }\n.card h3 { margin: 0px 0px 8px; font-size: 16px; }\n.card p { margin: 0px; color: rgb(102, 102, 102); font-size: 14px; }\n.tbl { width: 100%; border-collapse: collapse; background: white; border: 1px solid rgb(234, 234, 234); border-radius: 8px; overflow: hidden; }\n.tbl th, .tbl td { padding: 12px 16px; text-align: left; }\n.tbl thead { background: rgb(244, 244, 244); font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; color: rgb(85, 85, 85); }\n.tbl tbody tr { border-top: 1px solid rgb(234, 234, 234); }\n.profile { display: flex; gap: 20px; align-items: center; background: white; padding: 24px; border: 1px solid rgb(234, 234, 234); border-radius: 8px; }\n.avatar { width: 64px; height: 64px; border-radius: 50%; background: linear-gradient(135deg, rgb(110, 142, 251), rgb(167, 119, 227)); color: white; font-size: 24px; font-weight: 700; display: grid; place-items: center; }\n.dim { color: rgb(136, 136, 136); }\n.footer { padding: 16px 32px; color: rgb(136, 136, 136); font-size: 12px; border-top: 1px solid rgb(234, 234, 234); background: white; }\n.longread { max-width: 720px; margin: 0px auto; font-family: Georgia, \"Times New Roman\", serif; color: rgb(26, 26, 26); }\n.longread h1, .longread h2, .longread h3, .longread h4 { font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; letter-spacing: -0.01em; }\n.lr-eyebrow { text-transform: uppercase; letter-spacing: 0.12em; font-size: 12px; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; color: rgb(107, 107, 107); margin: 0px 0px 14px; }\n.longread h1 { font-size: 44px; line-height: 1.15; margin: 0px 0px 18px; }\n.longread h2 { font-size: 26px; line-height: 1.3; margin: 56px 0px 14px; }\n.longread h3 { font-size: 19px; line-height: 1.4; margin: 36px 0px 10px; }\n.longread h4 { font-size: 15px; margin: 0px 0px 8px; }\n.lr-lede { font-size: 22px; line-height: 1.55; color: rgb(42, 42, 42); font-style: italic; margin: 0px 0px 24px; }\n.longread p { font-size: 18px; line-height: 1.75; color: rgb(42, 42, 42); margin: 0px 0px 20px; }\n.lr-byline { display: flex; justify-content: space-between; align-items: center; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; font-size: 13px; color: rgb(107, 107, 107); border-top: 1px solid rgb(238, 238, 238); border-bottom: 1px solid rgb(238, 238, 238); padding: 14px 0px; margin: 0px 0px 36px; }\n.lr-figure { margin: 36px 0px; }\n.lr-figure-img { background: linear-gradient(135deg, rgb(42, 63, 106), rgb(91, 140, 255) 60%, rgb(201, 163, 255)); border-radius: 6px; height: 320px; display: grid; place-items: center; color: rgba(255, 255, 255, 0.5); font-family: monospace; font-size: 11px; text-transform: uppercase; letter-spacing: 0.2em; }\n.lr-figure figcaption { margin-top: 10px; font-size: 13px; color: rgb(107, 107, 107); font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; }\n.longread ul, .longread ol { padding-left: 1.4em; margin: 0px 0px 24px; }\n.longread li { font-size: 17px; line-height: 1.7; color: rgb(42, 42, 42); margin-bottom: 10px; }\n.longread blockquote { margin: 32px 0px; padding: 0px 0px 0px 22px; border-left: 3px solid rgb(91, 140, 255); }\n.longread blockquote p { font-size: 22px; font-style: italic; line-height: 1.55; color: rgb(26, 26, 26); }\n.longread blockquote cite { display: block; font-size: 13px; color: rgb(107, 107, 107); font-style: normal; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; margin-top: 6px; }\n.longread pre { background: rgb(14, 17, 23); color: rgb(226, 232, 240); padding: 18px 20px; border-radius: 6px; font-size: 13px; line-height: 1.6; overflow-x: auto; margin: 0px 0px 28px; }\n.longread code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }\n.lr-callout { background: rgb(240, 244, 255); border: 1px solid rgb(214, 224, 255); border-radius: 8px; padding: 18px 22px; margin: 32px 0px; }\n.lr-callout h4 { font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; font-size: 13px; text-transform: uppercase; letter-spacing: 0.1em; color: rgb(91, 140, 255); margin: 0px 0px 8px; }\n.lr-callout p { font-size: 16px; margin: 0px; }\n.lr-table { width: 100%; border-collapse: collapse; margin: 0px 0px 28px; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; }\n.lr-table th, .lr-table td { padding: 10px 12px; text-align: left; border-bottom: 1px solid rgb(238, 238, 238); font-size: 14px; }\n.lr-table th { color: rgb(107, 107, 107); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; }\n.lr-link { color: rgb(91, 140, 255); text-decoration: underline; text-underline-offset: 2px; }\n.lr-divider { border-width: 1px 0px 0px; border-style: solid none none; border-color: rgb(238, 238, 238) currentcolor currentcolor; border-image: initial; margin: 48px 0px; }\n.lr-footer { font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; }\n.lr-tags { display: flex; gap: 8px; margin: 0px 0px 16px; }\n.lr-tag { background: rgb(244, 246, 250); border: 1px solid rgb(230, 233, 239); border-radius: 999px; padding: 4px 12px; font-size: 12px; color: rgb(68, 68, 68); }\n.lr-also { font-size: 14px; color: rgb(107, 107, 107); }",
+      "capturedAt": "2026-04-27T19:21:09.993Z",
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "kind": "component",
+      "component": {
+        "name": "ColorBox",
+        "file": "src/components/ColorBox.tsx",
+        "propsUsed": {
+          "variant": "green",
+          "text": "Turpis succedo trepide utpote testimonium quidem varius adsidue calculus."
+        }
+      },
+      "title": "Spidey preview",
+      "containerSize": {
+        "width": 132,
+        "height": 132
       },
       "htmlAttrs": {
         "lang": "en"
@@ -3502,26 +3614,139 @@
       "id": "component:Navbar-4d5e55",
       "status": "ok",
       "tree": {
-        "id": "t6-n1",
+        "id": "t7-n12",
         "kind": "el",
         "tag": "body",
         "attrs": {},
         "style": {},
         "children": [
           {
-            "id": "t6-n0",
+            "id": "t7-n11",
             "kind": "el",
             "tag": "div",
             "attrs": {
-              "id": "root"
+              "data-spidey-component-root": "true",
+              "data-spidey-component": "Router",
+              "data-spidey-props": "{\"basename\":null,\"location\":{\"pathname\":\"/\",\"search\":\"\",\"hash\":\"\",\"state\":null,\"key\":\"default\"},\"navigationType\":\"POP\",\"navigator\":{\"index\":0,\"action\":\"POP\",\"location\":{\"pathname\":\"/\",\"search\":\"\",\"hash\":\"\",\"state\":null,\"key\":\"default\"}},\"future\":null}"
             },
-            "style": {},
-            "children": []
+            "style": {
+              "display": "inline-block",
+              "padding": "16px",
+              "background": "white",
+              "color": "rgb(15, 23, 42)",
+              "max-width": "480px",
+              "box-sizing": "border-box"
+            },
+            "children": [
+              {
+                "id": "t7-n10",
+                "kind": "el",
+                "tag": "nav",
+                "attrs": {
+                  "class": "nav",
+                  "data-spidey-component": "Navbar"
+                },
+                "style": {},
+                "children": [
+                  {
+                    "id": "t7-n1",
+                    "kind": "el",
+                    "tag": "a",
+                    "attrs": {
+                      "class": "brand",
+                      "href": "/",
+                      "data-spidey-component": "Link",
+                      "data-spidey-props": "{\"to\":\"/\",\"className\":\"brand\"}"
+                    },
+                    "style": {},
+                    "children": [
+                      {
+                        "id": "t7-n0",
+                        "kind": "text",
+                        "value": "acme"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "t7-n3",
+                    "kind": "el",
+                    "tag": "a",
+                    "attrs": {
+                      "href": "/about",
+                      "data-spidey-component": "Link",
+                      "data-spidey-props": "{\"to\":\"/about\"}"
+                    },
+                    "style": {},
+                    "children": [
+                      {
+                        "id": "t7-n2",
+                        "kind": "text",
+                        "value": "About"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "t7-n5",
+                    "kind": "el",
+                    "tag": "a",
+                    "attrs": {
+                      "href": "/products",
+                      "data-spidey-component": "Link",
+                      "data-spidey-props": "{\"to\":\"/products\"}"
+                    },
+                    "style": {},
+                    "children": [
+                      {
+                        "id": "t7-n4",
+                        "kind": "text",
+                        "value": "Products"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "t7-n7",
+                    "kind": "el",
+                    "tag": "a",
+                    "attrs": {
+                      "href": "/users/42",
+                      "data-spidey-component": "Link",
+                      "data-spidey-props": "{\"to\":\"/users/42\"}"
+                    },
+                    "style": {},
+                    "children": [
+                      {
+                        "id": "t7-n6",
+                        "kind": "text",
+                        "value": "Profile"
+                      }
+                    ]
+                  },
+                  {
+                    "id": "t7-n9",
+                    "kind": "el",
+                    "tag": "a",
+                    "attrs": {
+                      "href": "/longread",
+                      "data-spidey-component": "Link",
+                      "data-spidey-props": "{\"to\":\"/longread\"}"
+                    },
+                    "style": {},
+                    "children": [
+                      {
+                        "id": "t7-n8",
+                        "kind": "text",
+                        "value": "Longread"
+                      }
+                    ]
+                  }
+                ]
+              }
+            ]
           }
         ]
       },
-      "css": "html, body { margin: 0px; padding: 0px; background: white; }",
-      "capturedAt": "2026-04-27T00:50:28.276Z",
+      "css": "html, body { margin: 0px; padding: 0px; background: white; }\n* { box-sizing: border-box; }\nhtml, body { margin: 0px; padding: 0px; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; color: rgb(26, 26, 26); background: rgb(250, 250, 250); }\n.page { min-height: 800px; display: flex; flex-direction: column; }\n.nav { display: flex; gap: 20px; align-items: center; padding: 16px 32px; background: white; border-bottom: 1px solid rgb(234, 234, 234); }\n.nav a { color: rgb(68, 68, 68); text-decoration: none; font-size: 14px; }\n.nav a:hover { color: rgb(0, 112, 243); }\n.nav .brand { font-weight: 700; font-size: 18px; color: rgb(26, 26, 26); margin-right: auto; }\n.main { flex: 1 1 0%; padding: 48px 32px; max-width: 960px; width: 100%; margin: 0px auto; }\n.main h1 { font-size: 36px; margin: 0px 0px 16px; }\n.main h2 { font-size: 22px; margin: 0px; }\n.main .lead { font-size: 18px; color: rgb(85, 85, 85); margin-bottom: 32px; }\n.card-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }\n.card { background: white; border: 1px solid rgb(234, 234, 234); border-radius: 8px; padding: 24px; }\n.card h3 { margin: 0px 0px 8px; font-size: 16px; }\n.card p { margin: 0px; color: rgb(102, 102, 102); font-size: 14px; }\n.tbl { width: 100%; border-collapse: collapse; background: white; border: 1px solid rgb(234, 234, 234); border-radius: 8px; overflow: hidden; }\n.tbl th, .tbl td { padding: 12px 16px; text-align: left; }\n.tbl thead { background: rgb(244, 244, 244); font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; color: rgb(85, 85, 85); }\n.tbl tbody tr { border-top: 1px solid rgb(234, 234, 234); }\n.profile { display: flex; gap: 20px; align-items: center; background: white; padding: 24px; border: 1px solid rgb(234, 234, 234); border-radius: 8px; }\n.avatar { width: 64px; height: 64px; border-radius: 50%; background: linear-gradient(135deg, rgb(110, 142, 251), rgb(167, 119, 227)); color: white; font-size: 24px; font-weight: 700; display: grid; place-items: center; }\n.dim { color: rgb(136, 136, 136); }\n.footer { padding: 16px 32px; color: rgb(136, 136, 136); font-size: 12px; border-top: 1px solid rgb(234, 234, 234); background: white; }\n.longread { max-width: 720px; margin: 0px auto; font-family: Georgia, \"Times New Roman\", serif; color: rgb(26, 26, 26); }\n.longread h1, .longread h2, .longread h3, .longread h4 { font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; letter-spacing: -0.01em; }\n.lr-eyebrow { text-transform: uppercase; letter-spacing: 0.12em; font-size: 12px; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; color: rgb(107, 107, 107); margin: 0px 0px 14px; }\n.longread h1 { font-size: 44px; line-height: 1.15; margin: 0px 0px 18px; }\n.longread h2 { font-size: 26px; line-height: 1.3; margin: 56px 0px 14px; }\n.longread h3 { font-size: 19px; line-height: 1.4; margin: 36px 0px 10px; }\n.longread h4 { font-size: 15px; margin: 0px 0px 8px; }\n.lr-lede { font-size: 22px; line-height: 1.55; color: rgb(42, 42, 42); font-style: italic; margin: 0px 0px 24px; }\n.longread p { font-size: 18px; line-height: 1.75; color: rgb(42, 42, 42); margin: 0px 0px 20px; }\n.lr-byline { display: flex; justify-content: space-between; align-items: center; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; font-size: 13px; color: rgb(107, 107, 107); border-top: 1px solid rgb(238, 238, 238); border-bottom: 1px solid rgb(238, 238, 238); padding: 14px 0px; margin: 0px 0px 36px; }\n.lr-figure { margin: 36px 0px; }\n.lr-figure-img { background: linear-gradient(135deg, rgb(42, 63, 106), rgb(91, 140, 255) 60%, rgb(201, 163, 255)); border-radius: 6px; height: 320px; display: grid; place-items: center; color: rgba(255, 255, 255, 0.5); font-family: monospace; font-size: 11px; text-transform: uppercase; letter-spacing: 0.2em; }\n.lr-figure figcaption { margin-top: 10px; font-size: 13px; color: rgb(107, 107, 107); font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; }\n.longread ul, .longread ol { padding-left: 1.4em; margin: 0px 0px 24px; }\n.longread li { font-size: 17px; line-height: 1.7; color: rgb(42, 42, 42); margin-bottom: 10px; }\n.longread blockquote { margin: 32px 0px; padding: 0px 0px 0px 22px; border-left: 3px solid rgb(91, 140, 255); }\n.longread blockquote p { font-size: 22px; font-style: italic; line-height: 1.55; color: rgb(26, 26, 26); }\n.longread blockquote cite { display: block; font-size: 13px; color: rgb(107, 107, 107); font-style: normal; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; margin-top: 6px; }\n.longread pre { background: rgb(14, 17, 23); color: rgb(226, 232, 240); padding: 18px 20px; border-radius: 6px; font-size: 13px; line-height: 1.6; overflow-x: auto; margin: 0px 0px 28px; }\n.longread code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }\n.lr-callout { background: rgb(240, 244, 255); border: 1px solid rgb(214, 224, 255); border-radius: 8px; padding: 18px 22px; margin: 32px 0px; }\n.lr-callout h4 { font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; font-size: 13px; text-transform: uppercase; letter-spacing: 0.1em; color: rgb(91, 140, 255); margin: 0px 0px 8px; }\n.lr-callout p { font-size: 16px; margin: 0px; }\n.lr-table { width: 100%; border-collapse: collapse; margin: 0px 0px 28px; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; }\n.lr-table th, .lr-table td { padding: 10px 12px; text-align: left; border-bottom: 1px solid rgb(238, 238, 238); font-size: 14px; }\n.lr-table th { color: rgb(107, 107, 107); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; }\n.lr-link { color: rgb(91, 140, 255); text-decoration: underline; text-underline-offset: 2px; }\n.lr-divider { border-width: 1px 0px 0px; border-style: solid none none; border-color: rgb(238, 238, 238) currentcolor currentcolor; border-image: initial; margin: 48px 0px; }\n.lr-footer { font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; }\n.lr-tags { display: flex; gap: 8px; margin: 0px 0px 16px; }\n.lr-tag { background: rgb(244, 246, 250); border: 1px solid rgb(230, 233, 239); border-radius: 999px; padding: 4px 12px; font-size: 12px; color: rgb(68, 68, 68); }\n.lr-also { font-size: 14px; color: rgb(107, 107, 107); }",
+      "capturedAt": "2026-04-27T19:21:11.171Z",
       "viewport": {
         "width": 1280,
         "height": 800
@@ -3534,8 +3759,8 @@
       },
       "title": "Spidey preview",
       "containerSize": {
-        "width": 1280,
-        "height": 800
+        "width": 422,
+        "height": 86
       },
       "htmlAttrs": {
         "lang": "en"
@@ -3545,48 +3770,51 @@
       "id": "component:Pill-87e5a5",
       "status": "ok",
       "tree": {
-        "id": "t7-n3",
+        "id": "t8-n3",
         "kind": "el",
         "tag": "body",
         "attrs": {},
         "style": {},
         "children": [
           {
-            "id": "t7-n2",
+            "id": "t8-n2",
             "kind": "el",
             "tag": "div",
             "attrs": {
-              "data-spidey-component-root": "true"
+              "data-spidey-component-root": "true",
+              "data-spidey-component": "Router",
+              "data-spidey-props": "{\"basename\":null,\"location\":{\"pathname\":\"/\",\"search\":\"\",\"hash\":\"\",\"state\":null,\"key\":\"default\"},\"navigationType\":\"POP\",\"navigator\":{\"index\":0,\"action\":\"POP\",\"location\":{\"pathname\":\"/\",\"search\":\"\",\"hash\":\"\",\"state\":null,\"key\":\"default\"}},\"future\":null}"
             },
             "style": {
               "display": "inline-block",
               "padding": "16px",
-              "background": "white"
+              "background": "white",
+              "color": "rgb(15, 23, 42)",
+              "max-width": "480px",
+              "box-sizing": "border-box"
             },
             "children": [
               {
-                "id": "t7-n1",
+                "id": "t8-n1",
                 "kind": "el",
                 "tag": "span",
                 "attrs": {
                   "data-spidey-component": "Pill",
-                  "data-spidey-props": "{\"label\":\"aestivus caecus ratione\",\"tone\":\"info\"}"
+                  "data-spidey-props": "{\"label\":\"aestivus caecus ratione\"}"
                 },
                 "style": {
-                  "display": "flex",
+                  "display": "inline-block",
                   "background": "rgb(230, 239, 255)",
                   "color": "rgb(26, 85, 196)",
                   "padding": "2px 10px",
                   "border-radius": "999px",
                   "font-size": "12px",
                   "font-weight": "600",
-                  "letter-spacing": "0.3px",
-                  "align-items": "center",
-                  "justify-content": "center"
+                  "letter-spacing": "0.3px"
                 },
                 "children": [
                   {
-                    "id": "t7-n0",
+                    "id": "t8-n0",
                     "kind": "text",
                     "value": "aestivus caecus ratione"
                   }
@@ -3596,8 +3824,8 @@
           }
         ]
       },
-      "css": "html, body { margin: 0px; padding: 0px; background: white; }",
-      "capturedAt": "2026-04-27T00:50:29.334Z",
+      "css": "html, body { margin: 0px; padding: 0px; background: white; }\n* { box-sizing: border-box; }\nhtml, body { margin: 0px; padding: 0px; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; color: rgb(26, 26, 26); background: rgb(250, 250, 250); }\n.page { min-height: 800px; display: flex; flex-direction: column; }\n.nav { display: flex; gap: 20px; align-items: center; padding: 16px 32px; background: white; border-bottom: 1px solid rgb(234, 234, 234); }\n.nav a { color: rgb(68, 68, 68); text-decoration: none; font-size: 14px; }\n.nav a:hover { color: rgb(0, 112, 243); }\n.nav .brand { font-weight: 700; font-size: 18px; color: rgb(26, 26, 26); margin-right: auto; }\n.main { flex: 1 1 0%; padding: 48px 32px; max-width: 960px; width: 100%; margin: 0px auto; }\n.main h1 { font-size: 36px; margin: 0px 0px 16px; }\n.main h2 { font-size: 22px; margin: 0px; }\n.main .lead { font-size: 18px; color: rgb(85, 85, 85); margin-bottom: 32px; }\n.card-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }\n.card { background: white; border: 1px solid rgb(234, 234, 234); border-radius: 8px; padding: 24px; }\n.card h3 { margin: 0px 0px 8px; font-size: 16px; }\n.card p { margin: 0px; color: rgb(102, 102, 102); font-size: 14px; }\n.tbl { width: 100%; border-collapse: collapse; background: white; border: 1px solid rgb(234, 234, 234); border-radius: 8px; overflow: hidden; }\n.tbl th, .tbl td { padding: 12px 16px; text-align: left; }\n.tbl thead { background: rgb(244, 244, 244); font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px; color: rgb(85, 85, 85); }\n.tbl tbody tr { border-top: 1px solid rgb(234, 234, 234); }\n.profile { display: flex; gap: 20px; align-items: center; background: white; padding: 24px; border: 1px solid rgb(234, 234, 234); border-radius: 8px; }\n.avatar { width: 64px; height: 64px; border-radius: 50%; background: linear-gradient(135deg, rgb(110, 142, 251), rgb(167, 119, 227)); color: white; font-size: 24px; font-weight: 700; display: grid; place-items: center; }\n.dim { color: rgb(136, 136, 136); }\n.footer { padding: 16px 32px; color: rgb(136, 136, 136); font-size: 12px; border-top: 1px solid rgb(234, 234, 234); background: white; }\n.longread { max-width: 720px; margin: 0px auto; font-family: Georgia, \"Times New Roman\", serif; color: rgb(26, 26, 26); }\n.longread h1, .longread h2, .longread h3, .longread h4 { font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; letter-spacing: -0.01em; }\n.lr-eyebrow { text-transform: uppercase; letter-spacing: 0.12em; font-size: 12px; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; color: rgb(107, 107, 107); margin: 0px 0px 14px; }\n.longread h1 { font-size: 44px; line-height: 1.15; margin: 0px 0px 18px; }\n.longread h2 { font-size: 26px; line-height: 1.3; margin: 56px 0px 14px; }\n.longread h3 { font-size: 19px; line-height: 1.4; margin: 36px 0px 10px; }\n.longread h4 { font-size: 15px; margin: 0px 0px 8px; }\n.lr-lede { font-size: 22px; line-height: 1.55; color: rgb(42, 42, 42); font-style: italic; margin: 0px 0px 24px; }\n.longread p { font-size: 18px; line-height: 1.75; color: rgb(42, 42, 42); margin: 0px 0px 20px; }\n.lr-byline { display: flex; justify-content: space-between; align-items: center; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; font-size: 13px; color: rgb(107, 107, 107); border-top: 1px solid rgb(238, 238, 238); border-bottom: 1px solid rgb(238, 238, 238); padding: 14px 0px; margin: 0px 0px 36px; }\n.lr-figure { margin: 36px 0px; }\n.lr-figure-img { background: linear-gradient(135deg, rgb(42, 63, 106), rgb(91, 140, 255) 60%, rgb(201, 163, 255)); border-radius: 6px; height: 320px; display: grid; place-items: center; color: rgba(255, 255, 255, 0.5); font-family: monospace; font-size: 11px; text-transform: uppercase; letter-spacing: 0.2em; }\n.lr-figure figcaption { margin-top: 10px; font-size: 13px; color: rgb(107, 107, 107); font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; }\n.longread ul, .longread ol { padding-left: 1.4em; margin: 0px 0px 24px; }\n.longread li { font-size: 17px; line-height: 1.7; color: rgb(42, 42, 42); margin-bottom: 10px; }\n.longread blockquote { margin: 32px 0px; padding: 0px 0px 0px 22px; border-left: 3px solid rgb(91, 140, 255); }\n.longread blockquote p { font-size: 22px; font-style: italic; line-height: 1.55; color: rgb(26, 26, 26); }\n.longread blockquote cite { display: block; font-size: 13px; color: rgb(107, 107, 107); font-style: normal; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; margin-top: 6px; }\n.longread pre { background: rgb(14, 17, 23); color: rgb(226, 232, 240); padding: 18px 20px; border-radius: 6px; font-size: 13px; line-height: 1.6; overflow-x: auto; margin: 0px 0px 28px; }\n.longread code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }\n.lr-callout { background: rgb(240, 244, 255); border: 1px solid rgb(214, 224, 255); border-radius: 8px; padding: 18px 22px; margin: 32px 0px; }\n.lr-callout h4 { font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; font-size: 13px; text-transform: uppercase; letter-spacing: 0.1em; color: rgb(91, 140, 255); margin: 0px 0px 8px; }\n.lr-callout p { font-size: 16px; margin: 0px; }\n.lr-table { width: 100%; border-collapse: collapse; margin: 0px 0px 28px; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; }\n.lr-table th, .lr-table td { padding: 10px 12px; text-align: left; border-bottom: 1px solid rgb(238, 238, 238); font-size: 14px; }\n.lr-table th { color: rgb(107, 107, 107); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; }\n.lr-link { color: rgb(91, 140, 255); text-decoration: underline; text-underline-offset: 2px; }\n.lr-divider { border-width: 1px 0px 0px; border-style: solid none none; border-color: rgb(238, 238, 238) currentcolor currentcolor; border-image: initial; margin: 48px 0px; }\n.lr-footer { font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; }\n.lr-tags { display: flex; gap: 8px; margin: 0px 0px 16px; }\n.lr-tag { background: rgb(244, 246, 250); border: 1px solid rgb(230, 233, 239); border-radius: 999px; padding: 4px 12px; font-size: 12px; color: rgb(68, 68, 68); }\n.lr-also { font-size: 14px; color: rgb(107, 107, 107); }",
+      "capturedAt": "2026-04-27T19:21:12.362Z",
       "viewport": {
         "width": 1280,
         "height": 800
@@ -3607,14 +3835,13 @@
         "name": "Pill",
         "file": "src/components/Pill.tsx",
         "propsUsed": {
-          "label": "aestivus caecus ratione",
-          "tone": "info"
+          "label": "aestivus caecus ratione"
         }
       },
       "title": "Spidey preview",
       "containerSize": {
-        "width": 176,
-        "height": 51
+        "width": 199,
+        "height": 52
       },
       "htmlAttrs": {
         "lang": "en"
@@ -3639,6 +3866,28 @@
         },
         "size": {
           "kind": "number",
+          "optional": true
+        }
+      }
+    },
+    {
+      "name": "ColorBox",
+      "file": "/Users/matheus/Desktop/spidey-claude/examples/vite-app/src/components/ColorBox.tsx",
+      "relPath": "src/components/ColorBox.tsx",
+      "exportKind": "named",
+      "propsName": "ColorBoxProps",
+      "props": {
+        "variant": {
+          "kind": "enum",
+          "values": [
+            "blue",
+            "red",
+            "green"
+          ],
+          "optional": false
+        },
+        "text": {
+          "kind": "string",
           "optional": true
         }
       }
@@ -3673,5 +3922,5 @@
       }
     }
   ],
-  "editedAt": "2026-04-27T06:23:43.376Z"
+  "editedAt": "2026-04-27T19:21:43.150Z"
 }

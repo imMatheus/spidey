@@ -19,6 +19,10 @@ export type GenerateOptions = {
   projectPath: string;
   outputPath: string;
   components: boolean;
+  /** Cap how many components get captured. Workspace packages
+   *  sort first (curated UI libs are higher signal than page-coupled
+   *  project-local components), alphabetical within each group. */
+  maxComponents?: number;
   /** Skip the prompt that warns when overwriting a doc with viewer edits. */
   force?: boolean;
 };
@@ -86,6 +90,38 @@ export async function runGenerate(opts: GenerateOptions): Promise<void> {
       log.ok(
         `found ${componentSpecs.length} component${componentSpecs.length === 1 ? "" : "s"}`,
       );
+
+      if (
+        opts.maxComponents !== undefined &&
+        opts.maxComponents > 0 &&
+        componentSpecs.length > opts.maxComponents
+      ) {
+        // Tiered priority: design-system packages (`ui`, `ui-patterns`,
+        // `marketing`, `icons`) → other workspace packages (`common`,
+        // `dev-tools`) → project-local. Within a tier, sort by name.
+        // Utility packages tend to expose providers / hooks-as-components
+        // that don't render anything visual on their own, so preferring
+        // visual packages gives a better signal when smoke-testing.
+        const VISUAL_PKGS = ["ui", "ui-patterns", "marketing", "icons"];
+        const score = (c: typeof componentSpecs[number]) => {
+          const m = c.relPath.match(/^@workspace\/([^/]+)/);
+          if (m && VISUAL_PKGS.includes(m[1])) return 0;
+          if (m) return 1; // workspace but not a designated visual package
+          return 2; // project-local
+        };
+        componentSpecs = [...componentSpecs]
+          .sort((a, b) => {
+            const sa = score(a);
+            const sb = score(b);
+            if (sa !== sb) return sa - sb;
+            return a.name.localeCompare(b.name);
+          })
+          .slice(0, opts.maxComponents);
+        log.dim(
+          `capped at --max-components=${opts.maxComponents} (visual workspace packages first)`,
+        );
+      }
+
       describeComponents(componentSpecs);
 
       const propsByComponent = new Map<string, Record<string, unknown>>();
@@ -123,14 +159,18 @@ export async function runGenerate(opts: GenerateOptions): Promise<void> {
   try {
     dev = await startDevServer(project.root);
 
-    const devRef = dev;
     const cleanupRef = cleanupPreviews;
+    // Reads the live `dev` binding so a restart (onDevServerDeath) is
+    // covered: SIGINT after a restart still kills the new process, not
+    // the dead one captured at the time the handler was registered.
     exitHandler = () => {
       log.warn("interrupted; stopping dev server");
       try {
         cleanupRef?.();
       } catch {}
-      devRef.stop().finally(() => process.exit(130));
+      const current = dev;
+      if (current) current.stop().finally(() => process.exit(130));
+      else process.exit(130);
     };
     process.on("SIGINT", exitHandler);
     process.on("SIGTERM", exitHandler);
@@ -146,9 +186,50 @@ export async function runGenerate(opts: GenerateOptions): Promise<void> {
       },
     }));
 
+    // Mid-run persistence: write spidey.json after each tile so a partial
+    // run is visible in the viewer and survives Ctrl-C / crashes. Only the
+    // primary doc is updated; the baseline sidecar is written once at the
+    // end of a successful run so it reflects a full capture only.
+    fs.mkdirSync(path.dirname(outPathAbs), { recursive: true });
+    const writePartial = (tilesSoFar: SpideyTile[]) => {
+      const doc: SpideyDocument = {
+        version: 3,
+        generatedAt: new Date().toISOString(),
+        project: {
+          name: project.name,
+          framework: project.framework,
+          root: project.root,
+        },
+        capture: {
+          viewport: { width: 1280, height: 800 },
+          devServerUrl: dev!.url,
+        },
+        tiles: tilesSoFar,
+        components: componentSpecs.length > 0 ? componentSpecs : undefined,
+      };
+      fs.writeFileSync(outPathAbs, JSON.stringify(doc, null, 2));
+    };
+
     const { tiles, viewport } = await captureAll({
       baseUrl: dev.url,
       targets: [...routeTargets, ...previewTargets],
+      onTile: (_tile, allSoFar) => writePartial(allSoFar),
+      onDevServerDeath: async () => {
+        // Heavy monorepo dev servers (Next.js compiling 549 component
+        // previews + 87 routes) sometimes OOM and die mid-run. Tear down
+        // the corpse, start a fresh one, and let capture continue from
+        // wherever it was. The .next/cache on disk persists so the
+        // restarted server hot-loads compiled routes faster than the
+        // first run.
+        try {
+          await dev?.stop();
+        } catch {
+          // already gone
+        }
+        const fresh = await startDevServer(project.root);
+        dev = fresh;
+        return fresh.url;
+      },
     });
 
     const doc: SpideyDocument = {

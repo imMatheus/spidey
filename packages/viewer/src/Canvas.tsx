@@ -22,8 +22,11 @@ type Props = {
 
 type Transform = { x: number; y: number; k: number };
 
-const TILES_PER_ROW = 3;
+const TILES_PER_ROW = 8;
 const GAP = 80;
+/** Extra vertical breathing room between the components band and the
+ *  routes band — lets the eye see them as separate sections. */
+const SECTION_GAP = 160;
 const HEADER_HEIGHT = 36;
 const MIN_K = 0.05;
 const MAX_K = 2;
@@ -65,7 +68,6 @@ export function Canvas({ onScaleChange }: Props) {
   }, [t.k, onScaleChange]);
 
   const positions = useMemo(() => {
-    const tileW = dims.width;
     const map = new Map<
       string,
       { x: number; y: number; w: number; h: number }
@@ -74,31 +76,50 @@ export function Canvas({ onScaleChange }: Props) {
     const routes = tiles.filter((p) => (p.kind ?? "route") === "route");
     const components = tiles.filter((p) => p.kind === "component");
 
-    // Column-packed layout for routes: each tile drops into the shortest
-    // column. Heights come from containerSize so a long blog post sits in
-    // one column without stretching the rest of the row.
-    const colY: number[] = new Array(TILES_PER_ROW).fill(0);
+    // Components band (top): each tile keeps its natural captured size,
+    // dropped into the shortest of TILES_PER_ROW columns. Cell width is
+    // the widest component so columns line up visually even when one
+    // component (e.g. a card) is much wider than another (e.g. a pill).
+    const compNaturalWidths = components.map(
+      (p) => p.containerSize?.width ?? 320,
+    );
+    const compCellW = compNaturalWidths.length
+      ? Math.max(...compNaturalWidths)
+      : 0;
+    const colYComp: number[] = new Array(TILES_PER_ROW).fill(0);
+    for (const p of components) {
+      let col = 0;
+      for (let i = 1; i < TILES_PER_ROW; i++) {
+        if (colYComp[i] < colYComp[col]) col = i;
+      }
+      const w = p.containerSize?.width ?? 320;
+      const h = p.containerSize?.height ?? 200;
+      const x = col * (compCellW + GAP);
+      const y = colYComp[col];
+      map.set(p.id, { x, y, w, h });
+      colYComp[col] += h + HEADER_HEIGHT + GAP;
+    }
+    const componentsBandHeight = compNaturalWidths.length
+      ? Math.max(...colYComp)
+      : 0;
+
+    // Routes band (below components): full-viewport tile width per cell,
+    // shortest-column packing so a tall page (longread) doesn't drag the
+    // whole row down.
+    const routeCellW = dims.width;
+    const routesY0 =
+      componentsBandHeight > 0 ? componentsBandHeight + SECTION_GAP : 0;
+    const colYRoute: number[] = new Array(TILES_PER_ROW).fill(routesY0);
     for (const p of routes) {
       let col = 0;
       for (let i = 1; i < TILES_PER_ROW; i++) {
-        if (colY[i] < colY[col]) col = i;
+        if (colYRoute[i] < colYRoute[col]) col = i;
       }
       const h = p.containerSize?.height ?? dims.height;
-      const x = col * (tileW + GAP);
-      const y = colY[col];
-      map.set(p.id, { x, y, w: tileW, h });
-      colY[col] += h + HEADER_HEIGHT + GAP;
-    }
-
-    // Components live in their own column to the right of the routes
-    // columns, stacked at their captured natural sizes.
-    const compColumnX = TILES_PER_ROW * (tileW + GAP) + GAP;
-    let compY = 0;
-    for (const p of components) {
-      const w = p.containerSize?.width ?? 320;
-      const h = p.containerSize?.height ?? 200;
-      map.set(p.id, { x: compColumnX, y: compY, w, h });
-      compY += h + HEADER_HEIGHT + GAP;
+      const x = col * (routeCellW + GAP);
+      const y = colYRoute[col];
+      map.set(p.id, { x, y, w: routeCellW, h });
+      colYRoute[col] += h + HEADER_HEIGHT + GAP;
     }
 
     return map;
