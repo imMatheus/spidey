@@ -15,6 +15,7 @@ import {
   RecaptureError,
   disposeAll as disposeRecaptureRuntimes,
   recaptureMasterTile,
+  recaptureComponentInstance,
 } from "./recapture.js";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -336,6 +337,92 @@ export async function startViewer({
           } else {
             res.statusCode = 500;
             res.end(`recapture failed: ${(e as Error)?.message ?? e}`);
+          }
+        }
+      });
+      req.on("error", (e) => {
+        res.statusCode = 500;
+        res.end(String(e));
+      });
+      return;
+    }
+
+    // Recapture an instance: POST /spidey-projects/:id/recapture-instance
+    // — re-render a component by name with the given props and return only
+    // its rendered subtree, ready to splice into a route tile in place of
+    // an instance node. The viewer drives this from the Inspector when the
+    // user edits an instance's props on a route tile.
+    const recaptureInstanceMatch = pathname.match(
+      /^\/spidey-projects\/([^/]+)\/recapture-instance$/,
+    );
+    if (recaptureInstanceMatch && req.method === "POST") {
+      const id = recaptureInstanceMatch[1];
+      const project = projects.find((p) => p.id === id);
+      if (!project) {
+        res.statusCode = 404;
+        res.end("project not found");
+        return;
+      }
+      const chunks: Buffer[] = [];
+      let total = 0;
+      const MAX = 5 * 1024 * 1024;
+      req.on("data", (c) => {
+        total += c.length;
+        if (total > MAX) {
+          res.statusCode = 413;
+          res.end("body too large");
+          req.destroy();
+          return;
+        }
+        chunks.push(c);
+      });
+      req.on("end", async () => {
+        try {
+          const body = Buffer.concat(chunks).toString("utf8");
+          const parsed = JSON.parse(body) as {
+            componentName?: string;
+            componentFile?: string;
+            propsUsed?: Record<string, unknown>;
+          };
+          if (
+            typeof parsed.componentName !== "string" ||
+            !parsed.componentName
+          ) {
+            res.statusCode = 400;
+            res.end("componentName is required");
+            return;
+          }
+          if (
+            !parsed.propsUsed ||
+            typeof parsed.propsUsed !== "object" ||
+            Array.isArray(parsed.propsUsed)
+          ) {
+            res.statusCode = 400;
+            res.end("propsUsed must be a plain object");
+            return;
+          }
+          const result = await recaptureComponentInstance({
+            projectId: project.id,
+            docPath: project.absPath,
+            componentName: parsed.componentName,
+            componentFile:
+              typeof parsed.componentFile === "string"
+                ? parsed.componentFile
+                : undefined,
+            propsUsed: parsed.propsUsed,
+          });
+          res.setHeader("content-type", MIME[".json"]);
+          res.statusCode = 200;
+          res.end(JSON.stringify(result));
+        } catch (e) {
+          if (e instanceof RecaptureError) {
+            res.statusCode = e.statusCode;
+            res.end(e.message);
+          } else {
+            res.statusCode = 500;
+            res.end(
+              `recapture-instance failed: ${(e as Error)?.message ?? e}`,
+            );
           }
         }
       });

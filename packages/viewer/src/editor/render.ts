@@ -25,6 +25,13 @@ export function renderNode(node: SpideyNode, inSvg = false): Node {
     // Defense in depth — capture already strips on*. Skip any that slipped
     // through (e.g. JSON authored by hand).
     if (name.toLowerCase().startsWith("on")) continue;
+    // Skip `loading="lazy"` on captured images. Tiles render inside a
+    // CSS-transformed canvas, frequently translated off the layout viewport;
+    // the browser's lazy-load IntersectionObserver fires against the layout
+    // viewport, so off-screen tiles never start fetching, and even after the
+    // user pans to a tile the load often stays pending under the transform.
+    // Force eager loading for the editor preview.
+    if (name.toLowerCase() === "loading" && value === "lazy") continue;
     try {
       el.setAttribute(name, value);
     } catch {

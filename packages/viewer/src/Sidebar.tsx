@@ -28,7 +28,6 @@ export function Sidebar() {
   const components = filteredTiles.filter((p) => p.kind === 'component')
 
   const showLayers = activeTileId != null
-  const activeProject = projects.find((p) => p.id === activeProjectId)
 
   const onSelect = (id: string) => {
     setFocusId(id)
@@ -51,14 +50,14 @@ export function Sidebar() {
           </h1>
           <ThemeToggle />
         </div>
-        {projects.length > 1 ? (
+        {projects.length > 0 ? (
           <div className="-mx-1">
             <NativeSelect
               size="sm"
               className="w-full text-[13px] font-medium border-transparent bg-transparent shadow-none hover:bg-muted dark:bg-transparent dark:hover:bg-muted px-2"
               value={activeProjectId ?? ''}
               onChange={(e) => setActiveProjectId(e.target.value)}
-              title="Switch project"
+              title={projects.length > 1 ? 'Switch project' : undefined}
             >
               {projects.map((p) => (
                 <NativeSelectOption key={p.id} value={p.id}>
@@ -66,10 +65,6 @@ export function Sidebar() {
                 </NativeSelectOption>
               ))}
             </NativeSelect>
-          </div>
-        ) : activeProject ? (
-          <div className="text-[13px] font-medium px-1">
-            {activeProject.name}
           </div>
         ) : null}
         <Input

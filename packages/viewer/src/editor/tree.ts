@@ -247,3 +247,21 @@ export function cloneWithNewIds(node: SpideyNode): SpideyNode {
     children: node.children.map(cloneWithNewIds),
   };
 }
+
+/** Deep-clone a subtree, assigning the supplied id to the root and
+ *  fresh ids to every descendant. Used when splicing a freshly-rendered
+ *  subtree into a tile in place of an existing node — keeping the
+ *  existing id on the root preserves selection state. */
+export function stampRootId(node: SpideyNode, rootId: string): SpideyNode {
+  if (node.kind === "text") {
+    return { id: rootId, kind: "text", value: node.value };
+  }
+  return {
+    id: rootId,
+    kind: "el",
+    tag: node.tag,
+    attrs: { ...node.attrs },
+    style: { ...node.style },
+    children: node.children.map(cloneWithNewIds),
+  };
+}

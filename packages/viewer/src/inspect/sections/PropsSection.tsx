@@ -8,8 +8,15 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { CollapsibleSection } from "../inputs";
-import { NOOP_FN_SENTINEL } from "@spidey/shared";
+import { NOOP_FN_SENTINEL, type PropSpec } from "@spidey/shared";
 
 /**
  * Editable props for a component, parameterized by mode:
@@ -44,6 +51,11 @@ export type PropsSectionMode =
       kind: "instance";
       onCommit: (next: Record<string, unknown>) => void;
       onRawCommit: (text: string) => void;
+      /** Re-render in flight from an instance recapture, when the
+       *  component is in the discovered catalog. Surfaces the same
+       *  "re-rendering preview…" indicator as master mode. */
+      pending?: boolean;
+      error?: string | null;
     };
 
 export function PropsSection({
@@ -51,6 +63,7 @@ export function PropsSection({
   rawAttr,
   parsed,
   mode,
+  propSpecs,
 }: {
   name: string;
   /** Only meaningful in instance mode — used by the raw-text fallback
@@ -59,6 +72,11 @@ export function PropsSection({
   rawAttr: string | null;
   parsed: Record<string, unknown> | null;
   mode: PropsSectionMode;
+  /** Discovered prop signature from the components catalog, when
+   *  available. Drives input choice — e.g. an enum prop renders as a
+   *  dropdown of its declared values, not a free text field. Missing
+   *  specs fall through to value-type inference. */
+  propSpecs?: Record<string, PropSpec>;
 }) {
   const setProp = (key: string, value: unknown) => {
     if (!parsed) return;
@@ -74,6 +92,7 @@ export function PropsSection({
             onChange={(next) => mode.onCommit(next as Record<string, unknown>)}
             setEntry={setProp}
             depth={0}
+            specs={propSpecs}
           />
         ) : mode.kind === "instance" && rawAttr != null ? (
           <RawJsonFallback
@@ -85,13 +104,13 @@ export function PropsSection({
             no captured props
           </div>
         )}
-        {mode.kind === "master" && mode.pending && (
+        {mode.pending && (
           <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground">
             <Loader2 size={12} className="animate-spin" />
             re-rendering preview…
           </div>
         )}
-        {mode.kind === "master" && mode.error && (
+        {mode.error && (
           <div className="text-[11px] text-destructive font-mono break-words">
             {mode.error}
           </div>
@@ -99,7 +118,7 @@ export function PropsSection({
         <p className="text-[10px] text-muted-foreground/70 leading-snug">
           {mode.kind === "master"
             ? "Edits re-render this preview and propagate any structural changes to instances."
-            : "Prop edits on instances don't re-render — they flow into the change log for code generation."}
+            : "Edits re-render this instance and are recorded for code generation."}
         </p>
       </div>
     </CollapsibleSection>
@@ -116,6 +135,7 @@ function ObjectFields({
   onChange,
   setEntry,
   depth,
+  specs,
 }: {
   value: Record<string, unknown>;
   /** Called with a fully-replaced object when a child field changes.
@@ -127,6 +147,9 @@ function ObjectFields({
    *  have a setProp closure. */
   setEntry?: (key: string, value: unknown) => void;
   depth: number;
+  /** Per-key PropSpec, when known. Drives input choice (enum →
+   *  dropdown, etc). Missing entries fall through to type inference. */
+  specs?: Record<string, PropSpec>;
 }) {
   const entries = Object.entries(value);
   if (entries.length === 0) {
@@ -148,6 +171,7 @@ function ObjectFields({
             value={v}
             onChange={(next) => updateKey(k, next)}
             depth={depth + 1}
+            spec={specs?.[k]}
           />
         </FieldBlock>
       ))}
@@ -162,10 +186,13 @@ function ArrayFields({
   value,
   onChange,
   depth,
+  itemSpec,
 }: {
   value: unknown[];
   onChange: (next: unknown[]) => void;
   depth: number;
+  /** Element type for the array — applied uniformly to every item. */
+  itemSpec?: PropSpec;
 }) {
   if (value.length === 0) {
     return (
@@ -184,6 +211,7 @@ function ArrayFields({
               onChange(arr);
             }}
             depth={depth + 1}
+            spec={itemSpec}
           />
         </FieldBlock>
       ))}
@@ -259,11 +287,32 @@ function PropInput({
   value,
   onChange,
   depth,
+  spec,
 }: {
   value: unknown;
   onChange: (next: unknown) => void;
   depth: number;
+  /** PropSpec for this slot, when known. Spec wins over value-type
+   *  inference where it offers something better — e.g. enum → dropdown.
+   *  When the spec doesn't apply (missing, "unknown", or "node"), we
+   *  fall through to the type-inferred input below. */
+  spec?: PropSpec;
 }) {
+  // Enum → dropdown of declared values, no free typing. Works for
+  // string/number/boolean enum values; we render labels by their
+  // string-coerced form.
+  if (spec?.kind === "enum" && (value === null || value === undefined ||
+      typeof value === "string" || typeof value === "number" ||
+      typeof value === "boolean")) {
+    return (
+      <EnumInput
+        value={value as string | number | boolean | null | undefined}
+        values={spec.values}
+        optional={spec.optional}
+        onChange={onChange}
+      />
+    );
+  }
   if (value === NOOP_FN_SENTINEL) {
     return (
       <span className="text-muted-foreground italic font-mono text-[11px]">
@@ -289,7 +338,14 @@ function PropInput({
     return <JsonPropInput value={value} onChange={onChange} />;
   }
   if (Array.isArray(value)) {
-    return <ArrayFields value={value} onChange={onChange} depth={depth} />;
+    return (
+      <ArrayFields
+        value={value}
+        onChange={onChange}
+        depth={depth}
+        itemSpec={spec?.kind === "array" ? spec.of : undefined}
+      />
+    );
   }
   if (typeof value === "object") {
     return (
@@ -297,12 +353,68 @@ function PropInput({
         value={value as Record<string, unknown>}
         onChange={onChange as (next: Record<string, unknown>) => void}
         depth={depth}
+        specs={spec?.kind === "object" ? spec.fields : undefined}
       />
     );
   }
   // Fallback for exotic types (bigint, symbol after JSON round-trip
   // shouldn't occur, but be defensive).
   return <JsonPropInput value={value} onChange={onChange} />;
+}
+
+const NULL_SENTINEL = "__spidey_null__";
+
+function EnumInput({
+  value,
+  values,
+  optional,
+  onChange,
+}: {
+  value: string | number | boolean | null | undefined;
+  values: (string | number | boolean)[];
+  optional: boolean;
+  onChange: (next: unknown) => void;
+}) {
+  // Radix Select stores selection as a string. We tag each option with
+  // its index so we can round-trip non-string values (numbers, booleans)
+  // without coercion ambiguity. The "null" option (only shown for
+  // optional props) uses a sentinel so it can't collide with a literal
+  // value of the same string.
+  const currentIdx = values.findIndex((v) => v === value);
+  const selected =
+    currentIdx >= 0 ? String(currentIdx) : value == null ? NULL_SENTINEL : "";
+  return (
+    <Select
+      value={selected}
+      onValueChange={(v) => {
+        if (v === NULL_SENTINEL) onChange(null);
+        else onChange(values[Number(v)]);
+      }}
+    >
+      <SelectTrigger size="sm" className="h-7 text-[11px] font-mono w-full">
+        <SelectValue placeholder="—" />
+      </SelectTrigger>
+      <SelectContent>
+        {optional && (
+          <SelectItem
+            value={NULL_SENTINEL}
+            className="text-[11px] font-mono italic text-muted-foreground"
+          >
+            null
+          </SelectItem>
+        )}
+        {values.map((v, i) => (
+          <SelectItem
+            key={i}
+            value={String(i)}
+            className="text-[11px] font-mono"
+          >
+            {String(v)}
+          </SelectItem>
+        ))}
+      </SelectContent>
+    </Select>
+  );
 }
 
 function BooleanInput({

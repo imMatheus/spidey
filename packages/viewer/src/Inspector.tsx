@@ -1,6 +1,6 @@
 import { useEffect, useState, useMemo } from "react";
 import { Lock, MousePointer2, PenSquare } from "lucide-react";
-import type { SpideyNode, SpideyTile } from "@spidey/shared";
+import type { ComponentSpec, SpideyNode, SpideyTile } from "@spidey/shared";
 import { findById, findInstanceAncestor } from "./editor/tree";
 import type { EditAction } from "./editor/state";
 import { Badge } from "@/components/ui/badge";
@@ -17,6 +17,7 @@ import { ValueSection } from "./inspect/sections/ValueSection";
 import { PseudoSection } from "./inspect/sections/PseudoSection";
 import { PropsSection, type PropsSectionMode } from "./inspect/sections/PropsSection";
 import { useRecapture } from "./hooks/useRecapture";
+import { useInstanceRecapture } from "./hooks/useInstanceRecapture";
 import {
   useEditorDispatch,
   useEditorRev,
@@ -139,6 +140,7 @@ export function Inspector() {
               ? (activeTile?.component?.propsUsed ?? null)
               : null
           }
+          componentsCatalog={doc.components ?? []}
         />
       ) : (
         <div className="px-4 py-3 text-muted-foreground text-[12px]">
@@ -248,6 +250,7 @@ function StylePanels({
   dispatch,
   masterComponent,
   masterPropsUsed,
+  componentsCatalog,
 }: {
   el: HTMLElement;
   rev: number;
@@ -265,6 +268,9 @@ function StylePanels({
    *  re-reads after an optimistic update without rebuilding the whole
    *  componentInfo object). */
   masterPropsUsed: Record<string, unknown> | null;
+  /** Discovered component catalog from the doc — used to resolve the
+   *  selected component's prop signature (enums → dropdowns, etc). */
+  componentsCatalog: ComponentSpec[];
 }) {
   // getComputedStyle is reactive only via element identity / rev — recompute
   // when either changes so the inputs' placeholders mirror the live cascade.
@@ -274,6 +280,11 @@ function StylePanels({
   }, [el, rev]);
 
   const { recapture, pending, error } = useRecapture();
+  const {
+    recapture: recaptureInstance,
+    pending: instancePending,
+    error: instanceError,
+  } = useInstanceRecapture();
 
   // Component-instance panel: surface name + props
   const componentName = el.getAttribute("data-spidey-component");
@@ -304,6 +315,16 @@ function StylePanels({
     return true;
   })();
 
+  // Catalog entry for the selected component, when one exists. Required
+  // by the instance-recapture path: the server needs the spec
+  // (file/exportKind/props) to write a single-component preview. When
+  // the catalog has no match (e.g. framework internals like Router
+  // that capture tags but aren't user components) we fall back to
+  // attribute-only edits.
+  const componentCatalogEntry = componentName
+    ? componentsCatalog.find((c) => c.name === componentName)
+    : undefined;
+
   const propsMode: PropsSectionMode | null = !componentName
     ? null
     : isMasterRoot
@@ -317,14 +338,33 @@ function StylePanels({
         }
       : {
           kind: "instance",
-          onCommit: (next) =>
+          onCommit: (next) => {
+            // Optimistic attribute write so the inspector inputs reflect
+            // the user's typing without waiting on the recapture
+            // roundtrip. The recapture's resulting subtree carries its
+            // own data-spidey-props that will overwrite this on land.
             dispatch({
               type: "setAttr",
               tileId,
               nodeId,
               name: "data-spidey-props",
               value: JSON.stringify(next),
-            }),
+            });
+            // Re-render the instance via the same preview pipeline as
+            // the master flow when the component is in the discovered
+            // catalog. Without a spec the server can't render — leave
+            // the attribute-only edit (still recorded in the change
+            // log for the agent handoff).
+            if (componentCatalogEntry) {
+              void recaptureInstance(
+                tileId,
+                nodeId,
+                componentName,
+                next,
+                componentCatalogEntry.relPath,
+              );
+            }
+          },
           onRawCommit: (text) =>
             dispatch({
               type: "setAttr",
@@ -333,6 +373,8 @@ function StylePanels({
               name: "data-spidey-props",
               value: text,
             }),
+          pending: instancePending,
+          error: instanceError,
         };
 
   // For master-mode, parsed props come from the doc (live, mutable).
@@ -340,6 +382,14 @@ function StylePanels({
   // selected element (read-only DOM, but the gesture log persists edits
   // to data-spidey-props on dispatch).
   const parsedProps = isMasterRoot ? masterPropsUsed : runtimeProps;
+
+  // Look up the discovered prop signature so the section can render
+  // enums as dropdowns, etc. Match by name; multiple components can
+  // share a name across files but the catalog is small enough that a
+  // first-match is fine for v1.
+  const propSpec = componentName
+    ? componentsCatalog.find((c) => c.name === componentName)?.props
+    : undefined;
 
   const setStyle = (prop: string, value: string | null) =>
     dispatch({ type: "setStyle", tileId, nodeId, prop, value });
@@ -359,6 +409,7 @@ function StylePanels({
             rawAttr={propsAttr}
             parsed={parsedProps}
             mode={propsMode}
+            propSpecs={propSpec}
           />
         )}
         <div className="px-4 py-3 border-b border-border">

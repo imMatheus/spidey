@@ -10,6 +10,7 @@ import {
   newId,
   pathFromTo,
   removeIds,
+  stampRootId,
   updateNode,
   walkPath,
 } from "./tree";
@@ -97,6 +98,18 @@ export type EditAction =
       type: "replaceTileTree";
       tileId: string;
       tree: SpideyNode;
+    }
+  | {
+      /** Replace a single subtree within a tile — used by the
+       *  instance-recapture flow when an instance's props are edited on
+       *  a route tile. The new subtree gets the existing nodeId on its
+       *  root (so selection stays valid) and fresh ids on descendants
+       *  (so they don't collide with anything elsewhere in the tree).
+       *  Recorded in history so undo restores the prior subtree. */
+      type: "replaceSubtree";
+      tileId: string;
+      nodeId: string;
+      subtree: SpideyNode;
     }
   | { type: "setText"; tileId: string; nodeId: string; text: string }
   | {
@@ -199,6 +212,23 @@ export function reducer(state: EditorState, action: EditAction): EditorState {
       return commitChanges(
         state,
         [{ tileId: action.tileId, prev: prev ?? null, next: action.tree }],
+        action,
+      );
+    }
+
+    case "replaceSubtree": {
+      const prev = state.tileTrees[action.tileId];
+      if (!prev) return state;
+      // Stamp the existing node id on the new root + fresh ids on all
+      // descendants. Preserving the root id keeps the user's selection
+      // valid; fresh ids on descendants avoid colliding with anything
+      // already in the tree.
+      const stamped = stampRootId(action.subtree, action.nodeId);
+      const next = updateNode(prev, action.nodeId, () => stamped);
+      if (next === prev) return state;
+      return commitChanges(
+        state,
+        [{ tileId: action.tileId, prev, next }],
         action,
       );
     }
