@@ -9,24 +9,17 @@ import {
   Check,
   AlertTriangle,
   Terminal,
-  GitCompare,
-  Search,
-  Columns2,
-  Rows2,
 } from "lucide-react";
 import { toast } from "sonner";
 import {
   renderPrompt,
   summarize,
   type ChangeSummary,
-  type ComponentScope,
   type NodeLineage,
   type SquashedChange,
-  type TileScope,
 } from "./editor/changeset";
 import type { SpideyNode } from "@spidey/shared";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import claudeIcon from "./assets/claude.png";
 import codexIcon from "./assets/codex.png";
 import {
@@ -447,11 +440,11 @@ function LogModal({
   );
 }
 
-/** Compute a token-level diff between two strings, returning spans with
- *  highlight flags. Uses character-level tokens for short values (≤80 chars
- *  combined) and word/boundary tokens for longer ones so the highlighted
- *  regions stay readable. Returns null when the strings are identical or the
- *  combined length is too large to diff cheaply. */
+/** Word-level diff between two strings. Tokens are word runs, single
+ *  punctuation chars, or whitespace runs — that gives readable highlights
+ *  on CSS values like `rgba(255, 0, 0)` (only the changed numbers light up)
+ *  without falling back to per-character noise. Returns null when strings
+ *  are identical or too large to diff cheaply. */
 type DiffSpan = { text: string; highlight: boolean };
 
 function computeDiff(
@@ -460,10 +453,10 @@ function computeDiff(
 ): { beforeSpans: DiffSpan[]; afterSpans: DiffSpan[] } | null {
   if (before === after) return null;
   const total = before.length + after.length;
-  if (total > 600) return null;
+  if (total > 4000) return null;
 
   const tokenize = (s: string): string[] =>
-    total <= 80 ? [...s] : (s.match(/\S+|\s+/g) ?? [...s]);
+    s.match(/[\w-]+|\s+|[^\w\s]/g) ?? [s];
 
   const ta = tokenize(before);
   const tb = tokenize(after);
@@ -509,7 +502,148 @@ function computeDiff(
   };
 }
 
-type DiffViewMode = "split" | "stacked";
+/* ------------------------------------------------------------------ */
+/*  Changes modal                                                     */
+/* ------------------------------------------------------------------ */
+
+type StyleChange = Extract<SquashedChange, { kind: "style" }>;
+
+type Hunk =
+  | {
+      kind: "css-rule";
+      id: string;
+      nodeId: string;
+      selector: string;
+      lineage: NodeLineage;
+      changes: StyleChange[];
+    }
+  | {
+      kind: "single";
+      id: string;
+      change: SquashedChange;
+    }
+  | {
+      kind: "primitive";
+      id: string;
+      node: SpideyNode;
+      tileLabel: string;
+      lineage: NodeLineage;
+    };
+
+type Scope = {
+  id: string;
+  category: "component" | "tile" | "primitive";
+  /** Path-style title shown in the rail and section header. */
+  title: string;
+  /** Subtitle (file path / source hint). */
+  subtitle?: string;
+  /** Extra source-hint count after the first. */
+  extraSources?: number;
+  /** Total raw change count (un-grouped). */
+  rawCount: number;
+  /** Hunks for the right pane (css-rules grouped, structurals as singles). */
+  hunks: Hunk[];
+  /** Optional instance count badge for component scopes. */
+  instanceCount?: number;
+};
+
+function buildHunks(changes: SquashedChange[], idPrefix: string): Hunk[] {
+  // Group `style` changes by nodeId so a node with several edited properties
+  // surfaces as one CSS rule. Everything else stays as its own hunk in
+  // original order.
+  const styleBuckets = new Map<string, StyleChange[]>();
+  const order: Array<{ kind: "rule"; nodeId: string } | { kind: "single"; index: number }> = [];
+
+  changes.forEach((c, idx) => {
+    if (c.kind === "style") {
+      const existing = styleBuckets.get(c.nodeId);
+      if (existing) {
+        existing.push(c);
+      } else {
+        styleBuckets.set(c.nodeId, [c]);
+        order.push({ kind: "rule", nodeId: c.nodeId });
+      }
+    } else {
+      order.push({ kind: "single", index: idx });
+    }
+  });
+
+  return order.map((o, i) => {
+    if (o.kind === "rule") {
+      const bucket = styleBuckets.get(o.nodeId)!;
+      return {
+        kind: "css-rule" as const,
+        id: `${idPrefix}:rule:${o.nodeId}:${i}`,
+        nodeId: o.nodeId,
+        selector: pickSelector(bucket[0].lineage),
+        lineage: bucket[0].lineage,
+        changes: bucket,
+      };
+    }
+    const c = changes[o.index];
+    return {
+      kind: "single" as const,
+      id: `${idPrefix}:single:${i}`,
+      change: c,
+    };
+  });
+}
+
+function pickSelector(l: NodeLineage): string {
+  if (l.classChain && l.classChain.length > 0) {
+    return "." + l.classChain.slice(0, 3).join(".");
+  }
+  if (l.componentName) return `<${l.componentName}>`;
+  return "node";
+}
+
+function buildScopes(summary: ChangeSummary): Scope[] {
+  const out: Scope[] = [];
+
+  for (const c of summary.byComponent) {
+    out.push({
+      id: `c:${c.componentName}`,
+      category: "component",
+      title: `<${c.componentName}>`,
+      subtitle: c.file,
+      rawCount: c.changes.length,
+      hunks: buildHunks(c.changes, `c:${c.componentName}`),
+      instanceCount: c.instanceCount,
+    });
+  }
+  for (const t of summary.byTile) {
+    out.push({
+      id: `t:${t.tileId}`,
+      category: "tile",
+      title: t.tileLabel,
+      subtitle: t.sourceHints[0],
+      extraSources:
+        t.sourceHints.length > 1 ? t.sourceHints.length - 1 : undefined,
+      rawCount: t.changes.length,
+      hunks: buildHunks(t.changes, `t:${t.tileId}`),
+    });
+  }
+  summary.primitives.forEach((p, i) => {
+    out.push({
+      id: `p:${p.tileId}:${p.node.id}:${i}`,
+      category: "primitive",
+      title: describeNodeShape(p.node),
+      subtitle: `inserted on ${p.tileLabel}`,
+      rawCount: 1,
+      hunks: [
+        {
+          kind: "primitive",
+          id: `p:${p.tileId}:${p.node.id}:${i}:hunk`,
+          node: p.node,
+          tileLabel: p.tileLabel,
+          lineage: p.insertedUnder,
+        },
+      ],
+    });
+  });
+
+  return out;
+}
 
 function ChangesModal({
   open,
@@ -520,104 +654,74 @@ function ChangesModal({
   onOpenChange: (open: boolean) => void;
   summary: ChangeSummary;
 }) {
-  const [query, setQuery] = useState("");
-  const [activeKinds, setActiveKinds] = useState<Set<SquashedChange["kind"]>>(
-    () => new Set(),
-  );
-  const [viewMode, setViewMode] = useState<DiffViewMode>("split");
+  const scopes = useMemo(() => buildScopes(summary), [summary]);
+  const empty = scopes.length === 0;
 
-  // Reset transient UI state whenever the modal closes — opening fresh
-  // shouldn't carry stale filters.
+  const [activeId, setActiveId] = useState<string>("all");
   useEffect(() => {
-    if (!open) {
-      setQuery("");
-      setActiveKinds(new Set());
-    }
+    if (!open) setActiveId("all");
   }, [open]);
 
-  const kindCounts = useMemo(() => {
-    const counts: Partial<Record<SquashedChange["kind"], number>> = {};
-    const tally = (cs: SquashedChange[]) => {
-      for (const c of cs) counts[c.kind] = (counts[c.kind] ?? 0) + 1;
-    };
-    summary.byComponent.forEach((c) => tally(c.changes));
-    summary.byTile.forEach((t) => tally(t.changes));
-    counts.insert = (counts.insert ?? 0) + summary.primitives.length;
-    return counts;
-  }, [summary]);
+  const componentScopes = scopes.filter((s) => s.category === "component");
+  const tileScopes = scopes.filter((s) => s.category === "tile");
+  const primitiveScopes = scopes.filter((s) => s.category === "primitive");
 
-  const matchesFilters = (c: SquashedChange) => {
-    if (activeKinds.size > 0 && !activeKinds.has(c.kind)) return false;
-    if (!query) return true;
-    const q = query.toLowerCase();
-    const haystacks: string[] = [c.kind];
-    if (c.kind === "style") haystacks.push(c.prop, c.before ?? "", c.after ?? "");
-    else if (c.kind === "attr") haystacks.push(c.name, c.before ?? "", c.after ?? "");
-    else if (c.kind === "text") haystacks.push(c.before ?? "", c.after);
-    else if (c.kind === "insert") haystacks.push(describeNodeShape(c.node));
-    else if (c.kind === "remove") haystacks.push(c.nodeId);
-    else if (c.kind === "move") haystacks.push(c.newParentId);
-    else if (c.kind === "duplicate") haystacks.push(c.sourceNodeId);
-    else if (c.kind === "paste") haystacks.push(c.parentId);
-    if (c.lineage.componentName) haystacks.push(c.lineage.componentName);
-    if (c.lineage.classChain) haystacks.push(...c.lineage.classChain);
-    if (c.lineage.textContext) haystacks.push(c.lineage.textContext);
-    return haystacks.some((s) => s.toLowerCase().includes(q));
+  // Hold one element ref per scope section + the scrollable right pane, so
+  // rail clicks can scrollIntoView on the matching section without affecting
+  // what's rendered.
+  const scrollRef = useRef<HTMLDivElement | null>(null);
+  const sectionRefs = useRef<Map<string, HTMLElement>>(new Map());
+  const registerSection = (id: string) => (el: HTMLElement | null) => {
+    if (el) sectionRefs.current.set(id, el);
+    else sectionRefs.current.delete(id);
   };
 
-  const filteredComponents = useMemo(
-    () =>
-      summary.byComponent
-        .map((c) => ({ ...c, changes: c.changes.filter(matchesFilters) }))
-        .filter((c) => c.changes.length > 0),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [summary.byComponent, query, activeKinds],
-  );
-  const filteredTiles = useMemo(
-    () =>
-      summary.byTile
-        .map((t) => ({ ...t, changes: t.changes.filter(matchesFilters) }))
-        .filter((t) => t.changes.length > 0),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [summary.byTile, query, activeKinds],
-  );
-  const filteredPrimitives = useMemo(() => {
-    if (activeKinds.size > 0 && !activeKinds.has("insert")) return [];
-    if (!query) return summary.primitives;
-    const q = query.toLowerCase();
-    return summary.primitives.filter((p) => {
-      const bits: string[] = [
-        describeNodeShape(p.node),
-        p.tileLabel,
-        p.insertedUnder.componentName ?? "",
-        ...(p.insertedUnder.classChain ?? []),
-      ];
-      return bits.some((s) => s.toLowerCase().includes(q));
-    });
-  }, [summary.primitives, query, activeKinds]);
+  // Scrollspy: as the user scrolls, mark whichever section's header is at
+  // the top of the viewport as the active rail item. We pick the section
+  // whose top is closest to (but ≤) the scroll container's top.
+  useEffect(() => {
+    if (!open || empty) return;
+    const root = scrollRef.current;
+    if (!root) return;
 
-  const empty =
-    summary.byComponent.length === 0 &&
-    summary.byTile.length === 0 &&
-    summary.primitives.length === 0;
-  const noMatches =
-    !empty &&
-    filteredComponents.length === 0 &&
-    filteredTiles.length === 0 &&
-    filteredPrimitives.length === 0;
+    const update = () => {
+      const rootTop = root.getBoundingClientRect().top;
+      let bestId: string = scopes[0]?.id ?? "all";
+      let bestDelta = -Infinity;
+      for (const scope of scopes) {
+        const el = sectionRefs.current.get(scope.id);
+        if (!el) continue;
+        const delta = el.getBoundingClientRect().top - rootTop;
+        // Section starts at or above the viewport top — prefer the closest.
+        if (delta <= 4 && delta > bestDelta) {
+          bestDelta = delta;
+          bestId = scope.id;
+        }
+      }
+      // Near the top? Mark "all" instead, so the pinned header item stays
+      // active when nothing has been scrolled past.
+      if (root.scrollTop < 8) bestId = "all";
+      setActiveId((prev) => (prev === bestId ? prev : bestId));
+    };
 
-  const filteredCount =
-    filteredComponents.reduce((n, c) => n + c.changes.length, 0) +
-    filteredTiles.reduce((n, t) => n + t.changes.length, 0) +
-    filteredPrimitives.length;
-  const hasFilters = query.length > 0 || activeKinds.size > 0;
+    update();
+    root.addEventListener("scroll", update, { passive: true });
+    return () => root.removeEventListener("scroll", update);
+  }, [open, empty, scopes]);
 
-  const toggleKind = (kind: SquashedChange["kind"]) => {
-    setActiveKinds((prev) => {
-      const next = new Set(prev);
-      if (next.has(kind)) next.delete(kind);
-      else next.add(kind);
-      return next;
+  const handleSelect = (id: string) => {
+    setActiveId(id);
+    if (id === "all") {
+      scrollRef.current?.scrollTo({ top: 0, behavior: "smooth" });
+      return;
+    }
+    const el = sectionRefs.current.get(id);
+    if (!el || !scrollRef.current) return;
+    const rootTop = scrollRef.current.getBoundingClientRect().top;
+    const elTop = el.getBoundingClientRect().top;
+    scrollRef.current.scrollTo({
+      top: scrollRef.current.scrollTop + (elTop - rootTop),
+      behavior: "smooth",
     });
   };
 
@@ -625,660 +729,547 @@ function ChangesModal({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         showCloseButton={false}
-        className="sm:max-w-5xl max-h-[88vh] !p-0 !gap-0 flex flex-col"
+        className="!max-w-[1100px] sm:!max-w-[1100px] !w-[min(95vw,1100px)] h-[82vh] !max-h-[82vh] !p-0 !gap-0 flex flex-col bg-card overflow-hidden"
       >
-        <DialogHeader className="flex-col items-stretch gap-3 px-5 pt-4 pb-3 border-b border-border shrink-0">
-          <div className="flex items-center justify-between gap-3">
-            <DialogTitle className="flex items-center gap-2.5 text-sm font-semibold">
-              <GitCompare size={15} className="text-muted-foreground" />
-              Changes
-              <span className="bg-muted text-muted-foreground font-mono text-[11px] font-normal px-1.5 py-0.5 rounded-md tabular-nums">
-                {hasFilters
-                  ? `${filteredCount} / ${summary.totalCount}`
-                  : summary.totalCount}
-              </span>
-            </DialogTitle>
-            <div className="flex items-center gap-1.5">
-              <div className="inline-flex items-center rounded-md border border-border bg-muted/40 p-0.5">
-                <button
-                  type="button"
-                  onClick={() => setViewMode("split")}
-                  title="Side-by-side diff"
-                  className={`h-6 px-2 rounded-[5px] text-[11px] inline-flex items-center gap-1.5 transition-colors ${
-                    viewMode === "split"
-                      ? "bg-background text-foreground shadow-sm"
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  <Columns2 size={12} />
-                  Split
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setViewMode("stacked")}
-                  title="Stacked diff"
-                  className={`h-6 px-2 rounded-[5px] text-[11px] inline-flex items-center gap-1.5 transition-colors ${
-                    viewMode === "stacked"
-                      ? "bg-background text-foreground shadow-sm"
-                      : "text-muted-foreground hover:text-foreground"
-                  }`}
-                >
-                  <Rows2 size={12} />
-                  Stacked
-                </button>
-              </div>
-              <Button
-                variant="ghost"
-                size="icon-sm"
-                onClick={() => onOpenChange(false)}
-              >
-                <X />
-              </Button>
-            </div>
-          </div>
-
-          {!empty && (
-            <div className="flex items-center gap-2 flex-wrap">
-              <div className="relative flex-1 min-w-[200px]">
-                <Search
-                  size={12}
-                  className="absolute left-2.5 top-1/2 -translate-y-1/2 text-muted-foreground/60 pointer-events-none"
-                />
-                <Input
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value)}
-                  placeholder="Filter changes by prop, value, or component…"
-                  className="!h-7 pl-7 text-[12px]"
-                />
-              </div>
-              <div className="flex items-center gap-1 flex-wrap">
-                {(Object.keys(KIND_STYLES) as SquashedChange["kind"][])
-                  .filter((k) => (kindCounts[k] ?? 0) > 0)
-                  .map((kind) => {
-                    const count = kindCounts[kind] ?? 0;
-                    const active = activeKinds.has(kind);
-                    const s = KIND_STYLES[kind];
-                    return (
-                      <button
-                        key={kind}
-                        type="button"
-                        onClick={() => toggleKind(kind)}
-                        className={`inline-flex items-center gap-1.5 h-6 px-2 rounded-md text-[10px] font-medium uppercase tracking-wide transition-colors border ${
-                          active
-                            ? `${s.bg} ${s.text} border-transparent ring-1 ring-current/20`
-                            : "bg-transparent text-muted-foreground border-border hover:bg-muted/60"
-                        }`}
-                      >
-                        <span
-                          className={`size-1.5 rounded-full ${s.dot} ${
-                            active ? "opacity-100" : "opacity-50"
-                          }`}
-                        />
-                        {kind}
-                        <span className="font-mono text-[10px] tabular-nums opacity-70">
-                          {count}
-                        </span>
-                      </button>
-                    );
-                  })}
-                {hasFilters && (
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setQuery("");
-                      setActiveKinds(new Set());
-                    }}
-                    className="text-[10px] text-muted-foreground hover:text-foreground inline-flex items-center gap-1 px-1.5 h-6"
-                  >
-                    <X size={11} /> Clear
-                  </button>
-                )}
-              </div>
-            </div>
-          )}
+        <DialogHeader className="flex-row items-center justify-between px-5 h-12 border-b border-border shrink-0 gap-4">
+          <DialogTitle className="flex items-baseline gap-2.5 text-[13px] font-medium">
+            <span>Changes</span>
+            <span className="text-muted-foreground/70 tabular-nums font-normal">
+              {summary.totalCount}
+            </span>
+          </DialogTitle>
+          <Button
+            variant="ghost"
+            size="icon-sm"
+            onClick={() => onOpenChange(false)}
+            className="-mr-2"
+          >
+            <X />
+          </Button>
         </DialogHeader>
 
-        <div className="flex-1 min-h-0 overflow-y-auto bg-muted/20">
-          {empty && (
-            <div className="flex flex-col items-center justify-center py-20 text-center gap-2">
-              <div className="size-10 rounded-full bg-muted flex items-center justify-center text-muted-foreground/60">
-                <GitCompare size={18} />
-              </div>
-              <div className="text-[13px] text-foreground/80">
-                No changes recorded yet
-              </div>
-              <div className="text-[11px] text-muted-foreground/70 max-w-xs">
-                Edit a tile or property — your changes show up here grouped by
-                scope.
-              </div>
+        {empty ? (
+          <div className="flex-1 min-h-0 flex flex-col items-center justify-center gap-1.5 text-center">
+            <div className="text-[13px] text-foreground/80">
+              No changes yet
             </div>
-          )}
-
-          {!empty && noMatches && (
-            <div className="flex flex-col items-center justify-center py-20 text-center gap-2">
-              <Search size={18} className="text-muted-foreground/60" />
-              <div className="text-[13px] text-foreground/80">
-                No matches for current filters
-              </div>
-              <button
-                type="button"
-                onClick={() => {
-                  setQuery("");
-                  setActiveKinds(new Set());
-                }}
-                className="text-[11px] text-primary hover:underline"
-              >
-                Clear filters
-              </button>
+            <div className="text-[11px] text-muted-foreground/70 max-w-[220px]">
+              Edit a tile or property — your changes appear here.
             </div>
-          )}
-
-          {filteredComponents.length > 0 && (
-            <ChangesGroup
-              title="Component-scoped edits"
-              hint="propagates to all instances"
-              count={filteredComponents.reduce(
-                (n, c) => n + c.changes.length,
-                0,
-              )}
-            >
-              {filteredComponents.map((c) => (
-                <ComponentBlock
-                  key={c.componentName}
-                  scope={c}
-                  viewMode={viewMode}
+          </div>
+        ) : (
+          <div className="flex-1 min-h-0 flex">
+            <Rail
+              totalCount={summary.totalCount}
+              activeId={activeId}
+              onSelect={handleSelect}
+              componentScopes={componentScopes}
+              tileScopes={tileScopes}
+              primitiveScopes={primitiveScopes}
+            />
+            <div ref={scrollRef} className="flex-1 min-h-0 overflow-y-auto">
+              {scopes.map((scope) => (
+                <ScopeSection
+                  key={scope.id}
+                  scope={scope}
+                  sectionRef={registerSection(scope.id)}
                 />
               ))}
-            </ChangesGroup>
-          )}
-
-          {filteredTiles.length > 0 && (
-            <ChangesGroup
-              title="Tile-scoped edits"
-              hint="local to a single tile"
-              count={filteredTiles.reduce((n, t) => n + t.changes.length, 0)}
-            >
-              {filteredTiles.map((t) => (
-                <TileBlock key={t.tileId} scope={t} viewMode={viewMode} />
-              ))}
-            </ChangesGroup>
-          )}
-
-          {filteredPrimitives.length > 0 && (
-            <ChangesGroup
-              title="User-drawn primitives"
-              hint="newly inserted nodes"
-              count={filteredPrimitives.length}
-            >
-              {filteredPrimitives.map((p, i) => (
-                <PrimitiveBlock
-                  key={`${p.tileId}::${p.node.id}::${i}`}
-                  primitive={p}
-                />
-              ))}
-            </ChangesGroup>
-          )}
-        </div>
+            </div>
+          </div>
+        )}
       </DialogContent>
     </Dialog>
   );
 }
 
-function ChangesGroup({
-  title,
-  hint,
-  count,
+function Rail({
+  totalCount,
+  activeId,
+  onSelect,
+  componentScopes,
+  tileScopes,
+  primitiveScopes,
+}: {
+  totalCount: number;
+  activeId: string;
+  onSelect: (id: string) => void;
+  componentScopes: Scope[];
+  tileScopes: Scope[];
+  primitiveScopes: Scope[];
+}) {
+  return (
+    <aside className="w-[244px] shrink-0 border-r border-border overflow-y-auto bg-muted/20">
+      <RailItem
+        active={activeId === "all"}
+        onClick={() => onSelect("all")}
+        label="All changes"
+        count={totalCount}
+        sansFont
+      />
+      {componentScopes.length > 0 && (
+        <RailGroup label="Components">
+          {componentScopes.map((s) => (
+            <RailItem
+              key={s.id}
+              active={activeId === s.id}
+              onClick={() => onSelect(s.id)}
+              label={s.title}
+              subtitle={s.subtitle}
+              count={s.rawCount}
+            />
+          ))}
+        </RailGroup>
+      )}
+      {tileScopes.length > 0 && (
+        <RailGroup label="Tiles">
+          {tileScopes.map((s) => (
+            <RailItem
+              key={s.id}
+              active={activeId === s.id}
+              onClick={() => onSelect(s.id)}
+              label={s.title}
+              subtitle={s.subtitle}
+              count={s.rawCount}
+            />
+          ))}
+        </RailGroup>
+      )}
+      {primitiveScopes.length > 0 && (
+        <RailGroup label="Primitives">
+          {primitiveScopes.map((s) => (
+            <RailItem
+              key={s.id}
+              active={activeId === s.id}
+              onClick={() => onSelect(s.id)}
+              label={s.title}
+              subtitle={s.subtitle}
+              count={s.rawCount}
+            />
+          ))}
+        </RailGroup>
+      )}
+    </aside>
+  );
+}
+
+function RailGroup({
+  label,
   children,
 }: {
-  title: string;
-  hint?: string;
-  count: number;
+  label: string;
   children: React.ReactNode;
 }) {
   return (
-    <section className="flex flex-col">
-      <div className="sticky top-0 z-10 px-5 py-2 bg-muted/95 backdrop-blur-sm border-b border-border/60 flex items-center gap-2">
-        <h3 className="text-[10px] uppercase tracking-widest font-semibold text-foreground/70">
-          {title}
-        </h3>
-        <span className="bg-background/80 text-muted-foreground font-mono text-[10px] px-1.5 py-0.5 rounded tabular-nums border border-border/60">
-          {count}
+    <div className="pt-3">
+      <div className="px-3 pb-1 text-[10px] uppercase tracking-wider text-muted-foreground/60 font-medium">
+        {label}
+      </div>
+      <div className="flex flex-col">{children}</div>
+    </div>
+  );
+}
+
+function RailItem({
+  active,
+  onClick,
+  label,
+  subtitle,
+  count,
+  sansFont,
+}: {
+  active: boolean;
+  onClick: () => void;
+  label: string;
+  subtitle?: string;
+  count: number;
+  sansFont?: boolean;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`group w-full text-left px-3 py-1.5 flex items-center gap-2 text-[12px] transition-colors ${
+        active
+          ? "bg-foreground/[0.06] text-foreground"
+          : "text-muted-foreground hover:bg-foreground/[0.03] hover:text-foreground"
+      }`}
+    >
+      <div className="min-w-0 flex-1 flex flex-col gap-0">
+        <span
+          className={`truncate ${sansFont ? "" : "font-mono"} ${
+            active ? "" : "group-hover:text-foreground"
+          }`}
+        >
+          {label}
         </span>
-        {hint && (
-          <span className="text-[10px] text-muted-foreground/60 italic">
-            {hint}
+        {subtitle && (
+          <span
+            className="truncate text-[10px] text-muted-foreground/55 font-mono"
+            title={subtitle}
+          >
+            {subtitle}
           </span>
         )}
       </div>
-      <div className="flex flex-col gap-3 px-5 py-4">{children}</div>
+      <span
+        className={`shrink-0 text-[10px] tabular-nums ${
+          active ? "text-foreground/70" : "text-muted-foreground/55"
+        }`}
+      >
+        {count}
+      </span>
+    </button>
+  );
+}
+
+function ScopeSection({
+  scope,
+  sectionRef,
+}: {
+  scope: Scope;
+  sectionRef?: (el: HTMLElement | null) => void;
+}) {
+  return (
+    <section
+      ref={sectionRef}
+      className="border-b border-border last:border-b-0 scroll-mt-0"
+    >
+      <header className="sticky top-0 z-10 bg-card/95 backdrop-blur-sm border-b border-border">
+        <div className="px-6 py-3 flex items-center gap-3 min-w-0">
+          <code className="text-[12px] font-mono font-medium text-foreground truncate">
+            {scope.title}
+          </code>
+          {scope.subtitle && (
+            <span
+              className="text-[11px] text-muted-foreground/70 font-mono truncate"
+              title={scope.subtitle}
+            >
+              {scope.subtitle}
+              {scope.extraSources ? ` +${scope.extraSources}` : ""}
+            </span>
+          )}
+          <span className="ml-auto shrink-0 inline-flex items-center gap-3 text-[11px] text-muted-foreground/60 tabular-nums">
+            {scope.instanceCount != null && scope.instanceCount > 0 && (
+              <span>
+                {scope.instanceCount} instance
+                {scope.instanceCount === 1 ? "" : "s"}
+              </span>
+            )}
+            <span>
+              {scope.rawCount} change{scope.rawCount === 1 ? "" : "s"}
+            </span>
+          </span>
+        </div>
+      </header>
+      <div className="px-6 py-5 flex flex-col gap-5">
+        {scope.hunks.map((h) => (
+          <HunkBlock key={h.id} hunk={h} />
+        ))}
+      </div>
     </section>
   );
 }
 
-function ComponentBlock({
-  scope,
-  viewMode,
-}: {
-  scope: ComponentScope;
-  viewMode: DiffViewMode;
-}) {
-  return (
-    <article className="border border-border rounded-lg overflow-hidden bg-card shadow-sm">
-      <header className="flex items-center gap-3 px-4 py-2.5 bg-gradient-to-b from-muted/50 to-muted/30 border-b border-border">
-        <div className="flex items-center gap-2 min-w-0 flex-1 flex-wrap">
-          <span className="size-1.5 rounded-full bg-primary shrink-0" />
-          <code className="text-[12px] font-mono font-semibold text-foreground shrink-0">
-            &lt;{scope.componentName}&gt;
-          </code>
-          {scope.file && (
-            <span
-              className="text-[11px] font-mono text-muted-foreground/70 truncate"
-              title={scope.file}
-            >
-              {scope.file}
-            </span>
-          )}
-        </div>
-        <span className="shrink-0 text-[10px] text-muted-foreground bg-background/70 border border-border px-2 py-0.5 rounded-full tabular-nums">
-          {scope.changes.length} change{scope.changes.length === 1 ? "" : "s"}
-        </span>
-        {scope.instanceCount > 0 && (
-          <span className="shrink-0 text-[10px] text-muted-foreground bg-background/70 border border-border px-2 py-0.5 rounded-full tabular-nums">
-            {scope.instanceCount} instance{scope.instanceCount === 1 ? "" : "s"}
-          </span>
-        )}
-      </header>
-      <div className="divide-y divide-border/60">
-        {scope.changes.map((c, i) => (
-          <ChangeRow key={i} change={c} viewMode={viewMode} />
-        ))}
-      </div>
-    </article>
-  );
+function HunkBlock({ hunk }: { hunk: Hunk }) {
+  if (hunk.kind === "css-rule") return <CssRuleHunk hunk={hunk} />;
+  if (hunk.kind === "primitive") return <PrimitiveHunk hunk={hunk} />;
+  return <SingleHunk change={hunk.change} />;
 }
 
-function TileBlock({
-  scope,
-  viewMode,
+function PrimitiveHunk({
+  hunk,
 }: {
-  scope: TileScope;
-  viewMode: DiffViewMode;
+  hunk: Extract<Hunk, { kind: "primitive" }>;
 }) {
   return (
-    <article className="border border-border rounded-lg overflow-hidden bg-card shadow-sm">
-      <header className="flex items-center gap-3 px-4 py-2.5 bg-gradient-to-b from-muted/50 to-muted/30 border-b border-border">
-        <div className="flex items-center gap-2 min-w-0 flex-1 flex-wrap">
-          <span className="size-1.5 rounded-full bg-cyan-500 shrink-0" />
-          <code className="text-[12px] font-mono font-semibold text-foreground shrink-0">
-            {scope.tileLabel}
-          </code>
-          {scope.sourceHints.length > 0 && (
-            <span
-              className="text-[11px] font-mono text-muted-foreground/70 truncate"
-              title={scope.sourceHints.join(", ")}
-            >
-              {scope.sourceHints[0]}
-              {scope.sourceHints.length > 1
-                ? ` +${scope.sourceHints.length - 1}`
-                : ""}
-            </span>
-          )}
-        </div>
-        <span className="shrink-0 text-[10px] text-muted-foreground bg-background/70 border border-border px-2 py-0.5 rounded-full tabular-nums">
-          {scope.changes.length} change{scope.changes.length === 1 ? "" : "s"}
-        </span>
-      </header>
-      <div className="divide-y divide-border/60">
-        {scope.changes.map((c, i) => (
-          <ChangeRow key={i} change={c} viewMode={viewMode} />
-        ))}
+    <div>
+      <HunkLabel
+        badge="INSERT"
+        title={describeNodeShape(hunk.node)}
+        lineage={hunk.lineage}
+      />
+      <div className="rounded-md border border-border bg-muted/20 px-3 py-2 text-[12px] font-mono text-foreground/80">
+        <span className="text-muted-foreground">inserted on</span>{" "}
+        {hunk.tileLabel}
       </div>
-    </article>
-  );
-}
-
-function PrimitiveBlock({
-  primitive,
-}: {
-  primitive: ChangeSummary["primitives"][number];
-}) {
-  return (
-    <article className="border border-border rounded-lg overflow-hidden bg-card shadow-sm">
-      <header className="flex items-center gap-3 px-4 py-2.5 bg-gradient-to-b from-muted/50 to-muted/30 border-b border-border">
-        <KindBadge kind="insert" />
-        <code className="text-[12px] font-mono text-foreground">
-          {describeNodeShape(primitive.node)}
-        </code>
-        <span className="ml-auto text-[11px] text-muted-foreground/70">
-          on <span className="font-mono">{primitive.tileLabel}</span>
-        </span>
-      </header>
-      <div className="px-4 py-3 text-[11px] text-muted-foreground font-mono flex items-center gap-2 flex-wrap">
-        <span className="text-muted-foreground/70">inserted under</span>
-        <Lineage lineage={primitive.insertedUnder} />
-      </div>
-    </article>
-  );
-}
-
-function ChangeRow({
-  change,
-  viewMode,
-}: {
-  change: SquashedChange;
-  viewMode: DiffViewMode;
-}) {
-  return (
-    <div className="px-4 py-3 flex flex-col gap-2 hover:bg-muted/20 transition-colors">
-      <div className="flex items-center gap-2 flex-wrap min-w-0">
-        <KindBadge kind={change.kind} />
-        <span className="text-[12px] font-mono min-w-0">
-          <ChangeTitle change={change} />
-        </span>
-        <Lineage lineage={change.lineage} className="ml-auto" />
-      </div>
-      <ChangeBody change={change} viewMode={viewMode} />
     </div>
   );
 }
 
-function ChangeTitle({ change }: { change: SquashedChange }) {
-  switch (change.kind) {
-    case "style":
-      return (
-        <span className="text-foreground/80">
-          <span className="text-muted-foreground">style.</span>
-          <span className="text-foreground font-semibold">{change.prop}</span>
+/* ------------------------------------------------------------------ */
+/*  Hunk renderers                                                    */
+/* ------------------------------------------------------------------ */
+
+function HunkLabel({
+  badge,
+  title,
+  lineage,
+}: {
+  badge: string;
+  title?: React.ReactNode;
+  lineage?: NodeLineage;
+}) {
+  return (
+    <div className="flex items-center gap-2 mb-1.5 min-w-0">
+      <span className="text-[10px] uppercase tracking-wider text-muted-foreground/60 font-medium">
+        {badge}
+      </span>
+      {title && (
+        <span className="text-[11px] font-mono text-foreground/80 truncate">
+          {title}
         </span>
-      );
-    case "attr":
-      return (
-        <span className="text-foreground/80">
-          <span className="text-muted-foreground">attr </span>
-          <span className="text-foreground font-semibold">{change.name}</span>
-        </span>
-      );
-    case "text":
-      return <span className="text-foreground/80">text content</span>;
-    case "insert":
-      return (
-        <span className="text-foreground/80">
-          insert {describeNodeShape(change.node)}{" "}
-          <span className="text-muted-foreground">
-            → {change.parentId}[{change.index}]
-          </span>
-        </span>
-      );
-    case "remove":
-      return (
-        <span className="text-foreground/80">
-          remove{" "}
-          <span className="text-muted-foreground">{change.nodeId}</span>
-        </span>
-      );
-    case "move":
-      return (
-        <span className="text-foreground/80">
-          move{" "}
-          <span className="text-muted-foreground">
-            → {change.newParentId}[{change.newIndex}]
-          </span>
-        </span>
-      );
-    case "duplicate":
-      return (
-        <span className="text-foreground/80">
-          duplicate{" "}
-          <span className="text-muted-foreground">{change.sourceNodeId}</span>
-        </span>
-      );
-    case "paste":
-      return (
-        <span className="text-foreground/80">
-          paste into{" "}
-          <span className="text-muted-foreground">{change.parentId}</span>
-        </span>
-      );
-  }
+      )}
+      {lineage && <Lineage lineage={lineage} className="ml-auto" />}
+    </div>
+  );
 }
 
-function ChangeBody({
-  change,
-  viewMode,
+type Side = "before" | "after";
+
+const HL_BEFORE =
+  "bg-rose-500/15 dark:bg-rose-400/20 text-rose-700 dark:text-rose-300 rounded-[3px] px-0.5";
+const HL_AFTER =
+  "bg-emerald-500/15 dark:bg-emerald-400/20 text-emerald-700 dark:text-emerald-300 rounded-[3px] px-0.5";
+
+/** Two equal columns separated by a single border. No row-level fills —
+ *  changed tokens highlight inline only. */
+function SplitContainer({
+  left,
+  right,
 }: {
-  change: SquashedChange;
-  viewMode: DiffViewMode;
+  left: React.ReactNode;
+  right: React.ReactNode;
 }) {
-  if (change.kind === "style" || change.kind === "attr") {
-    return (
-      <BeforeAfter
-        before={change.before}
-        after={change.after}
-        viewMode={viewMode}
+  return (
+    <div className="rounded-md border border-border overflow-hidden font-mono text-[12px] leading-[1.6] grid grid-cols-2">
+      <div className="px-3 py-2 border-r border-border min-w-0 overflow-x-auto">
+        {left}
+      </div>
+      <div className="px-3 py-2 min-w-0 overflow-x-auto">{right}</div>
+    </div>
+  );
+}
+
+/** Renders all style edits on one node as a paired CSS-rule block,
+ *  side-by-side. Each property line shows its before value on the left and
+ *  after value on the right; changed tokens are word-highlighted inline. */
+function CssRuleHunk({
+  hunk,
+}: {
+  hunk: Extract<Hunk, { kind: "css-rule" }>;
+}) {
+  return (
+    <div>
+      <HunkLabel badge="CSS" title={hunk.selector} lineage={hunk.lineage} />
+      <SplitContainer
+        left={
+          <CssRuleSide
+            selector={hunk.selector}
+            side="before"
+            changes={hunk.changes}
+          />
+        }
+        right={
+          <CssRuleSide
+            selector={hunk.selector}
+            side="after"
+            changes={hunk.changes}
+          />
+        }
       />
+    </div>
+  );
+}
+
+function CssRuleSide({
+  selector,
+  side,
+  changes,
+}: {
+  selector: string;
+  side: Side;
+  changes: StyleChange[];
+}) {
+  return (
+    <div className="text-foreground/90">
+      <div>
+        <span className="text-foreground">{selector}</span>{" "}
+        <span className="text-muted-foreground/70">{`{`}</span>
+      </div>
+      {changes.map((c) => {
+        const value = side === "before" ? c.before : c.after;
+        const swatch = value ? extractColor(value) : null;
+        return (
+          <div key={c.prop} className="pl-4 flex items-center gap-2 min-w-0">
+            <span className="min-w-0 break-all">
+              <span className="text-muted-foreground">{c.prop}</span>
+              <span className="text-muted-foreground/60">: </span>
+              <DiffValue before={c.before} after={c.after} side={side} />
+              <span className="text-muted-foreground/50">;</span>
+            </span>
+            {swatch && (
+              <span
+                className="shrink-0 size-3 rounded-[3px] border border-foreground/15"
+                style={{ background: swatch }}
+                aria-hidden="true"
+              />
+            )}
+          </div>
+        );
+      })}
+      <div className="text-muted-foreground/70">{`}`}</div>
+    </div>
+  );
+}
+
+/** Single-row diff for one value (attr / text / structural change). */
+function SingleHunk({ change }: { change: SquashedChange }) {
+  if (change.kind === "attr") {
+    return (
+      <div>
+        <HunkLabel
+          badge="ATTR"
+          title={
+            <>
+              <span className="text-muted-foreground">[</span>
+              {change.name}
+              <span className="text-muted-foreground">]</span>
+            </>
+          }
+          lineage={change.lineage}
+        />
+        <ValueSplit before={change.before} after={change.after} />
+      </div>
     );
   }
   if (change.kind === "text") {
     return (
-      <BeforeAfter
-        before={change.before}
-        after={change.after}
-        viewMode={viewMode}
-        multiline
-      />
+      <div>
+        <HunkLabel badge="TEXT" lineage={change.lineage} />
+        <ValueSplit before={change.before} after={change.after} multiline />
+      </div>
     );
   }
-  return null;
+  // Structural change — no value diff, just a single descriptive row.
+  return (
+    <div>
+      <HunkLabel
+        badge={change.kind.toUpperCase()}
+        lineage={change.lineage}
+      />
+      <div className="rounded-md border border-border bg-muted/20 px-3 py-2 text-[12px] font-mono text-foreground/80">
+        <StructuralDescription change={change} />
+      </div>
+    </div>
+  );
 }
 
-function BeforeAfter({
+function StructuralDescription({ change }: { change: SquashedChange }) {
+  switch (change.kind) {
+    case "insert":
+      return (
+        <>
+          <span className="text-muted-foreground">insert</span>{" "}
+          {describeNodeShape(change.node)}{" "}
+          <span className="text-muted-foreground">
+            into {change.parentId}[{change.index}]
+          </span>
+        </>
+      );
+    case "remove":
+      return (
+        <>
+          <span className="text-muted-foreground">remove</span> {change.nodeId}
+        </>
+      );
+    case "move":
+      return (
+        <>
+          <span className="text-muted-foreground">move</span> {change.nodeId}{" "}
+          <span className="text-muted-foreground">→</span>{" "}
+          {change.newParentId}[{change.newIndex}]
+        </>
+      );
+    case "duplicate":
+      return (
+        <>
+          <span className="text-muted-foreground">duplicate</span>{" "}
+          {change.sourceNodeId}
+        </>
+      );
+    case "paste":
+      return (
+        <>
+          <span className="text-muted-foreground">paste into</span>{" "}
+          {change.parentId}
+        </>
+      );
+    default:
+      return null;
+  }
+}
+
+function ValueSplit({
   before,
   after,
-  viewMode,
   multiline,
 }: {
   before: string | null;
   after: string | null;
-  viewMode: DiffViewMode;
   multiline?: boolean;
 }) {
-  const diff =
-    !multiline && before !== null && after !== null
-      ? computeDiff(before, after)
-      : null;
-
   const beforeSwatch = before ? extractColor(before) : null;
   const afterSwatch = after ? extractColor(after) : null;
-
-  if (viewMode === "split") {
-    return (
-      <div className="grid grid-cols-2 gap-1.5 text-[11px] font-mono">
-        <DiffPane
-          sign="-"
-          label="Before"
-          value={before}
-          spans={diff?.beforeSpans}
+  return (
+    <SplitContainer
+      left={
+        <ValueLine
+          before={before}
+          after={after}
+          side="before"
           swatch={beforeSwatch}
           multiline={multiline}
         />
-        <DiffPane
-          sign="+"
-          label="After"
-          value={after}
-          spans={diff?.afterSpans}
+      }
+      right={
+        <ValueLine
+          before={before}
+          after={after}
+          side="after"
           swatch={afterSwatch}
           multiline={multiline}
         />
-      </div>
-    );
-  }
-
-  return (
-    <div className="rounded-md overflow-hidden border border-border text-[11px] font-mono">
-      <DiffRow
-        sign="-"
-        value={before}
-        spans={diff?.beforeSpans}
-        swatch={beforeSwatch}
-        multiline={multiline}
-      />
-      <div className="border-t border-border/60" />
-      <DiffRow
-        sign="+"
-        value={after}
-        spans={diff?.afterSpans}
-        swatch={afterSwatch}
-        multiline={multiline}
-      />
-    </div>
+      }
+    />
   );
 }
 
-function diffSideStyles(sign: "-" | "+") {
-  const isMinus = sign === "-";
-  return {
-    lineBg: isMinus
-      ? "bg-red-500/[0.06] dark:bg-red-500/[0.1]"
-      : "bg-emerald-500/[0.06] dark:bg-emerald-500/[0.1]",
-    headerBg: isMinus
-      ? "bg-red-500/[0.08] dark:bg-red-500/[0.14] border-red-200/60 dark:border-red-900/40"
-      : "bg-emerald-500/[0.08] dark:bg-emerald-500/[0.14] border-emerald-200/60 dark:border-emerald-900/40",
-    textCls: isMinus
-      ? "text-red-700 dark:text-red-400"
-      : "text-emerald-700 dark:text-emerald-400",
-    gutterBg: isMinus
-      ? "bg-red-500/[0.1] dark:bg-red-500/[0.15] border-r border-red-200/60 dark:border-red-900/40"
-      : "bg-emerald-500/[0.1] dark:bg-emerald-500/[0.15] border-r border-emerald-200/60 dark:border-emerald-900/40",
-    hlCls: isMinus
-      ? "bg-red-400/30 dark:bg-red-500/35 rounded-[2px] px-[1px]"
-      : "bg-emerald-400/30 dark:bg-emerald-500/35 rounded-[2px] px-[1px]",
-    borderCls: isMinus
-      ? "border-red-200/60 dark:border-red-900/40"
-      : "border-emerald-200/60 dark:border-emerald-900/40",
-  };
-}
-
-function DiffValue({
-  value,
-  spans,
-  hlCls,
-  multiline,
-}: {
-  value: string | null;
-  spans?: DiffSpan[];
-  hlCls: string;
-  multiline?: boolean;
-}) {
-  if (value === null) return <span className="italic opacity-40">(unset)</span>;
-  if (value === "") return <span className="italic opacity-40">(empty)</span>;
-  if (spans)
-    return (
-      <>
-        {spans.map((s, idx) =>
-          s.highlight ? (
-            <mark
-              key={idx}
-              className={`not-italic font-semibold text-inherit ${hlCls}`}
-            >
-              {s.text}
-            </mark>
-          ) : (
-            <span key={idx}>{s.text}</span>
-          ),
-        )}
-      </>
-    );
-  return (
-    <span className={multiline ? "" : "break-all"}>{value}</span>
-  );
-}
-
-function DiffPane({
-  sign,
-  label,
-  value,
-  spans,
+function ValueLine({
+  before,
+  after,
+  side,
   swatch,
   multiline,
 }: {
-  sign: "-" | "+";
-  label: string;
-  value: string | null;
-  spans?: DiffSpan[];
+  before: string | null;
+  after: string | null;
+  side: Side;
   swatch: string | null;
   multiline?: boolean;
 }) {
-  const s = diffSideStyles(sign);
   return (
-    <div className={`rounded-md overflow-hidden border ${s.borderCls}`}>
-      <div
-        className={`flex items-center justify-between px-2 py-1 text-[10px] uppercase tracking-wide font-semibold border-b ${s.headerBg} ${s.textCls}`}
-      >
-        <span className="inline-flex items-center gap-1.5">
-          <span className="font-mono text-[11px] leading-none">{sign}</span>
-          {label}
-        </span>
-        {swatch && (
-          <span
-            className="size-3 rounded border border-foreground/20"
-            style={{ background: swatch }}
-            aria-hidden="true"
-          />
-        )}
-      </div>
-      <div
-        className={`px-3 py-1.5 leading-relaxed ${s.lineBg} ${s.textCls} ${
-          multiline ? "whitespace-pre-wrap break-words" : "break-all"
-        }`}
-      >
-        <DiffValue
-          value={value}
-          spans={spans}
-          hlCls={s.hlCls}
-          multiline={multiline}
-        />
-      </div>
-    </div>
-  );
-}
-
-function DiffRow({
-  sign,
-  value,
-  spans,
-  swatch,
-  multiline,
-}: {
-  sign: "-" | "+";
-  value: string | null;
-  spans?: DiffSpan[];
-  swatch: string | null;
-  multiline?: boolean;
-}) {
-  const s = diffSideStyles(sign);
-
-  return (
-    <div className={`flex items-start ${s.lineBg} ${s.textCls}`}>
+    <div className="flex items-start gap-2 min-w-0">
       <span
-        className={`shrink-0 w-7 flex items-center justify-center py-1.5 text-[12px] select-none ${s.gutterBg}`}
-      >
-        {sign}
-      </span>
-      <span
-        className={`flex-1 min-w-0 px-3 py-1.5 leading-relaxed ${
+        className={`flex-1 min-w-0 ${
           multiline ? "whitespace-pre-wrap break-words" : "break-all"
-        }`}
+        } text-foreground/90`}
       >
-        <DiffValue
-          value={value}
-          spans={spans}
-          hlCls={s.hlCls}
-          multiline={multiline}
-        />
+        <DiffValue before={before} after={after} side={side} />
       </span>
       {swatch && (
         <span
-          className="shrink-0 size-3.5 rounded border border-foreground/15 mt-2 mr-3"
+          className="shrink-0 size-3 rounded-[3px] border border-foreground/15 mt-1"
           style={{ background: swatch }}
           aria-hidden="true"
         />
@@ -1287,61 +1278,53 @@ function DiffRow({
   );
 }
 
-const KIND_STYLES: Record<
-  SquashedChange["kind"],
-  { bg: string; text: string; dot: string }
-> = {
-  style: {
-    bg: "bg-blue-500/10",
-    text: "text-blue-600 dark:text-blue-400",
-    dot: "bg-blue-500",
-  },
-  attr: {
-    bg: "bg-purple-500/10",
-    text: "text-purple-600 dark:text-purple-400",
-    dot: "bg-purple-500",
-  },
-  text: {
-    bg: "bg-amber-500/10",
-    text: "text-amber-600 dark:text-amber-400",
-    dot: "bg-amber-500",
-  },
-  insert: {
-    bg: "bg-emerald-500/10",
-    text: "text-emerald-600 dark:text-emerald-400",
-    dot: "bg-emerald-500",
-  },
-  remove: {
-    bg: "bg-red-500/10",
-    text: "text-red-600 dark:text-red-400",
-    dot: "bg-red-500",
-  },
-  move: {
-    bg: "bg-cyan-500/10",
-    text: "text-cyan-600 dark:text-cyan-400",
-    dot: "bg-cyan-500",
-  },
-  duplicate: {
-    bg: "bg-pink-500/10",
-    text: "text-pink-600 dark:text-pink-400",
-    dot: "bg-pink-500",
-  },
-  paste: {
-    bg: "bg-indigo-500/10",
-    text: "text-indigo-600 dark:text-indigo-400",
-    dot: "bg-indigo-500",
-  },
-};
-
-function KindBadge({ kind }: { kind: SquashedChange["kind"] }) {
-  const s = KIND_STYLES[kind];
+/** Renders the value for one side of a diff with word-level inline
+ *  highlights on the changed tokens. Tokens that match the other side stay
+ *  in normal foreground; only the diffing words light up. */
+function DiffValue({
+  before,
+  after,
+  side,
+}: {
+  before: string | null;
+  after: string | null;
+  side: Side;
+}) {
+  const value = side === "before" ? before : after;
+  if (value === null) {
+    return <span className="italic text-muted-foreground/60">unset</span>;
+  }
+  if (value === "") {
+    return <span className="italic text-muted-foreground/60">empty</span>;
+  }
+  // No counterpart on the other side → highlight the whole value (it's
+  // either a brand-new value or a deleted one).
+  const counterpart = side === "before" ? after : before;
+  if (counterpart === null || counterpart === "") {
+    return (
+      <mark
+        className={`not-italic ${side === "before" ? HL_BEFORE : HL_AFTER}`}
+      >
+        {value}
+      </mark>
+    );
+  }
+  const diff = computeDiff(before!, after!);
+  if (!diff) return <>{value}</>;
+  const spans = side === "before" ? diff.beforeSpans : diff.afterSpans;
+  const hl = side === "before" ? HL_BEFORE : HL_AFTER;
   return (
-    <span
-      className={`inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-medium uppercase tracking-wide ${s.bg} ${s.text}`}
-    >
-      <span className={`size-1.5 rounded-full ${s.dot} opacity-70`} />
-      {kind}
-    </span>
+    <>
+      {spans.map((s, idx) =>
+        s.highlight ? (
+          <mark key={idx} className={`not-italic ${hl}`}>
+            {s.text}
+          </mark>
+        ) : (
+          <span key={idx}>{s.text}</span>
+        ),
+      )}
+    </>
   );
 }
 
@@ -1361,7 +1344,7 @@ function Lineage({
   if (bits.length === 0) return null;
   return (
     <span
-      className={`inline-flex items-center gap-1 text-[10px] font-mono text-muted-foreground/50 max-w-[220px] truncate ${className ?? ""}`}
+      className={`inline-flex items-center gap-1 text-[10px] font-mono text-muted-foreground/55 max-w-[260px] truncate ${className ?? ""}`}
       title={bits.join(" › ")}
     >
       {bits.map((b, i) => (

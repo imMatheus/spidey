@@ -59,11 +59,12 @@ export function EditorToolbar({ saveStatus }: Props) {
                   value={t.tool}
                   aria-label={t.label}
                   className={cn(
+                    "text-muted-foreground hover:text-foreground",
                     // Override the shadcn base's data-[state=on]:bg-muted via
                     // tailwind-merge: same variant prefix, last value wins.
-                    "data-[state=on]:bg-primary data-[state=on]:text-primary-foreground",
+                    "data-[state=on]:bg-[var(--color-accent-bg)] data-[state=on]:text-[var(--color-accent)]",
                     active &&
-                      "bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground",
+                      "bg-[var(--color-accent-bg)] text-[var(--color-accent)] hover:bg-[var(--color-accent-bg)] hover:text-[var(--color-accent)]",
                   )}
                 >
                   <Icon size={16} strokeWidth={2} />

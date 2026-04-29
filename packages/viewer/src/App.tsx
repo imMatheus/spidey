@@ -13,6 +13,7 @@ import {
   SidebarTrigger,
   useSidebar,
 } from "@/components/ui/sidebar";
+import { cn } from "@/lib/utils";
 import {
   EditorProvider,
   ProjectProvider,
@@ -95,13 +96,7 @@ function Workspace() {
     >
       <Sidebar />
       <SidebarInset className="flex min-w-0 flex-col overflow-hidden bg-transparent">
-        {/* p-2 envelope so the toolbar reads as a floating panel with
-            the same chrome as the sidebars (rounded, ring, surface bg)
-            — bottom padding gives the shadow/ring room to render, and
-            visually mirrors the breathing room around the sidebars. */}
-        <div className="p-2 shrink-0">
-          <Toolbar scale={scale} />
-        </div>
+        <ToolbarRow scale={scale} />
         <div className="flex-1 min-h-0 relative">
           <Canvas onScaleChange={setScale} />
         </div>
@@ -136,5 +131,27 @@ function CollapsedSidebarTrigger() {
       title="Open left sidebar"
       className="fixed top-3 left-3 z-50 bg-sidebar text-sidebar-foreground shadow-sm ring-1 ring-sidebar-border [--sidebar:var(--color-background)] dark:[--sidebar:var(--color-surface)]"
     />
+  );
+}
+
+/**
+ * Toolbar wrapper — when the sidebar is collapsed, the floating
+ * reopen-trigger sits at top-left of the viewport (top-3 left-3, ~28px
+ * wide). Without an offset, the toolbar's left edge slides under it.
+ * Bumping `pl-12` clears the trigger's footprint so the button stays
+ * tappable and the toolbar's first item starts past it. Padding
+ * transitions to keep the shift smooth as the sidebar animates.
+ */
+function ToolbarRow({ scale }: { scale: number }) {
+  const { state } = useSidebar();
+  return (
+    <div
+      className={cn(
+        "p-2 shrink-0 transition-[padding] duration-100 ease-out",
+        state === "collapsed" && "pl-12",
+      )}
+    >
+      <Toolbar scale={scale} />
+    </div>
   );
 }
