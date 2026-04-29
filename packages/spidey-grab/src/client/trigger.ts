@@ -1,22 +1,142 @@
-export class TriggerButton {
-  private el: HTMLDivElement;
+export interface MenuItem {
+  label: string;
+  kbd?: string;
+  variant?: "default" | "danger";
+  disabled?: boolean;
+  onClick: () => void;
+}
 
-  constructor(parent: HTMLElement, onClick: () => void) {
-    const el = document.createElement("div");
-    el.className = "trigger";
-    el.title = "spidey-grab — click or ⌘G to pick an element";
-    el.innerHTML = ICON;
-    el.addEventListener("click", (e) => {
+export interface TriggerOpts {
+  parent: HTMLElement;
+  getMenuItems: () => MenuItem[];
+}
+
+export class TriggerButton {
+  private wrapper: HTMLDivElement;
+  private button: HTMLDivElement;
+  private menu: HTMLUListElement | null = null;
+  private menuOpen = false;
+  private opts: TriggerOpts;
+  private boundOutside: (e: PointerEvent) => void;
+  private boundKey: (e: KeyboardEvent) => void;
+  private closeTimer: number | null = null;
+
+  constructor(opts: TriggerOpts) {
+    this.opts = opts;
+
+    const wrapper = document.createElement("div");
+    wrapper.className = "trigger-wrapper";
+
+    const button = document.createElement("div");
+    button.className = "trigger";
+    button.title = "spidey-grab";
+    button.innerHTML = ICON;
+    button.addEventListener("click", (e) => {
       e.preventDefault();
       e.stopPropagation();
-      onClick();
+      this.toggleMenu();
     });
-    parent.appendChild(el);
-    this.el = el;
+    wrapper.appendChild(button);
+
+    opts.parent.appendChild(wrapper);
+    this.wrapper = wrapper;
+    this.button = button;
+
+    this.boundOutside = (e) => this.onOutsidePointerDown(e);
+    this.boundKey = (e) => this.onKey(e);
   }
 
   setActive(active: boolean) {
-    this.el.classList.toggle("active", active);
+    this.button.classList.toggle("active", active);
+  }
+
+  closeMenu() {
+    if (!this.menuOpen || !this.menu) return;
+    this.menuOpen = false;
+    const menu = this.menu;
+    this.menu = null;
+    menu.classList.remove("open");
+    window.removeEventListener("pointerdown", this.boundOutside, true);
+    window.removeEventListener("keydown", this.boundKey, true);
+    if (this.closeTimer != null) clearTimeout(this.closeTimer);
+    this.closeTimer = window.setTimeout(() => {
+      menu.remove();
+    }, 220);
+  }
+
+  private toggleMenu() {
+    if (this.menuOpen) this.closeMenu();
+    else this.openMenu();
+  }
+
+  private openMenu() {
+    if (this.menuOpen) return;
+    if (this.closeTimer != null) {
+      clearTimeout(this.closeTimer);
+      this.closeTimer = null;
+    }
+
+    const menu = document.createElement("ul");
+    menu.className = "trigger-menu";
+    menu.setAttribute("role", "menu");
+
+    const items = this.opts.getMenuItems();
+    for (const item of items) {
+      const li = document.createElement("li");
+      li.className = "trigger-menu-item";
+      if (item.disabled) li.classList.add("disabled");
+      if (item.variant === "danger") li.classList.add("danger");
+      li.setAttribute("role", "menuitem");
+      li.tabIndex = -1;
+
+      const label = document.createElement("span");
+      label.textContent = item.label;
+      li.appendChild(label);
+
+      if (item.kbd) {
+        const kbd = document.createElement("span");
+        kbd.className = "kbd";
+        kbd.textContent = item.kbd;
+        li.appendChild(kbd);
+      }
+
+      if (!item.disabled) {
+        li.addEventListener("click", (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          this.closeMenu();
+          item.onClick();
+        });
+      }
+
+      menu.appendChild(li);
+    }
+
+    this.wrapper.appendChild(menu);
+    this.menu = menu;
+    this.menuOpen = true;
+
+    // animate in on next frame so the initial state lands first
+    requestAnimationFrame(() => {
+      if (this.menu === menu) menu.classList.add("open");
+    });
+
+    window.addEventListener("pointerdown", this.boundOutside, true);
+    window.addEventListener("keydown", this.boundKey, true);
+  }
+
+  private onOutsidePointerDown(e: PointerEvent) {
+    const path = e.composedPath();
+    if (path.includes(this.wrapper)) return;
+    this.closeMenu();
+  }
+
+  private onKey(e: KeyboardEvent) {
+    if (e.key === "Escape") {
+      e.preventDefault();
+      e.stopPropagation();
+      this.closeMenu();
+    }
   }
 }
 

@@ -60,7 +60,28 @@ function boot() {
     clearSelected();
   }
 
-  const trigger = new TriggerButton(mount.layer, toggleGrab);
+  const trigger = new TriggerButton({
+    parent: mount.layer,
+    getMenuItems: () => [
+      {
+        label: mode === "picking" ? "Stop picking" : "Pick element",
+        kbd: "⌘G",
+        onClick: toggleGrab,
+      },
+      {
+        label: "History",
+        onClick: () => console.log("[spidey-grab] history (todo)"),
+      },
+      {
+        label: "Settings",
+        onClick: () => console.log("[spidey-grab] settings (todo)"),
+      },
+      {
+        label: "Documentation",
+        onClick: () => console.log("[spidey-grab] documentation (todo)"),
+      },
+    ],
+  });
 
   function toggleGrab() {
     if (mode === "picking") {

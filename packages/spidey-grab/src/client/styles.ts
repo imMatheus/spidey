@@ -54,10 +54,16 @@ export const STYLES = `
   z-index: 2147483646;
 }
 
-.trigger {
+.trigger-wrapper {
   position: fixed;
   right: 16px;
   bottom: 16px;
+  z-index: 2147483647;
+  pointer-events: auto;
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+}
+
+.trigger {
   width: 44px;
   height: 44px;
   border-radius: 999px;
@@ -69,16 +75,82 @@ export const STYLES = `
   cursor: pointer;
   border: 1px solid hsla(var(--ds-gray-100-value), 0.1);
   box-shadow: 0 6px 18px hsla(var(--ds-gray-1000-value), 0.25);
-  z-index: 2147483647;
-  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   font-size: 18px;
   line-height: 1;
   user-select: none;
-  pointer-events: auto;
   transition: transform 120ms ease, background 120ms ease;
 }
 .trigger:hover { transform: translateY(-1px); }
 .trigger.active { background: var(--ds-blue-700); }
+
+.trigger-menu {
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + 8px);
+  min-width: 220px;
+  list-style: none;
+  margin: 0;
+  padding: 4px;
+  background: var(--ds-background-100);
+  border-radius: 12px;
+  box-shadow: var(--ds-shadow-menu);
+  font-size: 14px;
+  outline: none;
+  overflow: hidden auto;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+  transform-origin: bottom right;
+  transition:
+    opacity 200ms cubic-bezier(.175, .885, .32, 1.1),
+    transform 200ms cubic-bezier(.175, .885, .32, 1.1);
+  opacity: 0;
+  transform: scale(0.92) translateY(6px);
+  pointer-events: none;
+}
+.trigger-menu.open {
+  opacity: 1;
+  transform: scale(1) translateY(0);
+  pointer-events: auto;
+}
+
+.trigger-menu-item {
+  cursor: pointer;
+  height: 36px;
+  padding: 0 8px;
+  color: var(--ds-gray-1000);
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  user-select: none;
+}
+.trigger-menu-item:hover {
+  background: hsla(var(--ds-gray-1000-value), 0.05);
+}
+.trigger-menu-item.disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.trigger-menu-item.disabled:hover {
+  background: transparent;
+}
+.trigger-menu-item.danger {
+  color: var(--ds-red-700);
+}
+.trigger-menu-item.danger:hover {
+  background: color-mix(in oklch, var(--ds-red-700) 8%, transparent);
+}
+.trigger-menu-item .kbd {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-size: 11px;
+  color: var(--ds-gray-700);
+  background: hsla(var(--ds-gray-1000-value), 0.05);
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
 
 .crosshair {
   cursor: crosshair;
