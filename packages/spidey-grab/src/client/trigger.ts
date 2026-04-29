@@ -4,7 +4,7 @@ export class TriggerButton {
   constructor(parent: HTMLElement, onClick: () => void) {
     const el = document.createElement("div");
     el.className = "trigger";
-    el.title = "spidey-grab — click to pick an element";
+    el.title = "spidey-grab — click or ⌘G to pick an element";
     el.innerHTML = ICON;
     el.addEventListener("click", (e) => {
       e.preventDefault();

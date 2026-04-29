@@ -60,14 +60,32 @@ function boot() {
     clearSelected();
   }
 
-  const trigger = new TriggerButton(mount.layer, () => {
+  const trigger = new TriggerButton(mount.layer, toggleGrab);
+
+  function toggleGrab() {
     if (mode === "picking") {
       stopPicking();
     } else {
       closePromptBox();
       startPicking();
     }
-  });
+  }
+
+  window.addEventListener(
+    "keydown",
+    (e) => {
+      const isShortcut =
+        (e.metaKey || e.ctrlKey) &&
+        !e.altKey &&
+        !e.shiftKey &&
+        (e.key === "g" || e.key === "G");
+      if (!isShortcut) return;
+      e.preventDefault();
+      e.stopPropagation();
+      toggleGrab();
+    },
+    true,
+  );
 
   const picker = new Picker(overlay, {
     isOwnNode,
