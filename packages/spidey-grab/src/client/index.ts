@@ -78,6 +78,7 @@ function boot() {
       },
       {
         label: 'History',
+        kbd: '⌘⇧H',
         keepOpen: true,
         onClick: () => void openHistorySubmenu(),
       },
@@ -106,15 +107,19 @@ function boot() {
   }
 
   async function openHistorySubmenu() {
-    if (!trigger.isOpen()) return
-    trigger.setMenuItems([
+    const loadingItems: MenuItem[] = [
       {
         label: '← Back',
         keepOpen: true,
         onClick: () => trigger.setMenuItems(mainMenuItems()),
       },
       { label: 'Loading…', disabled: true, onClick: () => {} },
-    ])
+    ]
+    if (trigger.isOpen()) {
+      trigger.setMenuItems(loadingItems)
+    } else {
+      trigger.open(loadingItems)
+    }
 
     let entries: JobHistoryListResponse['entries'] = []
     try {
@@ -166,15 +171,23 @@ function boot() {
   window.addEventListener(
     'keydown',
     (e) => {
-      const isShortcut =
-        (e.metaKey || e.ctrlKey) &&
-        !e.altKey &&
-        !e.shiftKey &&
-        (e.key === 'g' || e.key === 'G')
-      if (!isShortcut) return
-      e.preventDefault()
-      e.stopPropagation()
-      toggleGrab()
+      if (!(e.metaKey || e.ctrlKey) || e.altKey) return
+
+      // ⌘G / Ctrl+G — toggle grab
+      if (!e.shiftKey && (e.key === 'g' || e.key === 'G')) {
+        e.preventDefault()
+        e.stopPropagation()
+        toggleGrab()
+        return
+      }
+
+      // ⌘⇧H / Ctrl+⇧+H — open history menu directly
+      if (e.shiftKey && (e.key === 'h' || e.key === 'H')) {
+        e.preventDefault()
+        e.stopPropagation()
+        void openHistorySubmenu()
+        return
+      }
     },
     true,
   )

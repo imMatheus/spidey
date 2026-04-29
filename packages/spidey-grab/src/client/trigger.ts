@@ -114,12 +114,16 @@ export class TriggerButton {
     }, 120);
   }
 
+  open(initialItems?: MenuItem[]) {
+    this.openMenu(initialItems);
+  }
+
   private toggleMenu() {
     if (this.menuOpen) this.closeMenu();
     else this.openMenu();
   }
 
-  private openMenu() {
+  private openMenu(initialItems?: MenuItem[]) {
     if (this.menuOpen) return;
     if (this.closeTimer != null) {
       clearTimeout(this.closeTimer);
@@ -130,7 +134,7 @@ export class TriggerButton {
     menu.className = "trigger-menu";
     menu.setAttribute("role", "menu");
 
-    const items = this.opts.getMenuItems();
+    const items = initialItems ?? this.opts.getMenuItems();
     for (const item of items) {
       menu.appendChild(this.renderItem(item));
     }

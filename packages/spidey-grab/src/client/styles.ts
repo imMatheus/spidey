@@ -188,7 +188,7 @@ export const STYLES = `
   background: color-mix(in oklch, var(--ds-red-700) 8%, transparent);
 }
 .trigger-menu-item .kbd {
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-family: -apple-system, "SF Pro Text", "Segoe UI Symbol", system-ui, ui-sans-serif, sans-serif;
   font-size: 11px;
   color: var(--ds-gray-700);
   background: hsla(var(--ds-gray-1000-value), 0.05);
@@ -396,12 +396,14 @@ export const STYLES = `
 
 .diff-sidebar {
   position: fixed;
-  top: 0;
-  right: 0;
-  bottom: 0;
+  top: 16px;
+  right: 16px;
+  bottom: 16px;
   width: 480px;
-  max-width: 90vw;
+  max-width: calc(100vw - 32px);
   background: var(--ds-background-100);
+  border-radius: 12px;
+  overflow: hidden;
   box-shadow: var(--ds-shadow-menu);
   /* same as .trigger-wrapper; sidebar is appended later in the layer so
      DOM-order tie-breaking puts it on top. */
@@ -410,7 +412,7 @@ export const STYLES = `
   flex-direction: column;
   pointer-events: auto;
   font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  transform: translateX(100%);
+  transform: translateX(calc(100% + 24px));
   transition: transform 280ms cubic-bezier(.175, .885, .32, 1.1);
 }
 .diff-sidebar.open { transform: translateX(0); }
