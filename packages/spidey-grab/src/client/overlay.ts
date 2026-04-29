@@ -191,11 +191,12 @@ export class OverlayLayer {
 
     if (entry.badge) {
       entry.badge.style.display = "";
-      const right = Math.min(window.innerWidth - 8, rect.right);
+      const rightOffset = Math.max(8, window.innerWidth - rect.right);
       const top = Math.max(8, rect.top - 24);
-      entry.badge.style.left = `${right}px`;
+      entry.badge.style.left = "auto";
+      entry.badge.style.right = `${rightOffset}px`;
       entry.badge.style.top = `${top}px`;
-      entry.badge.style.transform = "translateX(-100%)";
+      entry.badge.style.transform = "none";
     }
 
     if (entry.tagLabel) {

@@ -2,7 +2,7 @@ import type { OverlayLayer } from "./overlay";
 
 export interface PickOpts {
   isOwnNode: (node: Node | null) => boolean;
-  onPick: (target: Element) => void;
+  onPick: (target: Element, clickX: number, clickY: number) => void;
   onCancel: () => void;
 }
 
@@ -68,7 +68,7 @@ export class Picker {
       this.opts.onCancel();
       return;
     }
-    this.opts.onPick(target);
+    this.opts.onPick(target, e.clientX, e.clientY);
   }
 
   private onKey(e: KeyboardEvent) {

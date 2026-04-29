@@ -89,9 +89,9 @@ function boot() {
 
   const picker = new Picker(overlay, {
     isOwnNode,
-    onPick: async (target) => {
+    onPick: async (target, clickX, clickY) => {
       stopPicking();
-      await openPromptFor(target);
+      await openPromptFor(target, clickX, clickY);
     },
     onCancel: () => {
       stopPicking();
@@ -112,7 +112,7 @@ function boot() {
     picker.stop();
   }
 
-  async function openPromptFor(target: Element) {
+  async function openPromptFor(target: Element, clickX?: number, clickY?: number) {
     closePromptBox();
     const resolved = await resolveTarget(target);
     const fp = buildFingerprint(target, resolved);
@@ -126,6 +126,8 @@ function boot() {
       parent: mount.layer,
       target,
       resolved,
+      clickX,
+      clickY,
       onSubmit: async (prompt) => {
         const box = activePromptBox;
         activePromptBox = null;

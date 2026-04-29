@@ -4,6 +4,8 @@ export interface PromptBoxOpts {
   parent: HTMLElement;
   target: Element;
   resolved: ResolvedTarget;
+  clickX?: number;
+  clickY?: number;
   onSubmit: (prompt: string) => void;
   onCancel: () => void;
 }
@@ -16,9 +18,16 @@ export class PromptBox {
   private boundKey: (e: KeyboardEvent) => void;
   private boundDown: (e: PointerEvent) => void;
   private destroyed = false;
+  private clickOffsetX: number | null = null;
+  private clickOffsetY: number | null = null;
 
   constructor(opts: PromptBoxOpts) {
     this.opts = opts;
+    if (opts.clickX !== undefined && opts.clickY !== undefined) {
+      const rect = opts.target.getBoundingClientRect();
+      this.clickOffsetX = opts.clickX - rect.left;
+      this.clickOffsetY = opts.clickY - rect.top;
+    }
 
     const el = document.createElement("div");
     el.className = "prompt-box";
@@ -119,7 +128,21 @@ export class PromptBox {
     const boxHeight = this.el.offsetHeight || 100;
     const margin = 8;
 
-    let left = rect.left;
+    // Anchor horizontally on the click point if we have one (centered on the
+    // click, but kept inside the element's horizontal bounds where possible),
+    // otherwise fall back to the element's left edge.
+    let left: number;
+    if (this.clickOffsetX !== null) {
+      const anchorX = rect.left + this.clickOffsetX;
+      left = anchorX - boxWidth / 2;
+      // keep the box within the element's bounds horizontally if it fits
+      if (boxWidth <= rect.width) {
+        left = Math.max(rect.left, Math.min(left, rect.right - boxWidth));
+      }
+    } else {
+      left = rect.left;
+    }
+
     let top = rect.bottom + margin;
 
     if (left + boxWidth > window.innerWidth - margin) {

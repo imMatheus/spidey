@@ -35,7 +35,7 @@ function Home() {
         </div>
         <div className="card">
           <h3>Composable</h3>
-          <p>Bring your own routing, state, styling.</p>
+          <p>Bring your own routing, state, styling. Mix and match the libraries you already love without fighting an opinionated framework, because every team has different needs and constraints. Whether you prefer React Router or TanStack Router, Redux or Zustand or Jotai, Tailwind or vanilla CSS or styled-components, the choice is entirely yours and nothing here will get in your way. This flexibility means you can adopt the tool incrementally, swap pieces out as your project evolves, and keep using the patterns your team is already productive with — no rewrites required, no lock-in, no surprises down the road.</p>
         </div>
       </div>
     </Layout>
@@ -48,11 +48,11 @@ function About() {
       <h1 style={{ color: 'orange' }}>About</h1>
       <p>Acme is a fictional company that exists only inside this demo.</p>
       <ul>
-        <li>Founded in 2026</li>
-        <li>Headquartered nowhere</li>
-        <li>Specializes in stress-testing canvas viewers under heavy load, with a particular focus on edge cases, unusual viewport configurations, and ensuring smooth performance across a wide range of devices and browsers</li>
+        <li>Founded in 2026 by a small group of engineers passionate about building reliable, well-tested canvas tooling</li>
+        <li style={{ color: 'blue' }}>Headquartered nowhere in particular, with a fully distributed team spread across multiple time zones and continents</li>
+        <li>Specializes in stress-testing canvas viewers</li>
       </ul>
-      <ColorBox variant="red" text="matheus tester" />
+      <ColorBox variant="blue" text="matheus tester" />
     </Layout>
   )
 }
