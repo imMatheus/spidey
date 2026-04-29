@@ -45,15 +45,29 @@ function boot() {
   // out of `running`). avoids re-fetching on every menu open.
   let cachedHistory: JobHistorySummary[] | null = null
 
+  // jobs we've POSTed locally that haven't yet appeared in the daemon's
+  // /jobs/history (which only writes on completion). these get rendered at
+  // the top of the history menu with a spinner while running.
+  interface PendingJob {
+    prompt: string
+    createdAt: number
+  }
+  const pendingJobs = new Map<string, PendingJob>()
+  let historyMenuOpen = false
+
   socket.on((event) => {
     if (event.type === 'hello') {
       recoverFromHello(event)
     }
-    if (
-      event.type === 'job:created' ||
-      (event.type === 'job:status' && event.status !== 'running')
-    ) {
+    if (event.type === 'job:status' && event.status !== 'running') {
+      // job has landed in the daemon's history; drop our local placeholder,
+      // invalidate the cached list, and re-render so the menu shows the real
+      // entry with its time chip.
+      const wasPending = pendingJobs.delete(event.jobId)
       cachedHistory = null
+      if (wasPending && historyMenuOpen) {
+        void refreshHistoryMenu()
+      }
     }
     status.handleServerEvent(event)
   })
@@ -101,6 +115,9 @@ function boot() {
   const trigger = new TriggerButton({
     parent: mount.layer,
     getMenuItems: mainMenuItems,
+    onCloseMenu: () => {
+      historyMenuOpen = false
+    },
   })
 
   const updateCounter = () => {
@@ -119,68 +136,117 @@ function boot() {
     })
   }
 
+  function buildHistoryItems(entries: JobHistorySummary[]): MenuItem[] {
+    const items: MenuItem[] = [
+      {
+        label: '← Back',
+        keepOpen: true,
+        onClick: () => {
+          historyMenuOpen = false
+          trigger.setMenuItems(mainMenuItems())
+        },
+      },
+    ]
+
+    const pendingList = Array.from(pendingJobs.entries())
+      .map(([jobId, p]) => ({ jobId, ...p }))
+      .sort((a, b) => b.createdAt - a.createdAt)
+
+    for (const p of pendingList) {
+      const preview = p.prompt.length > 80 ? p.prompt.slice(0, 79) + '…' : p.prompt
+      items.push({
+        label: preview || '(empty prompt)',
+        kbd: '<div class="spinner"></div>',
+        compact: true,
+        onClick: () => {
+          void diffSidebar.show(p.jobId, {
+            pending: { jobId: p.jobId, prompt: p.prompt },
+          })
+        },
+      })
+    }
+
+    const remaining = Math.max(0, 6 - pendingList.length)
+    const completed = entries
+      .filter((e) => !pendingJobs.has(e.jobId))
+      .slice(0, remaining)
+    for (const entry of completed) {
+      items.push({
+        label: entry.promptPreview || '(empty prompt)',
+        kbd: timeChipHTML(entry.createdAt),
+        variant: entry.status === 'failed' ? 'danger' : 'default',
+        compact: true,
+        onClick: () => {
+          void diffSidebar.show(entry.jobId)
+        },
+      })
+    }
+
+    if (items.length === 1) {
+      items.push({ label: 'no history yet', disabled: true, onClick: () => {} })
+    }
+
+    return items
+  }
+
+  async function ensureHistoryFetched() {
+    if (cachedHistory !== null) return
+    try {
+      const res = await fetch(`${baseUrl}jobs/history`)
+      if (res.ok) {
+        const body = (await res.json()) as JobHistoryListResponse
+        cachedHistory = body.entries
+      }
+    } catch {
+      // ignore — show empty
+    }
+  }
+
+  async function refreshHistoryMenu() {
+    if (!historyMenuOpen || !trigger.isOpen()) return
+    await ensureHistoryFetched()
+    if (!historyMenuOpen || !trigger.isOpen()) return
+    trigger.setMenuItems(buildHistoryItems(cachedHistory ?? []))
+  }
+
   async function openHistorySubmenu() {
     const wasOpen = trigger.isOpen()
+    historyMenuOpen = true
 
     // if the menu is already open we morph through a loading state so the user
     // sees something happen immediately. when opening directly from closed
     // (e.g. ⌘⇧H), we skip the loading state and just wait for the fetch so
     // the menu pops in already showing the history entries. when the cache is
     // warm we skip the loading state entirely.
-    if (wasOpen && cachedHistory === null) {
+    if (wasOpen && cachedHistory === null && pendingJobs.size === 0) {
       const loadingItems: MenuItem[] = [
         {
           label: '← Back',
           keepOpen: true,
-          onClick: () => trigger.setMenuItems(mainMenuItems()),
+          onClick: () => {
+            historyMenuOpen = false
+            trigger.setMenuItems(mainMenuItems())
+          },
         },
         { label: 'Loading…', disabled: true, onClick: () => {} },
       ]
       trigger.setMenuItems(loadingItems)
     }
 
-    let entries: JobHistoryListResponse['entries'] = cachedHistory ?? []
-    if (cachedHistory === null) {
-      try {
-        const res = await fetch(`${baseUrl}jobs/history`)
-        if (res.ok) {
-          const body = (await res.json()) as JobHistoryListResponse
-          entries = body.entries
-          cachedHistory = entries
-        }
-      } catch {
-        // ignore — show empty
-      }
-    }
+    await ensureHistoryFetched()
+    if (!historyMenuOpen) return
 
-    const items: MenuItem[] = [
-      {
-        label: '← Back',
-        keepOpen: true,
-        onClick: () => trigger.setMenuItems(mainMenuItems()),
-      },
-    ]
-    if (entries.length === 0) {
-      items.push({ label: 'no history yet', disabled: true, onClick: () => {} })
-    } else {
-      for (const entry of entries.slice(0, 6)) {
-        items.push({
-          label: entry.promptPreview || '(empty prompt)',
-          kbd: timeChipHTML(entry.createdAt),
-          variant: entry.status === 'failed' ? 'danger' : 'default',
-          compact: true,
-          onClick: () => {
-            void diffSidebar.show(entry.jobId)
-          },
-        })
-      }
-    }
-
+    const items = buildHistoryItems(cachedHistory ?? [])
     if (trigger.isOpen()) {
       trigger.setMenuItems(items)
     } else {
       trigger.open(items)
     }
+  }
+
+  function trackPendingJob(jobId: string, prompt: string) {
+    pendingJobs.set(jobId, { prompt, createdAt: Date.now() })
+    if (historyMenuOpen) void refreshHistoryMenu()
   }
 
   function toggleGrab() {
@@ -291,6 +357,7 @@ function boot() {
           }
           const body = (await res.json()) as CreateJobResponse
           status.track(body.jobId, submittedTarget, fp, { persist: true })
+          trackPendingJob(body.jobId, prompt)
         } catch (err) {
           console.error('[spidey-grab] could not reach daemon', err)
         }

@@ -11,7 +11,24 @@ function Layout({ children }: { children: React.ReactNode }) {
   return (
     <div className="page">
       <Navbar />
-      <main className="main">{children}</main>
+      <main
+        className="main"
+        style={{
+          background: 'linear-gradient(180deg, rgba(255,255,255,0.85) 0%, rgba(250,250,252,0.9) 100%)',
+          backdropFilter: 'saturate(140%) blur(8px)',
+          WebkitBackdropFilter: 'saturate(140%) blur(8px)',
+          border: '1px solid rgba(15, 23, 42, 0.06)',
+          borderRadius: 20,
+          boxShadow: '0 1px 2px rgba(15,23,42,0.04), 0 12px 40px -12px rgba(15,23,42,0.12)',
+          padding: '56px 48px',
+          margin: '32px auto',
+          maxWidth: 920,
+          letterSpacing: '-0.01em',
+          lineHeight: 1.6,
+        }}
+      >
+        {children}
+      </main>
       <footer className="footer">© Acme · vite + react-router</footer>
     </div>
   )
@@ -21,8 +38,8 @@ function Home() {
   return (
     <Layout>
       <h1 style={{ color: 'red' }}>Welcome to Acme</h1>
-      <p className="lead">
-        A demo Vite app for testing Spidey. Each link is a different route.
+      <p className="lead" style={{ fontSize: '24px' }}>
+        A demo Vite app for testing Spidey. Each link is a different route. Navigate around to exercise the router, click on elements to try the visual picker, and explore how each page renders its own content. This sample is intentionally small so you can focus on the interaction model rather than wading through unrelated complexity, while still having enough surface area to feel like a real application.
       </p>
       <div className="card-grid" style={{ gridTemplateColumns: '1fr' }}>
         <div className="card">
@@ -108,7 +125,7 @@ function User() {
   const { id } = useParams()
   return (
     <Layout>
-      <h1>User #{id}</h1>
+      <h1 style={{ fontSize: 36 }}>User #{id}</h1>
       <div className="profile">
         <Avatar name={`User ${id}`} size={64} />
         <div>

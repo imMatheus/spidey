@@ -15,6 +15,7 @@ export interface MenuItem {
 export interface TriggerOpts {
   parent: HTMLElement;
   getMenuItems: () => MenuItem[];
+  onCloseMenu?: () => void;
 }
 
 export class TriggerButton {
@@ -100,6 +101,7 @@ export class TriggerButton {
     this.closeTimer = window.setTimeout(() => {
       menu.remove();
     }, 220);
+    this.opts.onCloseMenu?.();
   }
 
   isOpen(): boolean {

@@ -166,6 +166,7 @@ export const STYLES = `
   justify-content: space-between;
   gap: 12px;
   user-select: none;
+  font-size: 12px;
 }
 .trigger-menu-item:hover {
   background: hsla(var(--ds-gray-1000-value), 0.05);
@@ -207,7 +208,6 @@ export const STYLES = `
   flex-shrink: 0;
 }
 .trigger-menu-item.compact {
-  font-size: 12px;
   height: 26px;
 }
 .trigger-menu-item.compact .label {
@@ -315,6 +315,7 @@ export const STYLES = `
 }
 
 .spinner {
+  display: inline-block;
   width: 10px;
   height: 10px;
   border: 2px solid color-mix(in oklch, currentColor 30%, transparent);
@@ -322,6 +323,7 @@ export const STYLES = `
   border-radius: 999px;
   animation: spin 0.7s linear infinite;
   flex-shrink: 0;
+  vertical-align: middle;
 }
 @keyframes spin { to { transform: rotate(360deg); } }
 
