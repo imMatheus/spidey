@@ -1,6 +1,8 @@
 export const STYLES = `
 :host {
+  --ds-blue-100: oklch(97.32% .0141 251.56);
   --ds-blue-700: oklch(57.61% .2508 258.23);
+  --ds-blue-900: oklch(46.84% .1923 257.74);
 
   --ds-red-200: oklch(95.41% .0299 14.2526);
   --ds-red-700: oklch(62.56% .2524 23.03);
@@ -158,17 +160,20 @@ export const STYLES = `
 
 .outline {
   position: fixed;
-  border: 2px solid;
-  border-radius: 3px;
+  border: 1px solid;
+  border-radius: 0;
   pointer-events: none;
   transition: border-color 150ms ease, opacity 400ms ease;
   box-sizing: border-box;
 }
 .outline.hover {
-  border-color: var(--ds-blue-700);
-  border-style: dashed;
+  border-color: var(--ds-blue-900);
+  background: color-mix(in oklch, var(--ds-blue-900) 10%, transparent);
 }
-.outline.selected { border-color: var(--ds-blue-700); }
+.outline.selected {
+  border-color: var(--ds-blue-900);
+  background: color-mix(in oklch, var(--ds-blue-900) 10%, transparent);
+}
 .outline.running {
   border-color: var(--ds-amber-700);
   box-shadow: 0 0 0 1px color-mix(in oklch, var(--ds-amber-700) 25%, transparent);
@@ -320,4 +325,4 @@ export const STYLES = `
 }
 .prompt-box button:hover { background: var(--ds-gray-900); }
 .prompt-box button:disabled { opacity: 0.5; cursor: not-allowed; }
-`;
+`

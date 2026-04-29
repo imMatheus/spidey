@@ -46,7 +46,7 @@ function About() {
   return (
     <Layout>
       <h1 style={{ color: 'green' }}>About</h1>
-      <p>Acme is a fictional company that exists only inside this demo.</p>
+      <p>Acme is a fictional company that exists only inside this demo, created purely as a placeholder to showcase how the application looks and behaves with realistic-seeming content rather than empty filler text.</p>
       <ul>
         <li>Founded in 2026 by a small group of engineers passionate about building reliable, well-tested canvas tooling</li>
         <li style={{ color: 'blue' }}>Headquartered nowhere in particular, with a fully distributed team spread across multiple time zones and continents</li>

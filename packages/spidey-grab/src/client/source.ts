@@ -4,12 +4,17 @@ import {
   getDisplayName,
   type Fiber,
 } from "bippy";
-import { getSource } from "bippy/source";
 import type { ElementContext, SourceLocation } from "../protocol";
 
 export interface ResolvedTarget {
   source: SourceLocation | null;
   context: ElementContext;
+}
+
+interface DebugSource {
+  fileName?: string;
+  lineNumber?: number;
+  columnNumber?: number;
 }
 
 export async function resolveTarget(node: Element): Promise<ResolvedTarget> {
@@ -24,7 +29,7 @@ export async function resolveTarget(node: Element): Promise<ResolvedTarget> {
     context.displayName = safeDisplayName(composite);
   }
 
-  const source = composite ? await safeGetSource(composite) : null;
+  const source = findElementSource(fiber);
   return { source, context };
 }
 
@@ -60,18 +65,36 @@ function safeDisplayName(fiber: Fiber): string | null {
   }
 }
 
-async function safeGetSource(fiber: Fiber): Promise<SourceLocation | null> {
-  try {
-    const src = await getSource(fiber);
-    if (!src || !src.fileName) return null;
-    return {
-      file: cleanFileName(src.fileName),
-      line: src.lineNumber,
-      column: src.columnNumber,
-    };
-  } catch {
-    return null;
+// React's dev runtime annotates each JSX element with `__source` (via
+// @babel/plugin-transform-react-jsx-source / Vite's react plugin), which
+// surfaces on the fiber as `_debugSource`. That's the exact JSX call site of
+// the element the user clicked — what we want.
+//
+// `bippy/source`'s getSource() is intentionally *not* used here: it returns
+// where the surrounding composite component is *used*, not where the host
+// element is defined.
+function findElementSource(fiber: Fiber): SourceLocation | null {
+  let current: Fiber | null = fiber;
+  while (current) {
+    const ds = readDebugSource(current);
+    if (ds?.fileName) {
+      return {
+        file: cleanFileName(ds.fileName),
+        line: ds.lineNumber,
+        column: ds.columnNumber,
+      };
+    }
+    current = current.return ?? null;
   }
+  return null;
+}
+
+function readDebugSource(fiber: Fiber): DebugSource | null {
+  const f = fiber as Fiber & { _debugSource?: DebugSource; alternate?: Fiber };
+  if (f._debugSource?.fileName) return f._debugSource;
+  const alt = f.alternate as (Fiber & { _debugSource?: DebugSource }) | undefined;
+  if (alt?._debugSource?.fileName) return alt._debugSource;
+  return null;
 }
 
 function cleanFileName(name: string): string {
