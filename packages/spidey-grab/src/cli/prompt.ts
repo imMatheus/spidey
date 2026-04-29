@@ -1,14 +1,22 @@
 import type { CreateJobRequest } from "../protocol";
 
 export function buildPrompt(req: CreateJobRequest): string {
+  // Continuations resume an existing claude session; the agent already has
+  // every prior turn (initial element context, file reads, edits) in scope.
+  // Just hand it the new user message verbatim.
+  if (req.parentJobId) {
+    return req.prompt;
+  }
+
   const { prompt, source, context } = req;
   const sourceLine = source
     ? `${source.file}${source.line ? `:${source.line}` : ""}${source.column ? `:${source.column}` : ""}`
     : "(unknown — locate by component name + text content)";
 
-  const classes = context.classes.length ? context.classes.join(" ") : "(none)";
-  const text = context.textPreview ? `"${context.textPreview}"` : "(empty)";
-  const component = context.displayName ?? "(unknown)";
+  const classes = context && context.classes.length ? context.classes.join(" ") : "(none)";
+  const text = context?.textPreview ? `"${context.textPreview}"` : "(empty)";
+  const component = context?.displayName ?? "(unknown)";
+  const tag = context?.tagName ? context.tagName.toLowerCase() : "(unknown)";
 
   return `The user is editing a React app via a visual element picker. They clicked a specific element on the page and want this change applied to its source.
 
@@ -16,7 +24,7 @@ USER REQUEST: ${prompt}
 
 TARGET ELEMENT:
 - Source: ${sourceLine}
-- DOM tag: <${context.tagName.toLowerCase()}>
+- DOM tag: <${tag}>
 - CSS classes: ${classes}
 - React component: ${component}
 - Text preview: ${text}

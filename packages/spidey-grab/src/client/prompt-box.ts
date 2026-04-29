@@ -69,7 +69,7 @@ export class PromptBox {
     row.className = "row";
     const hint = document.createElement("span");
     hint.className = "hint";
-    hint.textContent = "enter to send · ↑↓←→ navigate · esc cancel";
+    hint.textContent = "↑↓←→ navigate · esc cancel";
     const button = document.createElement("button");
     button.textContent = "send";
     button.addEventListener("click", () => this.submit());

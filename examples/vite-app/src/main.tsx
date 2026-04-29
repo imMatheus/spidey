@@ -47,12 +47,12 @@ function About() {
     <Layout>
       <h1 style={{ color: 'green' }}>About</h1>
       <p>Acme is a fictional company that exists only inside this demo, created purely as a placeholder to showcase how the application looks and behaves with realistic-seeming content rather than empty filler text.</p>
-      <ul>
-        <li>Founded in 2026 by a small group of engineers passionate about building reliable, well-tested canvas tooling</li>
-        <li style={{ color: 'blue' }}>Headquartered nowhere in particular, with a fully distributed team spread across multiple time zones and continents</li>
+      <ul style={{ color: 'green' }}>
+        <li style={{ fontWeight: 'bold' }}>Founded in 2026 by a small group of engineers passionate about building reliable, well-tested canvas tooling</li>
+        <li>Headquartered nowhere in particular, with a fully distributed team spread across multiple time zones and continents</li>
         <li>Specializes in stress-testing canvas viewers</li>
       </ul>
-      <ColorBox variant="blue" text="matheus tester" />
+      <ColorBox variant="blue" text="you are amazing" />
     </Layout>
   )
 }
@@ -62,6 +62,20 @@ function Products() {
     { id: 1, name: 'Widget', price: '$10', tone: 'ok' as const },
     { id: 2, name: 'Gizmo', price: '$25', tone: 'warn' as const },
     { id: 3, name: 'Doohickey', price: '$8', tone: 'info' as const },
+    { id: 4, name: 'Sprocket', price: '$15', tone: 'ok' as const },
+    { id: 5, name: 'Thingamajig', price: '$32', tone: 'warn' as const },
+    { id: 6, name: 'Whatsit', price: '$12', tone: 'info' as const },
+    { id: 7, name: 'Contraption', price: '$45', tone: 'ok' as const },
+    { id: 8, name: 'Gadget', price: '$22', tone: 'warn' as const },
+    { id: 9, name: 'Doodad', price: '$5', tone: 'info' as const },
+    { id: 10, name: 'Knickknack', price: '$18', tone: 'ok' as const },
+    { id: 11, name: 'Gewgaw', price: '$30', tone: 'warn' as const },
+    { id: 12, name: 'Trinket', price: '$7', tone: 'info' as const },
+    { id: 13, name: 'matheus', price: '$50', tone: 'ok' as const },
+    { id: 14, name: 'Bauble', price: '$14', tone: 'warn' as const },
+    { id: 15, name: 'Whatchamacallit', price: '$27', tone: 'info' as const },
+    { id: 16, name: 'skrt', price: '$9', tone: 'ok' as const },
+    { id: 17, name: 'tester', price: '$38', tone: 'warn' as const },
   ]
   return (
     <Layout>

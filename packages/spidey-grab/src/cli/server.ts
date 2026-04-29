@@ -5,7 +5,13 @@ import { fileURLToPath } from "node:url";
 import { WebSocketServer, WebSocket } from "ws";
 import { jobStore } from "./jobs";
 import { runJob } from "./agent";
-import type { CreateJobRequest, CreateJobResponse, ServerEvent } from "../protocol";
+import { history } from "./history";
+import type {
+  CreateJobRequest,
+  CreateJobResponse,
+  JobHistoryListResponse,
+  ServerEvent,
+} from "../protocol";
 
 interface ServerOpts {
   port: number;
@@ -40,6 +46,52 @@ export function startServer(opts: ServerOpts) {
 
     if (req.method === "POST" && url === "/jobs") {
       handleCreateJob(req, res, opts);
+      return;
+    }
+
+    if (req.method === "GET" && url === "/jobs/history") {
+      const body: JobHistoryListResponse = { entries: history.list(opts.cwd) };
+      res.writeHead(200, { "content-type": "application/json" });
+      res.end(JSON.stringify(body));
+      return;
+    }
+
+    const diffMatch = req.method === "GET" ? url.match(/^\/jobs\/([0-9a-f-]{8,})\/diff$/i) : null;
+    if (diffMatch) {
+      const bundle = history.read(opts.cwd, diffMatch[1]);
+      if (!bundle) {
+        res.writeHead(404, { "content-type": "application/json" });
+        res.end(JSON.stringify({ error: "job not found" }));
+        return;
+      }
+      res.writeHead(200, { "content-type": "application/json" });
+      res.end(JSON.stringify(bundle));
+      return;
+    }
+
+    const threadMatch = req.method === "GET" ? url.match(/^\/jobs\/([0-9a-f-]{8,})\/thread$/i) : null;
+    if (threadMatch) {
+      const result = history.thread(opts.cwd, threadMatch[1]);
+      if (!result) {
+        res.writeHead(404, { "content-type": "application/json" });
+        res.end(JSON.stringify({ error: "job not found" }));
+        return;
+      }
+      res.writeHead(200, { "content-type": "application/json" });
+      res.end(JSON.stringify(result));
+      return;
+    }
+
+    const changesMatch = req.method === "GET" ? url.match(/^\/jobs\/([0-9a-f-]{8,})\/thread\/changes$/i) : null;
+    if (changesMatch) {
+      const result = history.aggregateChanges(opts.cwd, changesMatch[1]);
+      if (!result) {
+        res.writeHead(404, { "content-type": "application/json" });
+        res.end(JSON.stringify({ error: "job not found" }));
+        return;
+      }
+      res.writeHead(200, { "content-type": "application/json" });
+      res.end(JSON.stringify(result));
       return;
     }
 

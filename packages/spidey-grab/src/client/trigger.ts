@@ -3,6 +3,10 @@ export interface MenuItem {
   kbd?: string;
   variant?: "default" | "danger";
   disabled?: boolean;
+  /** If true, the menu stays open after click (e.g. for opening a submenu). */
+  keepOpen?: boolean;
+  /** Compact rendering: smaller font, single-row truncation. Used for history. */
+  compact?: boolean;
   onClick: () => void;
 }
 
@@ -14,6 +18,7 @@ export interface TriggerOpts {
 export class TriggerButton {
   private wrapper: HTMLDivElement;
   private button: HTMLDivElement;
+  private counter: HTMLDivElement;
   private menu: HTMLUListElement | null = null;
   private menuOpen = false;
   private opts: TriggerOpts;
@@ -38,9 +43,15 @@ export class TriggerButton {
     });
     wrapper.appendChild(button);
 
+    const counter = document.createElement("div");
+    counter.className = "trigger-counter";
+    counter.setAttribute("aria-hidden", "true");
+    wrapper.appendChild(counter);
+
     opts.parent.appendChild(wrapper);
     this.wrapper = wrapper;
     this.button = button;
+    this.counter = counter;
 
     this.boundOutside = (e) => this.onOutsidePointerDown(e);
     this.boundKey = (e) => this.onKey(e);
@@ -48,6 +59,30 @@ export class TriggerButton {
 
   setActive(active: boolean) {
     this.button.classList.toggle("active", active);
+  }
+
+  setCounts(running: number, done: number, failed: number) {
+    const total = running + done + failed;
+    this.counter.classList.remove("running", "idle", "failed");
+    if (total === 0) {
+      this.counter.classList.add("hidden");
+      this.counter.replaceChildren();
+      return;
+    }
+    this.counter.classList.remove("hidden");
+    if (running > 0) {
+      this.counter.classList.add("running");
+      this.counter.textContent = String(running);
+      this.counter.title = `${running} running · ${done} done${failed > 0 ? ` · ${failed} failed` : ""}`;
+    } else if (failed > 0 && done === 0) {
+      this.counter.classList.add("failed");
+      this.counter.textContent = String(failed);
+      this.counter.title = `${failed} failed`;
+    } else {
+      this.counter.classList.add("idle");
+      this.counter.textContent = String(done + failed);
+      this.counter.title = `${done} done${failed > 0 ? ` · ${failed} failed` : ""}`;
+    }
   }
 
   closeMenu() {
@@ -62,6 +97,21 @@ export class TriggerButton {
     this.closeTimer = window.setTimeout(() => {
       menu.remove();
     }, 220);
+  }
+
+  isOpen(): boolean {
+    return this.menuOpen;
+  }
+
+  setMenuItems(items: MenuItem[]) {
+    if (!this.menu) return;
+    const menu = this.menu;
+    menu.classList.add("swapping");
+    window.setTimeout(() => {
+      if (this.menu !== menu) return;
+      menu.replaceChildren(...items.map((item) => this.renderItem(item)));
+      menu.classList.remove("swapping");
+    }, 120);
   }
 
   private toggleMenu() {
@@ -82,34 +132,7 @@ export class TriggerButton {
 
     const items = this.opts.getMenuItems();
     for (const item of items) {
-      const li = document.createElement("li");
-      li.className = "trigger-menu-item";
-      if (item.disabled) li.classList.add("disabled");
-      if (item.variant === "danger") li.classList.add("danger");
-      li.setAttribute("role", "menuitem");
-      li.tabIndex = -1;
-
-      const label = document.createElement("span");
-      label.textContent = item.label;
-      li.appendChild(label);
-
-      if (item.kbd) {
-        const kbd = document.createElement("span");
-        kbd.className = "kbd";
-        kbd.textContent = item.kbd;
-        li.appendChild(kbd);
-      }
-
-      if (!item.disabled) {
-        li.addEventListener("click", (e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          this.closeMenu();
-          item.onClick();
-        });
-      }
-
-      menu.appendChild(li);
+      menu.appendChild(this.renderItem(item));
     }
 
     this.wrapper.appendChild(menu);
@@ -123,6 +146,40 @@ export class TriggerButton {
 
     window.addEventListener("pointerdown", this.boundOutside, true);
     window.addEventListener("keydown", this.boundKey, true);
+  }
+
+  private renderItem(item: MenuItem): HTMLLIElement {
+    const li = document.createElement("li");
+    li.className = "trigger-menu-item";
+    if (item.disabled) li.classList.add("disabled");
+    if (item.variant === "danger") li.classList.add("danger");
+    if (item.compact) li.classList.add("compact");
+    li.setAttribute("role", "menuitem");
+    li.tabIndex = -1;
+
+    const label = document.createElement("span");
+    label.className = "label";
+    label.textContent = item.label;
+    li.appendChild(label);
+
+    if (item.kbd) {
+      const kbd = document.createElement("span");
+      kbd.className = "kbd";
+      // kbd may contain inline markup (e.g. the clock-icon time chip used in
+      // history items). Callers control this string, so it's not user input.
+      kbd.innerHTML = item.kbd;
+      li.appendChild(kbd);
+    }
+
+    if (!item.disabled) {
+      li.addEventListener("click", (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        if (!item.keepOpen) this.closeMenu();
+        item.onClick();
+      });
+    }
+    return li;
   }
 
   private onOutsidePointerDown(e: PointerEvent) {

@@ -19,9 +19,11 @@
   },
   "dependencies": {
     "bippy": "^0.5.39",
+    "diff": "^7.0.0",
     "ws": "^8.20.0"
   },
   "devDependencies": {
+    "@types/diff": "^7.0.0",
     "@types/node": "^22.0.0",
     "@types/ws": "^8.5.12",
     "tsup": "^8.5.1",

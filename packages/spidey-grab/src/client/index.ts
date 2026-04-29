@@ -2,147 +2,222 @@
 // as a side-effect. This IIFE bundle runs synchronously when the <script> tag
 // loads, so as long as the user pastes the tag into <head> before their app
 // entry, the hook is in place when React boots.
-import "bippy";
+import 'bippy'
 
-import { mountShadow } from "./mount";
-import { TriggerButton } from "./trigger";
-import { OverlayLayer } from "./overlay";
-import { Picker } from "./pick";
-import { PromptBox } from "./prompt-box";
-import { StatusManager } from "./status";
-import { JobSocket } from "./socket";
-import { resolveTarget } from "./source";
-import { buildFingerprint, findByFingerprint } from "./refind";
-import { persistence } from "./persistence";
-import type { CreateJobRequest, CreateJobResponse, ServerEvent } from "../protocol";
+import { mountShadow } from './mount'
+import { TriggerButton } from './trigger'
+import type { MenuItem } from './trigger'
+import { OverlayLayer } from './overlay'
+import { Picker } from './pick'
+import { PromptBox } from './prompt-box'
+import { StatusManager } from './status'
+import { JobSocket } from './socket'
+import { resolveTarget } from './source'
+import { buildFingerprint, findByFingerprint } from './refind'
+import { persistence } from './persistence'
+import { DiffSidebar, loadPersistedSidebar, timeChipHTML } from './diff-sidebar'
+import type {
+  CreateJobRequest,
+  CreateJobResponse,
+  JobHistoryListResponse,
+  ServerEvent,
+} from '../protocol'
 
 declare global {
   interface Window {
-    __SPIDEY_GRAB__?: boolean;
+    __SPIDEY_GRAB__?: boolean
   }
 }
 
 function boot() {
-  if (window.__SPIDEY_GRAB__) return;
-  window.__SPIDEY_GRAB__ = true;
+  if (window.__SPIDEY_GRAB__) return
+  window.__SPIDEY_GRAB__ = true
 
-  const baseUrl = detectBaseUrl();
-  const mount = mountShadow();
-  const overlay = new OverlayLayer(mount.layer);
-  const status = new StatusManager(overlay);
-  const socket = new JobSocket(baseUrl);
+  const baseUrl = detectBaseUrl()
+  const mount = mountShadow()
+  const overlay = new OverlayLayer(mount.layer)
+  const status = new StatusManager(overlay)
+  const socket = new JobSocket(baseUrl)
   socket.on((event) => {
-    if (event.type === "hello") {
-      recoverFromHello(event);
+    if (event.type === 'hello') {
+      recoverFromHello(event)
     }
-    status.handleServerEvent(event);
-  });
+    status.handleServerEvent(event)
+  })
 
-  let mode: "idle" | "picking" = "idle";
-  let activePromptBox: PromptBox | null = null;
-  let selectedOutlineId: symbol | null = null;
+  let mode: 'idle' | 'picking' = 'idle'
+  let activePromptBox: PromptBox | null = null
+  let selectedOutlineId: symbol | null = null
 
   const isOwnNode = (node: Node | null): boolean => {
-    if (!node) return false;
-    return mount.host.contains(node) || node === mount.host;
-  };
+    if (!node) return false
+    return mount.host.contains(node) || node === mount.host
+  }
 
   function clearSelected() {
     if (selectedOutlineId !== null) {
-      overlay.remove(selectedOutlineId);
-      selectedOutlineId = null;
+      overlay.remove(selectedOutlineId)
+      selectedOutlineId = null
     }
   }
 
   function closePromptBox() {
-    activePromptBox?.destroy();
-    activePromptBox = null;
-    clearSelected();
+    activePromptBox?.destroy()
+    activePromptBox = null
+    clearSelected()
+  }
+
+  const diffSidebar = new DiffSidebar({ parent: mount.layer, baseUrl, socket })
+
+  function mainMenuItems(): MenuItem[] {
+    return [
+      {
+        label: mode === 'picking' ? 'Stop picking' : 'Pick element',
+        kbd: '⌘G',
+        onClick: toggleGrab,
+      },
+      {
+        label: 'History',
+        keepOpen: true,
+        onClick: () => void openHistorySubmenu(),
+      },
+    ]
   }
 
   const trigger = new TriggerButton({
     parent: mount.layer,
-    getMenuItems: () => [
+    getMenuItems: mainMenuItems,
+  })
+
+  const updateCounter = () => {
+    const c = status.counts()
+    trigger.setCounts(c.running, c.done, c.failed)
+  }
+  status.onChange(updateCounter)
+  updateCounter()
+
+  // Restore the diff sidebar if it was open before a reload
+  // (Vite/HMR sometimes does a full refresh after Claude's edit lands).
+  const persistedSidebar = loadPersistedSidebar()
+  if (persistedSidebar) {
+    void diffSidebar.show(persistedSidebar.rootJobId, {
+      pending: persistedSidebar.pending,
+    })
+  }
+
+  async function openHistorySubmenu() {
+    if (!trigger.isOpen()) return
+    trigger.setMenuItems([
       {
-        label: mode === "picking" ? "Stop picking" : "Pick element",
-        kbd: "⌘G",
-        onClick: toggleGrab,
+        label: '← Back',
+        keepOpen: true,
+        onClick: () => trigger.setMenuItems(mainMenuItems()),
       },
+      { label: 'Loading…', disabled: true, onClick: () => {} },
+    ])
+
+    let entries: JobHistoryListResponse['entries'] = []
+    try {
+      const res = await fetch(`${baseUrl}jobs/history`)
+      if (res.ok) {
+        const body = (await res.json()) as JobHistoryListResponse
+        entries = body.entries
+      }
+    } catch {
+      // ignore — show empty
+    }
+
+    if (!trigger.isOpen()) return
+
+    const items: MenuItem[] = [
       {
-        label: "History",
-        onClick: () => console.log("[spidey-grab] history (todo)"),
+        label: '← Back',
+        keepOpen: true,
+        onClick: () => trigger.setMenuItems(mainMenuItems()),
       },
-      {
-        label: "Settings",
-        onClick: () => console.log("[spidey-grab] settings (todo)"),
-      },
-      {
-        label: "Documentation",
-        onClick: () => console.log("[spidey-grab] documentation (todo)"),
-      },
-    ],
-  });
+    ]
+    if (entries.length === 0) {
+      items.push({ label: 'no history yet', disabled: true, onClick: () => {} })
+    } else {
+      for (const entry of entries.slice(0, 6)) {
+        items.push({
+          label: entry.promptPreview || '(empty prompt)',
+          kbd: timeChipHTML(entry.createdAt),
+          variant: entry.status === 'failed' ? 'danger' : 'default',
+          compact: true,
+          onClick: () => {
+            void diffSidebar.show(entry.jobId)
+          },
+        })
+      }
+    }
+    trigger.setMenuItems(items)
+  }
 
   function toggleGrab() {
-    if (mode === "picking") {
-      stopPicking();
+    if (mode === 'picking') {
+      stopPicking()
     } else {
-      closePromptBox();
-      startPicking();
+      closePromptBox()
+      startPicking()
     }
   }
 
   window.addEventListener(
-    "keydown",
+    'keydown',
     (e) => {
       const isShortcut =
         (e.metaKey || e.ctrlKey) &&
         !e.altKey &&
         !e.shiftKey &&
-        (e.key === "g" || e.key === "G");
-      if (!isShortcut) return;
-      e.preventDefault();
-      e.stopPropagation();
-      toggleGrab();
+        (e.key === 'g' || e.key === 'G')
+      if (!isShortcut) return
+      e.preventDefault()
+      e.stopPropagation()
+      toggleGrab()
     },
     true,
-  );
+  )
 
   const picker = new Picker(overlay, {
     isOwnNode,
     onPick: async (target, clickX, clickY) => {
-      stopPicking();
-      await openPromptFor(target, clickX, clickY);
+      stopPicking()
+      await openPromptFor(target, clickX, clickY)
     },
     onCancel: () => {
-      stopPicking();
+      stopPicking()
     },
-  });
+  })
 
   function startPicking() {
-    closePromptBox();
-    mode = "picking";
-    trigger.setActive(true);
-    picker.start();
+    closePromptBox()
+    mode = 'picking'
+    trigger.setActive(true)
+    picker.start()
   }
 
   function stopPicking() {
-    if (mode !== "picking") return;
-    mode = "idle";
-    trigger.setActive(false);
-    picker.stop();
+    if (mode !== 'picking') return
+    mode = 'idle'
+    trigger.setActive(false)
+    picker.stop()
   }
 
-  async function openPromptFor(target: Element, clickX?: number, clickY?: number) {
-    closePromptBox();
-    const resolved = await resolveTarget(target);
-    const initialFp = buildFingerprint(target, resolved);
-    let currentFp = initialFp;
+  async function openPromptFor(
+    target: Element,
+    clickX?: number,
+    clickY?: number,
+  ) {
+    closePromptBox()
+    const resolved = await resolveTarget(target)
+    const initialFp = buildFingerprint(target, resolved)
+    let currentFp = initialFp
 
-    selectedOutlineId = overlay.attach(target, "selected", {
+    selectedOutlineId = overlay.attach(target, 'selected', {
       withBadge: false,
       refinder: () => findByFingerprint(currentFp),
-    });
+    })
 
     activePromptBox = new PromptBox({
       parent: mount.layer,
@@ -151,134 +226,140 @@ function boot() {
       clickX,
       clickY,
       onSubmit: async (prompt, submittedTarget, submittedResolved) => {
-        const box = activePromptBox;
-        activePromptBox = null;
-        box?.destroy();
-        clearSelected();
+        const box = activePromptBox
+        activePromptBox = null
+        box?.destroy()
+        clearSelected()
 
-        const fp = buildFingerprint(submittedTarget, submittedResolved);
+        const fp = buildFingerprint(submittedTarget, submittedResolved)
         const req: CreateJobRequest = {
           prompt,
           source: submittedResolved.source,
           context: submittedResolved.context,
-        };
+        }
 
         try {
           const res = await fetch(`${baseUrl}jobs`, {
-            method: "POST",
-            headers: { "content-type": "application/json" },
+            method: 'POST',
+            headers: { 'content-type': 'application/json' },
             body: JSON.stringify(req),
-          });
+          })
           if (!res.ok) {
-            console.error("[spidey-grab] failed to create job", res.status, await res.text());
-            return;
+            console.error(
+              '[spidey-grab] failed to create job',
+              res.status,
+              await res.text(),
+            )
+            return
           }
-          const body = (await res.json()) as CreateJobResponse;
-          status.track(body.jobId, submittedTarget, fp, { persist: true });
+          const body = (await res.json()) as CreateJobResponse
+          status.track(body.jobId, submittedTarget, fp, { persist: true })
         } catch (err) {
-          console.error("[spidey-grab] could not reach daemon", err);
+          console.error('[spidey-grab] could not reach daemon', err)
         }
       },
       onCancel: () => {
-        closePromptBox();
+        closePromptBox()
       },
       onNavigate: async (current, direction) => {
         const next =
-          direction === "up"
+          direction === 'up'
             ? navigateUp(current)
-            : direction === "down"
+            : direction === 'down'
               ? navigateDown(current)
-              : direction === "left"
+              : direction === 'left'
                 ? navigatePrevSibling(current)
-                : navigateNextSibling(current);
-        if (!next) return null;
-        const nextResolved = await resolveTarget(next);
-        const nextFp = buildFingerprint(next, nextResolved);
+                : navigateNextSibling(current)
+        if (!next) return null
+        const nextResolved = await resolveTarget(next)
+        const nextFp = buildFingerprint(next, nextResolved)
         if (selectedOutlineId !== null) {
-          overlay.setAnimatingPosition(selectedOutlineId, true);
-          overlay.retarget(selectedOutlineId, next);
-          overlay.updateRefinder(selectedOutlineId, () => findByFingerprint(nextFp));
+          overlay.setAnimatingPosition(selectedOutlineId, true)
+          overlay.retarget(selectedOutlineId, next)
+          overlay.updateRefinder(selectedOutlineId, () =>
+            findByFingerprint(nextFp),
+          )
           // clear the animating-position class after the transition window so
           // future scroll/resize positioning doesn't lag through the transition.
           window.setTimeout(() => {
             if (selectedOutlineId !== null) {
-              overlay.setAnimatingPosition(selectedOutlineId, false);
+              overlay.setAnimatingPosition(selectedOutlineId, false)
             }
-          }, 320);
+          }, 320)
         }
-        currentFp = nextFp;
-        return { target: next, resolved: nextResolved };
+        currentFp = nextFp
+        return { target: next, resolved: nextResolved }
       },
-    });
+    })
   }
 
   function navigateUp(target: Element): Element | null {
-    let parent = target.parentElement;
-    while (parent && isOwnNode(parent)) parent = parent.parentElement;
-    if (!parent) return null;
-    if (parent === document.documentElement) return null;
-    return parent;
+    let parent = target.parentElement
+    while (parent && isOwnNode(parent)) parent = parent.parentElement
+    if (!parent) return null
+    if (parent === document.documentElement) return null
+    return parent
   }
 
   function navigateDown(target: Element): Element | null {
-    let child: Element | null = target.firstElementChild;
-    while (child && isOwnNode(child)) child = child.nextElementSibling;
-    return child;
+    let child: Element | null = target.firstElementChild
+    while (child && isOwnNode(child)) child = child.nextElementSibling
+    return child
   }
 
   function navigatePrevSibling(target: Element): Element | null {
-    let sib: Element | null = target.previousElementSibling;
-    while (sib && isOwnNode(sib)) sib = sib.previousElementSibling;
-    return sib;
+    let sib: Element | null = target.previousElementSibling
+    while (sib && isOwnNode(sib)) sib = sib.previousElementSibling
+    return sib
   }
 
   function navigateNextSibling(target: Element): Element | null {
-    let sib: Element | null = target.nextElementSibling;
-    while (sib && isOwnNode(sib)) sib = sib.nextElementSibling;
-    return sib;
+    let sib: Element | null = target.nextElementSibling
+    while (sib && isOwnNode(sib)) sib = sib.nextElementSibling
+    return sib
   }
 
-  function recoverFromHello(event: Extract<ServerEvent, { type: "hello" }>) {
-    const persisted = persistence.load();
-    if (persisted.length === 0) return;
-    const byId = new Map(event.jobs.map((j) => [j.jobId, j]));
+  function recoverFromHello(event: Extract<ServerEvent, { type: 'hello' }>) {
+    const persisted = persistence.load()
+    if (persisted.length === 0) return
+    const byId = new Map(event.jobs.map((j) => [j.jobId, j]))
     for (const p of persisted) {
-      const snap = byId.get(p.jobId);
+      const snap = byId.get(p.jobId)
       if (!snap) {
         // daemon doesn't know this job anymore (probably restarted); drop it
-        persistence.remove(p.jobId);
-        continue;
+        persistence.remove(p.jobId)
+        continue
       }
       // already attached this session? skip
-      if (status.hasJob(p.jobId)) continue;
+      if (status.hasJob(p.jobId)) continue
       void status.recover(p, {
         status: snap.status,
         step: snap.step,
         error: snap.error,
-      });
+      })
     }
   }
 }
 
 function detectBaseUrl(): string {
-  const scripts = document.querySelectorAll<HTMLScriptElement>("script[src]");
+  const scripts = document.querySelectorAll<HTMLScriptElement>('script[src]')
   for (const s of Array.from(scripts).reverse()) {
-    const src = s.src;
+    const src = s.src
     if (src && /spidey-grab(?:\.js|\/inject\.js)/.test(src)) {
       try {
-        const u = new URL(src);
-        return `${u.origin}/`;
+        const u = new URL(src)
+        return `${u.origin}/`
       } catch {
         // ignore
       }
     }
   }
   // fallback: same origin as the page (only useful if the user is serving the bundle themselves)
-  return `${location.origin}/`;
+  return `${location.origin}/`
 }
 
-if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", boot, { once: true });
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', boot, { once: true })
 } else {
-  boot();
+  boot()
 }

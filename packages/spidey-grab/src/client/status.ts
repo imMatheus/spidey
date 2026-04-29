@@ -10,12 +10,49 @@ interface Tracked {
   fingerprint: Fingerprint;
 }
 
+export interface StatusCounts {
+  running: number;
+  done: number;
+  failed: number;
+}
+
+type StatusListener = (counts: StatusCounts) => void;
+
 export class StatusManager {
   private overlay: OverlayLayer;
   private byJobId = new Map<string, Tracked>();
+  private listeners = new Set<StatusListener>();
 
   constructor(overlay: OverlayLayer) {
     this.overlay = overlay;
+  }
+
+  counts(): StatusCounts {
+    let running = 0;
+    let done = 0;
+    let failed = 0;
+    for (const t of this.byJobId.values()) {
+      if (t.status === "running") running++;
+      else if (t.status === "done") done++;
+      else if (t.status === "failed") failed++;
+    }
+    return { running, done, failed };
+  }
+
+  onChange(listener: StatusListener): () => void {
+    this.listeners.add(listener);
+    return () => this.listeners.delete(listener);
+  }
+
+  private emitChange() {
+    const counts = this.counts();
+    for (const l of this.listeners) {
+      try {
+        l(counts);
+      } catch {
+        // ignore
+      }
+    }
   }
 
   track(jobId: string, target: Element, fingerprint: Fingerprint, opts: { persist: boolean }) {
@@ -30,6 +67,7 @@ export class StatusManager {
     if (opts.persist) {
       persistence.add({ jobId, fingerprint, createdAt: Date.now() });
     }
+    this.emitChange();
   }
 
   hasJob(jobId: string): boolean {
@@ -55,6 +93,7 @@ export class StatusManager {
       fingerprint: persisted.fingerprint,
     });
     this.applySnapshot(persisted.jobId, snapshot);
+    this.emitChange();
   }
 
   handleServerEvent(event: ServerEvent) {
@@ -79,6 +118,7 @@ export class StatusManager {
   private applySnapshot(jobId: string, snapshot: { status: JobStatus; step?: string; error?: string }) {
     const tracked = this.byJobId.get(jobId);
     if (!tracked) return;
+    const prevStatus = tracked.status;
     tracked.status = snapshot.status;
     this.overlay.setState(tracked.outlineId, snapshot.status);
 
@@ -87,6 +127,7 @@ export class StatusManager {
         spinner: true,
         step: snapshot.step ?? "working",
       });
+      if (prevStatus !== "running") this.emitChange();
       return;
     }
 
@@ -94,7 +135,11 @@ export class StatusManager {
       this.overlay.setBadgeText(tracked.outlineId, { icon: "✓", step: "done" });
       this.overlay.fadeAndRemove(tracked.outlineId, 4000);
       persistence.remove(jobId);
-      setTimeout(() => this.byJobId.delete(jobId), 5000);
+      this.emitChange();
+      setTimeout(() => {
+        this.byJobId.delete(jobId);
+        this.emitChange();
+      }, 5000);
       return;
     }
 
@@ -106,6 +151,7 @@ export class StatusManager {
         tooltip: reason,
       });
       persistence.remove(jobId);
+      this.emitChange();
     }
   }
 }
