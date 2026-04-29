@@ -1,7 +1,7 @@
-@import "tailwindcss";
-@import "tw-animate-css";
-@import "shadcn/tailwind.css";
-@import "@fontsource-variable/inter";
+@import 'tailwindcss';
+@import 'tw-animate-css';
+@import 'shadcn/tailwind.css';
+@import '@fontsource-variable/inter';
 
 @custom-variant dark (&:is(.dark *));
 
@@ -81,73 +81,113 @@ body,
   --radius-4xl: calc(var(--radius) * 2.6);
 }
 
-:root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.488 0.243 264.376);
-  --primary-foreground: oklch(0.97 0.014 254.604);
-  --secondary: oklch(0.967 0.001 286.375);
-  --secondary-foreground: oklch(0.21 0.006 285.885);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.546 0.245 262.881);
-  --sidebar-primary-foreground: oklch(0.97 0.014 254.604);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+/*
+ * Palette tokens (--color-*) are the source of truth.
+ * The shadcn semantic tokens below them (--background, --card, --primary, ...)
+ * are kept as aliases that reference the palette via var(), so existing
+ * components reading `bg-background` / `text-foreground` etc. pick up the
+ * new colors with no code changes. Theme switching works because var()
+ * resolves at use-site against the cascade — when .light overrides a
+ * --color-*, every alias that references it recomputes automatically.
+ *
+ * Dark is the default (matches ThemeProvider's `defaultTheme="dark"`).
+ */
+:root,
+.dark {
+  --color-background: rgb(12, 12, 12);
+  --color-surface: rgb(18, 18, 18);
+  --color-surface-hover: rgb(22, 22, 22);
+  --color-foreground: rgb(226, 225, 219);
+  --color-foreground-muted: rgb(195, 194, 184);
+  --color-foreground-subtle: rgb(124, 123, 116);
+  --color-border: rgb(32, 32, 32);
+  --color-interactive: rgb(47, 47, 47);
+  --color-interactive-hover: rgb(43, 41, 35);
+  --color-accent: rgb(67, 151, 248);
+  --color-accent-hover: rgb(87, 171, 255);
+  --color-accent-bg: rgb(18, 26, 36);
+  --color-accent-foreground: #ffffff;
+  --color-success: rgb(102, 201, 95);
+  --color-success-bg: rgb(30, 40, 28);
+  --color-success-foreground: #ffffff;
+  --color-danger: rgb(227, 66, 88);
+  --color-danger-foreground: #ffffff;
 }
 
-.dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.424 0.199 265.638);
-  --primary-foreground: oklch(0.97 0.014 254.604);
-  --secondary: oklch(0.274 0.006 286.033);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.623 0.214 259.815);
-  --sidebar-primary-foreground: oklch(0.97 0.014 254.604);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+.light {
+  --color-background: rgb(253, 253, 252);
+  --color-surface: rgb(243, 243, 242);
+  --color-surface-hover: rgb(229, 229, 228);
+  --color-foreground: rgb(60, 60, 57);
+  --color-foreground-muted: rgb(122, 121, 112);
+  --color-foreground-subtle: rgb(165, 164, 158);
+  --color-border: rgb(234, 234, 233);
+  --color-interactive: rgb(237, 237, 234);
+  --color-interactive-hover: rgb(226, 225, 220);
+  --color-accent: rgb(43, 101, 197);
+  --color-accent-hover: rgb(48, 111, 207);
+  --color-accent-bg: rgb(238, 243, 250);
+  --color-accent-foreground: #ffffff;
+  --color-success: #16a34a;
+  --color-success-bg: rgb(30, 40, 28);
+  --color-success-foreground: #ffffff;
+  --color-danger: #dc2626;
+  --color-danger-foreground: #ffffff;
+}
+
+/*
+ * shadcn semantic aliases — defined once on :root because they reference
+ * --color-* tokens which the .light / .dark blocks above scope properly.
+ *
+ * Mapping rationale:
+ *   - card / popover  → surface         (elevated panels: sidebar, dialogs)
+ *   - primary         → accent          (the brand blue, on real CTAs)
+ *   - secondary       → interactive     (quieter button bg)
+ *   - muted           → surface-hover   (subtle bg blocks: code, callouts)
+ *   - muted-foreground → foreground-muted
+ *   - accent (shadcn) → interactive-hover  (ghost-button hover bg; note:
+ *                       shadcn's "accent" token is a hover-bg, NOT the
+ *                       brand color — the brand maps to "primary")
+ *   - destructive    → danger
+ *   - input          → interactive      (form-control bg)
+ *   - ring           → accent           (focus ring)
+ */
+:root {
+  --background: var(--color-background);
+  --foreground: var(--color-foreground);
+  --card: var(--color-surface);
+  --card-foreground: var(--color-foreground);
+  --popover: var(--color-surface);
+  --popover-foreground: var(--color-foreground);
+  --primary: var(--color-accent);
+  --primary-foreground: var(--color-accent-foreground);
+  --secondary: var(--color-interactive);
+  --secondary-foreground: var(--color-foreground);
+  --muted: var(--color-surface-hover);
+  --muted-foreground: var(--color-foreground-muted);
+  --accent: var(--color-interactive-hover);
+  --accent-foreground: var(--color-foreground);
+  --destructive: var(--color-danger);
+  --border: var(--color-border);
+  --input: var(--color-interactive);
+  --ring: var(--color-accent);
+  /* No palette-specific chart colors yet — pull from accents/states for
+   * any incidental data viz. Easy to swap later if a real chart palette
+   * gets defined. */
+  --chart-1: var(--color-accent);
+  --chart-2: var(--color-success);
+  --chart-3: var(--color-danger);
+  --chart-4: var(--color-foreground-muted);
+  --chart-5: var(--color-foreground-subtle);
+  --radius: 0.625rem;
+  --sidebar: var(--color-surface);
+  --sidebar-foreground: var(--color-foreground);
+  --sidebar-primary: var(--color-accent);
+  --sidebar-primary-foreground: var(--color-accent-foreground);
+  --sidebar-accent: var(--color-interactive-hover);
+  --sidebar-accent-foreground: var(--color-foreground);
+  --sidebar-border: var(--color-border);
+  --sidebar-ring: var(--color-accent);
 }
 
 @layer base {

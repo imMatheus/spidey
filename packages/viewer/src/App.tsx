@@ -8,6 +8,12 @@ import { HandoffBar } from "./HandoffBar";
 import { CommandPalette } from "./CommandPalette";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import {
+  SidebarInset,
+  SidebarProvider,
+  SidebarTrigger,
+  useSidebar,
+} from "@/components/ui/sidebar";
+import {
   EditorProvider,
   ProjectProvider,
   SelectionProvider,
@@ -79,12 +85,29 @@ function Workspace() {
     );
   }
 
+  // Only the LEFT sidebar lives inside the SidebarProvider — the
+  // toolbar's SidebarTrigger toggles only that one. The Inspector
+  // (right) renders as a sibling custom panel so it stays put.
   return (
-    <div className="grid grid-cols-[260px_1fr_340px] grid-rows-[44px_1fr] h-full bg-background text-foreground">
+    <SidebarProvider
+      style={{ "--sidebar-width": "16rem" } as React.CSSProperties}
+      className="h-full bg-background text-foreground"
+    >
       <Sidebar />
-      <Toolbar scale={scale} />
-      <Canvas onScaleChange={setScale} />
+      <SidebarInset className="flex min-w-0 flex-col overflow-hidden bg-transparent">
+        {/* p-2 envelope so the toolbar reads as a floating panel with
+            the same chrome as the sidebars (rounded, ring, surface bg)
+            — bottom padding gives the shadow/ring room to render, and
+            visually mirrors the breathing room around the sidebars. */}
+        <div className="p-2 shrink-0">
+          <Toolbar scale={scale} />
+        </div>
+        <div className="flex-1 min-h-0 relative">
+          <Canvas onScaleChange={setScale} />
+        </div>
+      </SidebarInset>
       <Inspector />
+      <CollapsedSidebarTrigger />
       <CommandPalette />
       {/* Bottom-center floating panel: gesture-handoff bar above the editor
           toolbar, wrapped in a tinted frame so the section reads as one
@@ -93,6 +116,25 @@ function Workspace() {
         <HandoffBar />
         <EditorToolbar saveStatus={saveStatus} />
       </div>
-    </div>
+    </SidebarProvider>
+  );
+}
+
+/**
+ * Floating reopen-button that materializes when the sidebar is
+ * collapsed. The in-sidebar trigger (next to the theme toggle) is
+ * unreachable once the sidebar slides off-canvas, so we surface this
+ * twin at the top-left corner of the viewport — the same visual
+ * neighborhood the user just clicked from. Hidden when the sidebar is
+ * expanded so the two triggers don't fight for the same space.
+ */
+function CollapsedSidebarTrigger() {
+  const { state } = useSidebar();
+  if (state !== "collapsed") return null;
+  return (
+    <SidebarTrigger
+      title="Open left sidebar"
+      className="fixed top-3 left-3 z-50 bg-sidebar text-sidebar-foreground shadow-sm ring-1 ring-sidebar-border [--sidebar:var(--color-background)] dark:[--sidebar:var(--color-surface)]"
+    />
   );
 }

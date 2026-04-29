@@ -89,7 +89,7 @@ export function CommandPalette() {
                   >
                     <Component className="text-muted-foreground" />
                     <span className="font-mono text-[12px] truncate">
-                      {`<${name}>`}
+                      {name}
                     </span>
                     {p.component?.file && (
                       <span className="ml-2 text-muted-foreground truncate text-[12px]">

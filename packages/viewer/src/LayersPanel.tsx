@@ -3,9 +3,9 @@ import { AnimatePresence, motion } from "motion/react";
 import {
   ChevronRight,
   ClipboardPaste,
+  Component,
   Copy,
   CopyPlus,
-  Link2,
   Scissors,
   Trash2,
 } from "lucide-react";
@@ -73,23 +73,23 @@ export function LayersPanel({ tileId }: Props) {
       onMouseLeave={() => onHover(null)}
     >
       {breadcrumb.length > 0 && (
-        <div className="px-4 py-2 border-b border-border text-[11px] text-muted-foreground whitespace-nowrap overflow-x-auto shrink-0">
+        <div className="px-4 py-2 border-b border-border text-muted-foreground whitespace-nowrap overflow-x-auto shrink-0 flex items-center">
           {breadcrumb.map((n, i) => {
             const isLast = i === breadcrumb.length - 1;
             return (
-              <span key={n.id} className="inline-flex items-center">
+              <span key={n.id} className="inline-flex items-center leading-none">
                 {i > 0 && (
                   <ChevronRight
-                    size={11}
+                    size={10}
                     strokeWidth={2}
-                    className="mx-0.5 text-muted-foreground/70 shrink-0"
+                    className="mx-px text-muted-foreground/70 shrink-0"
                   />
                 )}
                 <button
                   onClick={() => onSelect(n.id)}
                   title={describeNode(n)}
                   className={[
-                    "bg-transparent border-0 px-1 py-0.5 cursor-pointer rounded font-mono text-[11px] hover:bg-muted hover:text-foreground",
+                    "bg-transparent border-0 px-1 py-0.5 cursor-pointer rounded font-mono text-[10px] leading-none hover:bg-muted hover:text-foreground",
                     isLast ? "text-foreground font-semibold" : "text-muted-foreground",
                   ].join(" ")}
                 >
@@ -103,7 +103,7 @@ export function LayersPanel({ tileId }: Props) {
       <div className="text-[12px] font-semibold text-foreground px-4 pt-3 pb-1 shrink-0">
         Layers
       </div>
-      <div className="flex-1 overflow-y-auto pb-2 font-mono text-[11px]">
+      <div className="flex-1 overflow-y-auto pb-2 font-mono text-[10px]">
         {trees.length === 0 ? (
           <div className="px-4 py-2 text-muted-foreground text-[11px]">
             Empty tree.
@@ -340,7 +340,7 @@ function TreeRow({
           onMenu(node.id, e.clientX, e.clientY);
         }}
         className={[
-          "relative flex items-center gap-1 py-1 cursor-pointer whitespace-nowrap",
+          "relative flex items-center gap-1 py-0.5 cursor-pointer whitespace-nowrap",
           isSelected ? "bg-muted" : "hover:bg-muted/60",
         ].join(" ")}
         style={{ paddingLeft: depth * 12 + 16 }}
@@ -370,15 +370,15 @@ function TreeRow({
         </motion.span>
         {isComponent ? (
           <>
-            <Link2
-              size={11}
+            <Component
+              size={10}
               strokeWidth={2.5}
               className="text-primary shrink-0"
             />
-            <span className="font-semibold tracking-wide text-[12px] text-primary">
+            <span className="font-semibold tracking-wide text-primary">
               {node.componentName}
             </span>
-            <span className="text-muted-foreground/70 text-[10px]">
+            <span className="text-muted-foreground/70">
               · {node.tag}
               {node.classes.length > 0 ? `.${node.classes[0]}` : ""}
             </span>
@@ -393,7 +393,7 @@ function TreeRow({
               <span className="text-muted-foreground">.{node.classes[0]}</span>
             )}
             {node.textPreview && (
-              <span className="text-muted-foreground/70 text-[10px] italic">
+              <span className="text-muted-foreground/70 italic">
                 "{node.textPreview}"
               </span>
             )}

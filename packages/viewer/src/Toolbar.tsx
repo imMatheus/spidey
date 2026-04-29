@@ -15,7 +15,7 @@ export function Toolbar({ scale }: Props) {
   const sel = selectedElement ? describe(selectedElement) : null
 
   return (
-    <div className="col-start-2 row-start-1 flex items-center gap-2 px-3 bg-card border-b border-border text-xs">
+    <div className="h-11 shrink-0 flex items-center gap-2 px-3 text-xs bg-sidebar text-sidebar-foreground rounded-lg shadow-sm ring-1 ring-sidebar-border [--sidebar:var(--color-background)] dark:[--sidebar:var(--color-surface)]">
       <span className={metaCls}>Viewport</span>
       <ToggleGroup
         type="single"

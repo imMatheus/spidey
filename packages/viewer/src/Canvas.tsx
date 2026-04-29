@@ -304,7 +304,7 @@ export function Canvas({ onScaleChange }: Props) {
 
   return (
     <div
-      className="col-start-2 row-start-2 relative overflow-hidden canvas-grid-bg"
+      className="absolute inset-0 overflow-hidden canvas-grid-bg"
       ref={containerRef}
     >
       {tiles.length === 0 && (

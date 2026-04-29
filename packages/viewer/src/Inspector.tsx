@@ -5,6 +5,7 @@ import { findById, findInstanceAncestor } from "./editor/tree";
 import type { EditAction } from "./editor/state";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 import { PositionSection } from "./inspect/sections/PositionSection";
 import { LayoutSection } from "./inspect/sections/LayoutSection";
 import { TypographySection } from "./inspect/sections/TypographySection";
@@ -29,8 +30,21 @@ import {
 } from "./context";
 import { useSelectedElement } from "./hooks/useSelectedElement";
 
-const ASIDE =
-  "col-start-3 row-start-1 row-span-2 bg-card border-l border-border flex flex-col min-h-0 overflow-hidden";
+/**
+ * Outer shell mimics the floating shadcn sidebar (rounded card, ring,
+ * shadow, surface bg) without sitting inside the SidebarProvider. We
+ * deliberately keep it OUT of the provider's machinery so the toolbar's
+ * SidebarTrigger only collapses the left sidebar — the right inspector
+ * stays put.
+ *
+ * The `[--sidebar:...]` override mirrors the left sidebar so the right
+ * panel reads as the same surface treatment.
+ */
+const RIGHT_PANEL_OUTER =
+  "hidden md:flex shrink-0 h-svh p-2 [--sidebar:var(--color-background)] dark:[--sidebar:var(--color-surface)]";
+const RIGHT_PANEL_INNER =
+  "flex w-full flex-col bg-sidebar text-sidebar-foreground rounded-lg shadow-sm ring-1 ring-sidebar-border overflow-hidden";
+const RIGHT_PANEL_WIDTH = { width: "21rem" } as React.CSSProperties;
 
 /**
  * Right-side properties panel. Figma-style sections (Position, Layout,
@@ -88,14 +102,16 @@ export function Inspector() {
 
   if (!activeTileId || !tree) {
     return (
-      <aside className={ASIDE}>
-        <div className="grid place-items-center h-full text-center px-6">
-          <div className="flex flex-col items-center gap-2 text-muted-foreground">
-            <MousePointer2 size={20} strokeWidth={1.5} />
-            <div className="text-foreground text-[13px] font-medium">
-              No tile selected
+      <aside className={RIGHT_PANEL_OUTER} style={RIGHT_PANEL_WIDTH}>
+        <div className={RIGHT_PANEL_INNER}>
+          <div className="grid place-items-center h-full text-center px-6">
+            <div className="flex flex-col items-center gap-2 text-muted-foreground">
+              <MousePointer2 size={20} strokeWidth={1.5} />
+              <div className="text-foreground text-[13px] font-medium">
+                No tile selected
+              </div>
+              <div className="text-[12px]">Click a screen to inspect it</div>
             </div>
-            <div className="text-[12px]">Click a screen to inspect it</div>
           </div>
         </div>
       </aside>
@@ -117,36 +133,38 @@ export function Inspector() {
       : null;
 
   return (
-    <aside className={ASIDE}>
-      {componentInfo && <ComponentHeader info={componentInfo} />}
-      {instanceLock && (
-        <InstanceLockBanner
-          componentName={instanceLock.componentName}
-          onEditMaster={() => onEditMaster(instanceLock.componentName)}
-        />
-      )}
-      {selectedNodeId && selectedElement ? (
-        <StylePanels
-          el={selectedElement}
-          rev={rev}
-          tileId={activeTileId}
-          nodeId={selectedNodeId}
-          node={selectedNode && selectedNode.kind === "el" ? selectedNode : null}
-          locked={!!instanceLock}
-          dispatch={dispatch}
-          masterComponent={componentInfo}
-          masterPropsUsed={
-            componentInfo
-              ? (activeTile?.component?.propsUsed ?? null)
-              : null
-          }
-          componentsCatalog={doc.components ?? []}
-        />
-      ) : (
-        <div className="px-4 py-3 text-muted-foreground text-[12px]">
-          Select an element to inspect or edit its styles.
-        </div>
-      )}
+    <aside className={RIGHT_PANEL_OUTER} style={RIGHT_PANEL_WIDTH}>
+      <div className={cn(RIGHT_PANEL_INNER, "min-h-0")}>
+        {componentInfo && <ComponentHeader info={componentInfo} />}
+        {instanceLock && (
+          <InstanceLockBanner
+            componentName={instanceLock.componentName}
+            onEditMaster={() => onEditMaster(instanceLock.componentName)}
+          />
+        )}
+        {selectedNodeId && selectedElement ? (
+          <StylePanels
+            el={selectedElement}
+            rev={rev}
+            tileId={activeTileId}
+            nodeId={selectedNodeId}
+            node={selectedNode && selectedNode.kind === "el" ? selectedNode : null}
+            locked={!!instanceLock}
+            dispatch={dispatch}
+            masterComponent={componentInfo}
+            masterPropsUsed={
+              componentInfo
+                ? (activeTile?.component?.propsUsed ?? null)
+                : null
+            }
+            componentsCatalog={doc.components ?? []}
+          />
+        ) : (
+          <div className="px-4 py-3 text-muted-foreground text-[12px]">
+            Select an element to inspect or edit its styles.
+          </div>
+        )}
+      </div>
     </aside>
   );
 }

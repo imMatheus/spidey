@@ -1,8 +1,16 @@
 import { useState } from 'react'
+import { Component, FileText } from 'lucide-react'
 import type { SpideyPage } from '@spidey/shared'
 import { LayersPanel } from './LayersPanel'
 import { Input } from '@/components/ui/input'
 import { NativeSelect, NativeSelectOption } from '@/components/ui/native-select'
+import {
+  Sidebar as ShadcnSidebar,
+  SidebarContent,
+  SidebarFooter,
+  SidebarHeader,
+  SidebarTrigger,
+} from '@/components/ui/sidebar'
 import { ThemeToggle } from '@/components/theme-toggle'
 import spideyLogo from './assets/spidey-logo.png'
 import { useProject, useSelection, useSelectionActions } from './context'
@@ -35,8 +43,13 @@ export function Sidebar() {
   }
 
   return (
-    <aside className="col-start-1 row-start-1 row-span-2 bg-card border-r border-border flex flex-col min-h-0">
-      <div className="px-4 pt-3 pb-3 border-b border-border space-y-3">
+    <ShadcnSidebar
+      side="left"
+      variant="floating"
+      collapsible="offcanvas"
+      className="[--sidebar:var(--color-background)] dark:[--sidebar:var(--color-surface)]"
+    >
+      <SidebarHeader className="px-4 pt-3 pb-3 border-b border-sidebar-border space-y-3">
         <div className="flex items-center justify-between gap-2">
           <h1 className="m-0 text-[13px] font-semibold inline-flex items-center gap-1.5">
             <div className="bg-white py-0.5 px-px rounded-xs">
@@ -48,7 +61,10 @@ export function Sidebar() {
             </div>
             Spidey
           </h1>
-          <ThemeToggle />
+          <div className="flex items-center gap-1">
+            <ThemeToggle />
+            <SidebarTrigger title="Collapse sidebar" />
+          </div>
         </div>
         {projects.length > 0 ? (
           <div className="-mx-1">
@@ -74,8 +90,8 @@ export function Sidebar() {
           onChange={(e) => setSearch(e.target.value)}
           className="h-8 text-xs"
         />
-      </div>
-      <div className="flex-1 min-h-0 overflow-y-auto py-2">
+      </SidebarHeader>
+      <SidebarContent className="py-2">
         <Section title="Routes" count={routes.length}>
           {routes.length === 0 && <Empty>No matching routes.</Empty>}
           {routes.map((p) => (
@@ -102,22 +118,22 @@ export function Sidebar() {
             ))}
           </Section>
         ) : null}
-      </div>
-      {showLayers && activeTileId && (
-        <div
-          // key=activeTileId forces internal row state (open/closed, drop
-          // targets) to reset when the active tile changes.
-          key={activeTileId}
-          className="flex flex-col min-h-0 flex-1 border-t border-border"
-        >
-          <LayersPanel tileId={activeTileId} />
-        </div>
-      )}
-      <div className="px-4 py-2 border-t border-border text-[11px] text-muted-foreground shrink-0">
+        {showLayers && activeTileId && (
+          <div
+            // key=activeTileId forces internal row state (open/closed, drop
+            // targets) to reset when the active tile changes.
+            key={activeTileId}
+            className="flex flex-col min-h-0 flex-1 border-t border-sidebar-border"
+          >
+            <LayersPanel tileId={activeTileId} />
+          </div>
+        )}
+      </SidebarContent>
+      <SidebarFooter className="px-4 py-2 border-t border-sidebar-border text-[11px] text-muted-foreground shrink-0">
         {allTiles.length} tiles
         {errCount > 0 ? ` · ${errCount} error${errCount === 1 ? '' : 's'}` : ''}
-      </div>
-    </aside>
+      </SidebarFooter>
+    </ShadcnSidebar>
   )
 }
 
@@ -180,13 +196,14 @@ function Row({
   const display = isComponent
     ? (page.component?.name ?? page.id)
     : (page.route ?? page.url ?? page.id)
+  const Icon = isComponent ? Component : FileText
 
   return (
     <div
       onClick={onSelect}
       title={isComponent ? page.component?.file : page.url}
       className={[
-        'px-4 py-1.5 cursor-pointer text-[13px] flex items-center gap-2',
+        'mx-2 rounded-md px-2 py-1.5 cursor-pointer text-[13px] flex items-center gap-2',
         focus ? 'bg-muted' : 'hover:bg-muted/60',
       ].join(' ')}
     >
@@ -196,6 +213,7 @@ function Row({
           className="w-1.5 h-1.5 rounded-full shrink-0 bg-destructive"
         />
       )}
+      <Icon size={14} className="shrink-0 text-muted-foreground" />
       <span
         className={[
           'flex-1 whitespace-nowrap overflow-hidden text-ellipsis',
@@ -203,7 +221,7 @@ function Row({
           isComponent ? 'font-mono text-[12px]' : '',
         ].join(' ')}
       >
-        {isComponent ? `<${display}>` : display}
+        {display}
       </span>
     </div>
   )

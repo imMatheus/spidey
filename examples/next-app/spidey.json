@@ -469,6 +469,20 @@
                         "value": "The leadership team is a single person wearing a different tie each Friday."
                       }
                     ]
+                  },
+                  {
+                    "id": "u-b91cb153",
+                    "kind": "el",
+                    "tag": "p",
+                    "attrs": {},
+                    "style": {},
+                    "children": [
+                      {
+                        "id": "u-67b30927",
+                        "kind": "text",
+                        "value": "The leadership team is a single person wearing a different tie each Friday."
+                      }
+                    ]
                   }
                 ]
               }
@@ -4192,5 +4206,5 @@
       }
     }
   ],
-  "editedAt": "2026-04-27T07:03:11.947Z"
+  "editedAt": "2026-04-29T03:27:46.208Z"
 }
