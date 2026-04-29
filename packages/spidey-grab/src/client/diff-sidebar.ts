@@ -74,10 +74,16 @@ export class DiffSidebar {
   private pending: PendingTurn | null = null;
   private submitting = false;
 
-  // tab state
+  // tab state (persisted DOM so the indicator can animate between switches)
   private activeTab: "chat" | "changes" = "chat";
   private cachedChanges: JobThreadChangesResponse | null = null;
   private changesLoading = false;
+  private tabsStripEl: HTMLDivElement | null = null;
+  private tabsEl: HTMLDivElement | null = null;
+  private indicatorEl: HTMLDivElement | null = null;
+  private chatTabEl: HTMLDivElement | null = null;
+  private changesTabEl: HTMLDivElement | null = null;
+  private changesCountEl: HTMLSpanElement | null = null;
 
   constructor(opts: DiffSidebarOpts) {
     this.opts = opts;
@@ -165,6 +171,12 @@ export class DiffSidebar {
       this.rootJobId = null;
       this.activeTab = "chat";
       this.cachedChanges = null;
+      this.tabsStripEl = null;
+      this.tabsEl = null;
+      this.indicatorEl = null;
+      this.chatTabEl = null;
+      this.changesTabEl = null;
+      this.changesCountEl = null;
       this.removeTimer = null;
     }, 320);
     writePersistedSidebar(null);
@@ -284,7 +296,8 @@ export class DiffSidebar {
 
     this.el.replaceChildren();
     this.el.appendChild(this.buildHeader(headerPrompt, headerMeta));
-    this.el.appendChild(this.buildTabs());
+    this.el.appendChild(this.getOrBuildTabsStrip());
+    this.updateChangesCount();
 
     if (this.activeTab === "chat") {
       const body = this.buildChatBody();
@@ -293,24 +306,35 @@ export class DiffSidebar {
       this.el.appendChild(this.buildComposer(last));
       requestAnimationFrame(() => {
         if (this.bodyEl) this.bodyEl.scrollTop = this.bodyEl.scrollHeight;
+        this.positionIndicator(false);
       });
     } else {
       const body = this.buildChangesBody();
       this.el.appendChild(body);
       this.bodyEl = body;
-      // no composer in changes view
+      requestAnimationFrame(() => this.positionIndicator(false));
       void this.ensureChangesLoaded();
     }
   }
 
-  private buildTabs(): HTMLDivElement {
+  private getOrBuildTabsStrip(): HTMLDivElement {
+    if (this.tabsStripEl) return this.tabsStripEl;
+
+    const strip = document.createElement("div");
+    strip.className = "diff-sidebar-tabs-strip";
+
     const tabs = document.createElement("div");
     tabs.className = "diff-sidebar-tabs";
 
+    const indicator = document.createElement("div");
+    indicator.className = "diff-sidebar-tab-indicator";
+    tabs.appendChild(indicator);
+
     const chatTab = document.createElement("div");
     chatTab.className = `diff-sidebar-tab ${this.activeTab === "chat" ? "active" : ""}`.trim();
-    chatTab.textContent = "Chat";
     chatTab.tabIndex = 0;
+    chatTab.appendChild(iconSpan(CHAT_ICON_SVG));
+    chatTab.appendChild(textSpan("Chat"));
     chatTab.addEventListener("click", (e) => {
       e.preventDefault();
       e.stopPropagation();
@@ -320,12 +344,12 @@ export class DiffSidebar {
 
     const changesTab = document.createElement("div");
     changesTab.className = `diff-sidebar-tab ${this.activeTab === "changes" ? "active" : ""}`.trim();
-    const totalAdds = this.cachedChanges?.additions ?? this.entries.reduce((n, e) => n + e.additions, 0);
-    const totalDels = this.cachedChanges?.deletions ?? this.entries.reduce((n, e) => n + e.deletions, 0);
-    const totalFiles = this.cachedChanges?.filesChanged ?? new Set(this.entries.flatMap((e) => e.diffs.map((d) => d.file))).size;
-    const fileSuffix = totalFiles > 0 ? ` · ${totalFiles}` : "";
-    changesTab.innerHTML = `Changes<span class="tab-count">${fileSuffix}</span>`;
     changesTab.tabIndex = 0;
+    changesTab.appendChild(iconSpan(CHANGES_ICON_SVG));
+    changesTab.appendChild(textSpan("Changes"));
+    const countSpan = document.createElement("span");
+    countSpan.className = "tab-count";
+    changesTab.appendChild(countSpan);
     changesTab.addEventListener("click", (e) => {
       e.preventDefault();
       e.stopPropagation();
@@ -333,15 +357,79 @@ export class DiffSidebar {
     });
     tabs.appendChild(changesTab);
 
-    void totalAdds;
-    void totalDels;
-    return tabs;
+    strip.appendChild(tabs);
+
+    this.tabsStripEl = strip;
+    this.tabsEl = tabs;
+    this.indicatorEl = indicator;
+    this.chatTabEl = chatTab;
+    this.changesTabEl = changesTab;
+    this.changesCountEl = countSpan;
+    return strip;
+  }
+
+  private updateChangesCount() {
+    if (!this.changesCountEl) return;
+    const totalFiles =
+      this.cachedChanges?.filesChanged
+        ?? new Set(this.entries.flatMap((e) => e.diffs.map((d) => d.file))).size;
+    this.changesCountEl.textContent = totalFiles > 0 ? String(totalFiles) : "";
+    this.changesCountEl.style.display = totalFiles > 0 ? "" : "none";
   }
 
   private setTab(tab: "chat" | "changes") {
     if (this.activeTab === tab) return;
     this.activeTab = tab;
-    this.renderSidebar();
+    this.chatTabEl?.classList.toggle("active", tab === "chat");
+    this.changesTabEl?.classList.toggle("active", tab === "changes");
+    this.positionIndicator(true);
+    this.swapBody();
+  }
+
+  private positionIndicator(animate: boolean) {
+    if (!this.indicatorEl || !this.tabsEl) return;
+    const active = this.tabsEl.querySelector<HTMLElement>(".diff-sidebar-tab.active");
+    if (!active) return;
+    const containerRect = this.tabsEl.getBoundingClientRect();
+    const activeRect = active.getBoundingClientRect();
+    if (containerRect.width === 0 || activeRect.width === 0) return;
+    const left = activeRect.left - containerRect.left;
+
+    if (!animate) {
+      const prev = this.indicatorEl.style.transition;
+      this.indicatorEl.style.transition = "none";
+      this.indicatorEl.style.transform = `translateX(${left}px)`;
+      this.indicatorEl.style.width = `${activeRect.width}px`;
+      void this.indicatorEl.offsetWidth;
+      this.indicatorEl.style.transition = prev;
+    } else {
+      this.indicatorEl.style.transform = `translateX(${left}px)`;
+      this.indicatorEl.style.width = `${activeRect.width}px`;
+    }
+  }
+
+  private swapBody() {
+    if (!this.el) return;
+    const last = this.entries[this.entries.length - 1] ?? this.entries[0];
+    // remove old body / composer
+    this.el
+      .querySelectorAll(".diff-sidebar-body, .diff-sidebar-composer")
+      .forEach((n) => n.remove());
+
+    if (this.activeTab === "chat") {
+      const body = this.buildChatBody();
+      this.el.appendChild(body);
+      this.bodyEl = body;
+      if (last) this.el.appendChild(this.buildComposer(last));
+      requestAnimationFrame(() => {
+        if (this.bodyEl) this.bodyEl.scrollTop = this.bodyEl.scrollHeight;
+      });
+    } else {
+      const body = this.buildChangesBody();
+      this.el.appendChild(body);
+      this.bodyEl = body;
+      void this.ensureChangesLoaded();
+    }
   }
 
   private buildChatBody(): HTMLDivElement {
@@ -411,8 +499,9 @@ export class DiffSidebar {
     } finally {
       this.changesLoading = false;
     }
+    this.updateChangesCount();
     if (this.activeTab === "changes") {
-      this.renderSidebar();
+      this.swapBody();
     }
   }
 
@@ -671,6 +760,23 @@ export class DiffSidebar {
     }
   }
 }
+
+function textSpan(text: string): HTMLSpanElement {
+  const span = document.createElement("span");
+  span.textContent = text;
+  return span;
+}
+
+function iconSpan(svg: string): HTMLSpanElement {
+  const span = document.createElement("span");
+  span.className = "tab-icon";
+  span.innerHTML = svg;
+  return span;
+}
+
+const CHAT_ICON_SVG = `<svg viewBox="0 0 16 16" stroke-linejoin="round" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M11.75 0.189331L12.2803 0.719661L15.2803 3.71966L15.8107 4.24999L15.2803 4.78032L5.15901 14.9016C4.45575 15.6049 3.50192 16 2.50736 16H0.75H0V15.25V13.4926C0 12.4981 0.395088 11.5442 1.09835 10.841L11.2197 0.719661L11.75 0.189331ZM11.75 2.31065L9.81066 4.24999L11.75 6.18933L13.6893 4.24999L11.75 2.31065ZM2.15901 11.9016L8.75 5.31065L10.6893 7.24999L4.09835 13.841C3.67639 14.2629 3.1041 14.5 2.50736 14.5H1.5V13.4926C1.5 12.8959 1.73705 12.3236 2.15901 11.9016ZM9 16H16V14.5H9V16Z"/></svg>`;
+
+const CHANGES_ICON_SVG = `<svg viewBox="0 0 16 16" stroke-linejoin="round" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M14.5 13.5V6.5V5.41421C14.5 5.149 14.3946 4.89464 14.2071 4.70711L9.79289 0.292893C9.60536 0.105357 9.351 0 9.08579 0H8H3H1.5V1.5V13.5C1.5 14.8807 2.61929 16 4 16H12C13.3807 16 14.5 14.8807 14.5 13.5ZM13 13.5V6.5H9.5H8V5V1.5H3V13.5C3 14.0523 3.44772 14.5 4 14.5H12C12.5523 14.5 13 14.0523 13 13.5ZM9.5 5V2.12132L12.3787 5H9.5ZM5.13 5.00062H4.505V6.25062H5.13H6H6.625V5.00062H6H5.13ZM4.505 8H5.13H11H11.625V9.25H11H5.13H4.505V8ZM5.13 11H4.505V12.25H5.13H11H11.625V11H11H5.13Z"/></svg>`;
 
 function renderFileBlock(file: FileDiff): HTMLDivElement {
   const block = document.createElement("div");

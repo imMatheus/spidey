@@ -20,6 +20,7 @@
   "dependencies": {
     "bippy": "^0.5.39",
     "diff": "^7.0.0",
+    "motion": "^12.38.0",
     "ws": "^8.20.0"
   },
   "devDependencies": {

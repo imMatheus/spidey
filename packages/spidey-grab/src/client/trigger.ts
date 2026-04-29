@@ -1,3 +1,5 @@
+import { animate, stagger } from "motion";
+
 export interface MenuItem {
   label: string;
   kbd?: string;
@@ -25,6 +27,7 @@ export class TriggerButton {
   private boundOutside: (e: PointerEvent) => void;
   private boundKey: (e: KeyboardEvent) => void;
   private closeTimer: number | null = null;
+  private swapToken = 0;
 
   constructor(opts: TriggerOpts) {
     this.opts = opts;
@@ -106,12 +109,70 @@ export class TriggerButton {
   setMenuItems(items: MenuItem[]) {
     if (!this.menu) return;
     const menu = this.menu;
-    menu.classList.add("swapping");
-    window.setTimeout(() => {
-      if (this.menu !== menu) return;
-      menu.replaceChildren(...items.map((item) => this.renderItem(item)));
-      menu.classList.remove("swapping");
-    }, 120);
+    void this.morphMenu(menu, items);
+  }
+
+  private async morphMenu(menu: HTMLUListElement, items: MenuItem[]) {
+    const token = ++this.swapToken;
+    const stillCurrent = () => this.menu === menu && this.swapToken === token;
+
+    // measure current rendered height before any swap
+    menu.style.height = "";
+    menu.style.overflow = "";
+    const startHeight = menu.getBoundingClientRect().height;
+
+    const oldChildren = Array.from(menu.children) as HTMLElement[];
+    const newChildren = items.map((item) => this.renderItem(item));
+
+    // fade old items in place at the current height
+    menu.style.height = `${startHeight}px`;
+    menu.style.overflow = "hidden";
+    await animate(
+      oldChildren,
+      { opacity: [1, 0], y: [0, -4] },
+      { duration: .12, ease: "easeIn" },
+    ).finished;
+    if (!stillCurrent()) return;
+
+    // swap to the new set, prime them invisible
+    menu.replaceChildren(...newChildren);
+    for (const c of newChildren) {
+      c.style.opacity = "0";
+      c.style.transform = "translateY(6px)";
+    }
+
+    // measure target by briefly clearing the height lock, then re-lock so
+    // there's no visible jump before motion takes over.
+    menu.style.height = "";
+    const endHeight = menu.getBoundingClientRect().height;
+    menu.style.height = `${startHeight}px`;
+    // force layout so the browser commits the locked height before animating
+    void menu.offsetHeight;
+    if (!stillCurrent()) return;
+
+    const heightAnim = animate(startHeight, endHeight, {
+      duration: 0.32,
+      ease: [0.22, 1, 0.36, 1],
+      onUpdate: (latest) => {
+        menu.style.height = `${latest}px`;
+      },
+    });
+
+    const itemsAnim = animate(
+      newChildren,
+      { opacity: [0, 1], y: [6, 0] },
+      { duration: 0.24, delay: stagger(0.03, { start: 0.05 }), ease: [0.22, 1, 0.36, 1] },
+    );
+
+    await Promise.all([heightAnim.finished, itemsAnim.finished]);
+    if (!stillCurrent()) return;
+
+    menu.style.height = "";
+    menu.style.overflow = "";
+    for (const c of newChildren) {
+      c.style.opacity = "";
+      c.style.transform = "";
+    }
   }
 
   open(initialItems?: MenuItem[]) {

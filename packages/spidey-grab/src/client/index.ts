@@ -20,6 +20,7 @@ import type {
   CreateJobRequest,
   CreateJobResponse,
   JobHistoryListResponse,
+  JobHistorySummary,
   ServerEvent,
 } from '../protocol'
 
@@ -38,9 +39,21 @@ function boot() {
   const overlay = new OverlayLayer(mount.layer)
   const status = new StatusManager(overlay)
   const socket = new JobSocket(baseUrl)
+
+  // cached history list — invalidated when the daemon emits a job event that
+  // would change it (new job, or any status transition that promotes a job
+  // out of `running`). avoids re-fetching on every menu open.
+  let cachedHistory: JobHistorySummary[] | null = null
+
   socket.on((event) => {
     if (event.type === 'hello') {
       recoverFromHello(event)
+    }
+    if (
+      event.type === 'job:created' ||
+      (event.type === 'job:status' && event.status !== 'running')
+    ) {
+      cachedHistory = null
     }
     status.handleServerEvent(event)
   })
@@ -107,32 +120,38 @@ function boot() {
   }
 
   async function openHistorySubmenu() {
-    const loadingItems: MenuItem[] = [
-      {
-        label: '← Back',
-        keepOpen: true,
-        onClick: () => trigger.setMenuItems(mainMenuItems()),
-      },
-      { label: 'Loading…', disabled: true, onClick: () => {} },
-    ]
-    if (trigger.isOpen()) {
+    const wasOpen = trigger.isOpen()
+
+    // if the menu is already open we morph through a loading state so the user
+    // sees something happen immediately. when opening directly from closed
+    // (e.g. ⌘⇧H), we skip the loading state and just wait for the fetch so
+    // the menu pops in already showing the history entries. when the cache is
+    // warm we skip the loading state entirely.
+    if (wasOpen && cachedHistory === null) {
+      const loadingItems: MenuItem[] = [
+        {
+          label: '← Back',
+          keepOpen: true,
+          onClick: () => trigger.setMenuItems(mainMenuItems()),
+        },
+        { label: 'Loading…', disabled: true, onClick: () => {} },
+      ]
       trigger.setMenuItems(loadingItems)
-    } else {
-      trigger.open(loadingItems)
     }
 
-    let entries: JobHistoryListResponse['entries'] = []
-    try {
-      const res = await fetch(`${baseUrl}jobs/history`)
-      if (res.ok) {
-        const body = (await res.json()) as JobHistoryListResponse
-        entries = body.entries
+    let entries: JobHistoryListResponse['entries'] = cachedHistory ?? []
+    if (cachedHistory === null) {
+      try {
+        const res = await fetch(`${baseUrl}jobs/history`)
+        if (res.ok) {
+          const body = (await res.json()) as JobHistoryListResponse
+          entries = body.entries
+          cachedHistory = entries
+        }
+      } catch {
+        // ignore — show empty
       }
-    } catch {
-      // ignore — show empty
     }
-
-    if (!trigger.isOpen()) return
 
     const items: MenuItem[] = [
       {
@@ -156,7 +175,12 @@ function boot() {
         })
       }
     }
-    trigger.setMenuItems(items)
+
+    if (trigger.isOpen()) {
+      trigger.setMenuItems(items)
+    } else {
+      trigger.open(items)
+    }
   }
 
   function toggleGrab() {
