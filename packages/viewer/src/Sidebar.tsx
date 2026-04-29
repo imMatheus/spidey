@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { Component, FileText } from 'lucide-react'
+import { useEffect, useState } from 'react'
+import { ChevronDown, Component, FileText } from 'lucide-react'
 import type { SpideyPage } from '@spidey/shared'
 import { LayersPanel } from './LayersPanel'
 import { Input } from '@/components/ui/input'
@@ -12,8 +12,31 @@ import {
   SidebarTrigger,
 } from '@/components/ui/sidebar'
 import { ThemeToggle } from '@/components/theme-toggle'
+import { cn } from '@/lib/utils'
 import spideyLogo from './assets/spidey-logo.png'
 import { useProject, useSelection, useSelectionActions } from './context'
+
+type SectionKey = 'routes' | 'components' | 'layers'
+type CollapseState = Record<SectionKey, boolean>
+
+const COLLAPSE_KEY = 'spidey-sidebar-sections'
+
+function loadCollapse(): CollapseState {
+  try {
+    const raw = localStorage.getItem(COLLAPSE_KEY)
+    if (raw) {
+      const parsed = JSON.parse(raw) as Partial<CollapseState>
+      return {
+        routes: Boolean(parsed.routes),
+        components: Boolean(parsed.components),
+        layers: Boolean(parsed.layers),
+      }
+    }
+  } catch {
+    /* ignore */
+  }
+  return { routes: false, components: false, layers: false }
+}
 
 export function Sidebar() {
   const {
@@ -28,6 +51,18 @@ export function Sidebar() {
   const { setActiveTileId } = useSelectionActions()
 
   const [search, setSearch] = useState('')
+  const [collapsed, setCollapsed] = useState<CollapseState>(loadCollapse)
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(COLLAPSE_KEY, JSON.stringify(collapsed))
+    } catch {
+      /* ignore */
+    }
+  }, [collapsed])
+
+  const toggle = (key: SectionKey) =>
+    setCollapsed((s) => ({ ...s, [key]: !s[key] }))
 
   const allTiles = doc?.tiles ?? doc?.pages ?? []
   const errCount = allTiles.filter((p) => p.status === 'error').length
@@ -36,6 +71,8 @@ export function Sidebar() {
   const components = filteredTiles.filter((p) => p.kind === 'component')
 
   const showLayers = activeTileId != null
+  const showComponents =
+    components.length > 0 || (doc?.components?.length ?? 0) > 0
 
   const onSelect = (id: string) => {
     setFocusId(id)
@@ -91,23 +128,17 @@ export function Sidebar() {
           className="h-8 text-xs"
         />
       </SidebarHeader>
-      <SidebarContent className="py-2">
-        <Section title="Routes" count={routes.length}>
-          {routes.length === 0 && <Empty>No matching routes.</Empty>}
-          {routes.map((p) => (
-            <Row
-              key={p.id}
-              page={p}
-              focus={focusId === p.id}
-              active={activeTileId === p.id}
-              onSelect={() => onSelect(p.id)}
-            />
-          ))}
-        </Section>
-        {components.length > 0 || (doc?.components?.length ?? 0) > 0 ? (
-          <Section title="Components" count={components.length}>
-            {components.length === 0 && <Empty>No matching components.</Empty>}
-            {components.map((p) => (
+      <SidebarContent className="!overflow-hidden gap-0">
+        <Section
+          title="Routes"
+          count={routes.length}
+          collapsed={collapsed.routes}
+          onToggle={() => toggle('routes')}
+        >
+          {routes.length === 0 ? (
+            <Empty>No matching routes.</Empty>
+          ) : (
+            routes.map((p) => (
               <Row
                 key={p.id}
                 page={p}
@@ -115,18 +146,49 @@ export function Sidebar() {
                 active={activeTileId === p.id}
                 onSelect={() => onSelect(p.id)}
               />
-            ))}
-          </Section>
-        ) : null}
-        {showLayers && activeTileId && (
-          <div
-            // key=activeTileId forces internal row state (open/closed, drop
-            // targets) to reset when the active tile changes.
-            key={activeTileId}
-            className="flex flex-col min-h-0 flex-1 border-t border-sidebar-border"
+            ))
+          )}
+        </Section>
+        {showComponents && (
+          <Section
+            title="Components"
+            count={components.length}
+            collapsed={collapsed.components}
+            onToggle={() => toggle('components')}
           >
-            <LayersPanel tileId={activeTileId} />
-          </div>
+            {components.length === 0 ? (
+              <Empty>No matching components.</Empty>
+            ) : (
+              components.map((p) => (
+                <Row
+                  key={p.id}
+                  page={p}
+                  focus={focusId === p.id}
+                  active={activeTileId === p.id}
+                  onSelect={() => onSelect(p.id)}
+                />
+              ))
+            )}
+          </Section>
+        )}
+        {showLayers && activeTileId && (
+          <Section
+            title="Layers"
+            collapsed={collapsed.layers}
+            onToggle={() => toggle('layers')}
+            // LayersPanel manages its own scroll (breadcrumb pinned, tree
+            // scrolls), so don't wrap it in another overflow-y-auto.
+            bodyClassName="flex flex-col"
+          >
+            <div
+              // key=activeTileId resets internal row state (open/closed,
+              // drop targets) when the active tile changes.
+              key={activeTileId}
+              className="flex-1 min-h-0 flex flex-col"
+            >
+              <LayersPanel tileId={activeTileId} />
+            </div>
+          </Section>
         )}
       </SidebarContent>
       <SidebarFooter className="px-4 py-2 border-t border-sidebar-border text-[11px] text-muted-foreground shrink-0">
@@ -154,22 +216,64 @@ function filterPages(pages: SpideyPage[], search: string): SpideyPage[] {
 function Section({
   title,
   count,
+  collapsed,
+  onToggle,
   children,
+  bodyClassName,
 }: {
   title: string
-  count: number
+  count?: number
+  collapsed: boolean
+  onToggle: () => void
   children: React.ReactNode
+  /** Override the default scrolling body wrapper. Pass `flex flex-col` for
+   *  children that manage their own scroll (e.g. LayersPanel). */
+  bodyClassName?: string
 }) {
   return (
-    <div className="mb-2">
-      <div className="px-4 pt-2 pb-1 text-[12px] font-semibold flex items-center justify-between text-foreground">
-        <span>{title}</span>
-        <span className="text-muted-foreground/70 font-normal text-[11px]">
-          {count}
-        </span>
-      </div>
-      {children}
-    </div>
+    <section
+      className={cn(
+        'flex flex-col min-w-0 border-b border-sidebar-border last:border-b-0',
+        // flex-1 + max-h-max — section gets an equal share of the
+        // sidebar height, but caps at its content size. So a tiny Routes
+        // (2 items) sits at content height with no wasted whitespace, and
+        // a long Components hits the same share-ceiling as Routes would,
+        // scrolling internally instead of dominating. min-h-0 lets the
+        // body shrink past content; collapsed sections are header-only.
+        collapsed ? 'shrink-0' : 'flex-1 max-h-max min-h-0',
+      )}
+    >
+      <button
+        type="button"
+        onClick={onToggle}
+        className="shrink-0 h-7 px-3 flex items-center gap-1.5 text-[10px] uppercase tracking-wider font-semibold text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
+      >
+        <ChevronDown
+          size={11}
+          strokeWidth={2.5}
+          className={cn(
+            'shrink-0 transition-transform duration-150',
+            collapsed && '-rotate-90',
+          )}
+        />
+        <span className="flex-1 text-left">{title}</span>
+        {count != null && (
+          <span className="font-mono font-normal text-[10px] tabular-nums opacity-70">
+            {count}
+          </span>
+        )}
+      </button>
+      {!collapsed && (
+        <div
+          className={cn(
+            'flex-1 min-h-0',
+            bodyClassName ?? 'overflow-y-auto py-1',
+          )}
+        >
+          {children}
+        </div>
+      )}
+    </section>
   )
 }
 

@@ -1,6 +1,6 @@
 {
   "version": 3,
-  "generatedAt": "2026-04-27T00:50:16.100Z",
+  "generatedAt": "2026-04-29T04:42:31.522Z",
   "project": {
     "name": "spidey-example-next",
     "framework": "next",
@@ -196,7 +196,7 @@
                           {
                             "id": "t0-n15",
                             "kind": "text",
-                            "value": "Learn more"
+                            "value": "Learn more today"
                           }
                         ]
                       }
@@ -263,7 +263,7 @@
         ]
       },
       "css": "* { box-sizing: border-box; }\nhtml, body { margin: 0px; padding: 0px; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; color: rgb(17, 17, 17); background: rgb(255, 255, 255); }\n.nav { display: flex; gap: 20px; align-items: center; padding: 16px 32px; background: rgb(17, 17, 17); color: white; }\n.nav a { color: rgb(204, 204, 204); text-decoration: none; font-size: 14px; }\n.nav a:hover { color: white; }\n.nav .brand { font-weight: 700; font-size: 18px; color: white; margin-right: auto; letter-spacing: 1px; }\n.main { padding: 48px 32px; max-width: 960px; width: 100%; margin: 0px auto; min-height: calc(-110px + 800px); }\n.main h1 { font-size: 40px; margin: 0px 0px 16px; }\n.main h2 { font-size: 22px; margin: 24px 0px 12px; }\n.main p { font-size: 16px; line-height: 1.6; color: rgb(51, 51, 51); }\n.hero { background: linear-gradient(135deg, rgb(13, 31, 60), rgb(26, 58, 106)); color: white; border-radius: 12px; padding: 48px; }\n.hero h1 { color: white; }\n.hero p { color: rgb(196, 209, 232); font-size: 18px; }\n.hero .cta { display: inline-block; margin-top: 16px; padding: 10px 18px; background: white; color: rgb(13, 31, 60); border-radius: 6px; font-weight: 600; }\n.posts { display: grid; gap: 12px; margin-top: 24px; }\n.post-link { display: block; padding: 16px 20px; background: rgb(244, 246, 250); border-radius: 8px; border: 1px solid rgb(230, 233, 239); text-decoration: none; color: rgb(17, 17, 17); }\n.post-link h3 { margin: 0px 0px 4px; font-size: 16px; }\n.post-link p { margin: 0px; color: rgb(102, 102, 102); font-size: 13px; }\n.stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 16px; }\n.stat { background: white; border: 1px solid rgb(230, 233, 239); border-radius: 8px; padding: 18px; }\n.stat .num { font-size: 28px; font-weight: 700; }\n.stat .label { font-size: 12px; color: rgb(136, 136, 136); text-transform: uppercase; letter-spacing: 0.5px; }\n.footer { padding: 16px 32px; color: rgb(136, 136, 136); font-size: 12px; border-top: 1px solid rgb(234, 234, 234); }\n.longread { max-width: 720px; margin: 0px auto; font-family: Georgia, \"Times New Roman\", serif; color: rgb(26, 26, 26); }\n.longread h1, .longread h2, .longread h3, .longread h4 { font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; letter-spacing: -0.01em; }\n.lr-eyebrow { text-transform: uppercase; letter-spacing: 0.12em; font-size: 12px; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; color: rgb(107, 107, 107); margin: 0px 0px 14px; }\n.longread h1 { font-size: 44px; line-height: 1.15; margin: 0px 0px 18px; }\n.longread h2 { font-size: 26px; line-height: 1.3; margin: 56px 0px 14px; }\n.longread h3 { font-size: 19px; line-height: 1.4; margin: 36px 0px 10px; }\n.longread h4 { font-size: 15px; margin: 0px 0px 8px; }\n.lr-lede { font-size: 22px; line-height: 1.55; color: rgb(42, 42, 42); font-style: italic; margin: 0px 0px 24px; }\n.longread p { font-size: 18px; line-height: 1.75; color: rgb(42, 42, 42); margin: 0px 0px 20px; }\n.lr-byline { display: flex; justify-content: space-between; align-items: center; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; font-size: 13px; color: rgb(107, 107, 107); border-top: 1px solid rgb(238, 238, 238); border-bottom: 1px solid rgb(238, 238, 238); padding: 14px 0px; margin: 0px 0px 36px; }\n.lr-figure { margin: 36px 0px; }\n.lr-figure-img { background: linear-gradient(135deg, rgb(42, 63, 106), rgb(91, 140, 255) 60%, rgb(201, 163, 255)); border-radius: 6px; height: 320px; display: grid; place-items: center; color: rgba(255, 255, 255, 0.5); font-family: monospace; font-size: 11px; text-transform: uppercase; letter-spacing: 0.2em; }\n.lr-figure figcaption { margin-top: 10px; font-size: 13px; color: rgb(107, 107, 107); font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; }\n.longread ul, .longread ol { padding-left: 1.4em; margin: 0px 0px 24px; }\n.longread li { font-size: 17px; line-height: 1.7; color: rgb(42, 42, 42); margin-bottom: 10px; }\n.longread blockquote { margin: 32px 0px; padding: 0px 0px 0px 22px; border-left: 3px solid rgb(91, 140, 255); }\n.longread blockquote p { font-size: 22px; font-style: italic; line-height: 1.55; color: rgb(26, 26, 26); }\n.longread blockquote cite { display: block; font-size: 13px; color: rgb(107, 107, 107); font-style: normal; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; margin-top: 6px; }\n.longread pre { background: rgb(14, 17, 23); color: rgb(226, 232, 240); padding: 18px 20px; border-radius: 6px; font-size: 13px; line-height: 1.6; overflow-x: auto; margin: 0px 0px 28px; }\n.longread code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }\n.lr-callout { background: rgb(240, 244, 255); border: 1px solid rgb(214, 224, 255); border-radius: 8px; padding: 18px 22px; margin: 32px 0px; }\n.lr-callout h4 { font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; font-size: 13px; text-transform: uppercase; letter-spacing: 0.1em; color: rgb(91, 140, 255); margin: 0px 0px 8px; }\n.lr-callout p { font-size: 16px; margin: 0px; }\n.lr-table { width: 100%; border-collapse: collapse; margin: 0px 0px 28px; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; }\n.lr-table th, .lr-table td { padding: 10px 12px; text-align: left; border-bottom: 1px solid rgb(238, 238, 238); font-size: 14px; }\n.lr-table th { color: rgb(107, 107, 107); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; }\n.lr-link { color: rgb(91, 140, 255); text-decoration: underline; text-underline-offset: 2px; }\n.lr-divider { border-width: 1px 0px 0px; border-style: solid none none; border-color: rgb(238, 238, 238) currentcolor currentcolor; border-image: initial; margin: 48px 0px; }\n.lr-footer { font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; }\n.lr-tags { display: flex; gap: 8px; margin: 0px 0px 16px; }\n.lr-tag { background: rgb(244, 246, 250); border: 1px solid rgb(230, 233, 239); border-radius: 999px; padding: 4px 12px; font-size: 12px; color: rgb(68, 68, 68); }\n.lr-also { font-size: 14px; color: rgb(107, 107, 107); }",
-      "capturedAt": "2026-04-27T00:50:04.654Z",
+      "capturedAt": "2026-04-29T04:42:17.808Z",
       "viewport": {
         "width": 1280,
         "height": 800
@@ -431,9 +431,7 @@
                     "kind": "el",
                     "tag": "p",
                     "attrs": {},
-                    "style": {
-                      "padding-left": "8px"
-                    },
+                    "style": {},
                     "children": [
                       {
                         "id": "t1-n13",
@@ -461,24 +459,13 @@
                     "kind": "el",
                     "tag": "p",
                     "attrs": {},
-                    "style": {},
+                    "style": {
+                      "border-color": "#ff0000",
+                      "color": "#009dff"
+                    },
                     "children": [
                       {
                         "id": "t1-n17",
-                        "kind": "text",
-                        "value": "The leadership team is a single person wearing a different tie each Friday."
-                      }
-                    ]
-                  },
-                  {
-                    "id": "u-b91cb153",
-                    "kind": "el",
-                    "tag": "p",
-                    "attrs": {},
-                    "style": {},
-                    "children": [
-                      {
-                        "id": "u-67b30927",
                         "kind": "text",
                         "value": "The leadership team is a single person wearing a different tie each Friday."
                       }
@@ -517,7 +504,7 @@
         ]
       },
       "css": "* { box-sizing: border-box; }\nhtml, body { margin: 0px; padding: 0px; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; color: rgb(17, 17, 17); background: rgb(255, 255, 255); }\n.nav { display: flex; gap: 20px; align-items: center; padding: 16px 32px; background: rgb(17, 17, 17); color: white; }\n.nav a { color: rgb(204, 204, 204); text-decoration: none; font-size: 14px; }\n.nav a:hover { color: white; }\n.nav .brand { font-weight: 700; font-size: 18px; color: white; margin-right: auto; letter-spacing: 1px; }\n.main { padding: 48px 32px; max-width: 960px; width: 100%; margin: 0px auto; min-height: calc(-110px + 800px); }\n.main h1 { font-size: 40px; margin: 0px 0px 16px; }\n.main h2 { font-size: 22px; margin: 24px 0px 12px; }\n.main p { font-size: 16px; line-height: 1.6; color: rgb(51, 51, 51); }\n.hero { background: linear-gradient(135deg, rgb(13, 31, 60), rgb(26, 58, 106)); color: white; border-radius: 12px; padding: 48px; }\n.hero h1 { color: white; }\n.hero p { color: rgb(196, 209, 232); font-size: 18px; }\n.hero .cta { display: inline-block; margin-top: 16px; padding: 10px 18px; background: white; color: rgb(13, 31, 60); border-radius: 6px; font-weight: 600; }\n.posts { display: grid; gap: 12px; margin-top: 24px; }\n.post-link { display: block; padding: 16px 20px; background: rgb(244, 246, 250); border-radius: 8px; border: 1px solid rgb(230, 233, 239); text-decoration: none; color: rgb(17, 17, 17); }\n.post-link h3 { margin: 0px 0px 4px; font-size: 16px; }\n.post-link p { margin: 0px; color: rgb(102, 102, 102); font-size: 13px; }\n.stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 16px; }\n.stat { background: white; border: 1px solid rgb(230, 233, 239); border-radius: 8px; padding: 18px; }\n.stat .num { font-size: 28px; font-weight: 700; }\n.stat .label { font-size: 12px; color: rgb(136, 136, 136); text-transform: uppercase; letter-spacing: 0.5px; }\n.footer { padding: 16px 32px; color: rgb(136, 136, 136); font-size: 12px; border-top: 1px solid rgb(234, 234, 234); }\n.longread { max-width: 720px; margin: 0px auto; font-family: Georgia, \"Times New Roman\", serif; color: rgb(26, 26, 26); }\n.longread h1, .longread h2, .longread h3, .longread h4 { font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; letter-spacing: -0.01em; }\n.lr-eyebrow { text-transform: uppercase; letter-spacing: 0.12em; font-size: 12px; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; color: rgb(107, 107, 107); margin: 0px 0px 14px; }\n.longread h1 { font-size: 44px; line-height: 1.15; margin: 0px 0px 18px; }\n.longread h2 { font-size: 26px; line-height: 1.3; margin: 56px 0px 14px; }\n.longread h3 { font-size: 19px; line-height: 1.4; margin: 36px 0px 10px; }\n.longread h4 { font-size: 15px; margin: 0px 0px 8px; }\n.lr-lede { font-size: 22px; line-height: 1.55; color: rgb(42, 42, 42); font-style: italic; margin: 0px 0px 24px; }\n.longread p { font-size: 18px; line-height: 1.75; color: rgb(42, 42, 42); margin: 0px 0px 20px; }\n.lr-byline { display: flex; justify-content: space-between; align-items: center; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; font-size: 13px; color: rgb(107, 107, 107); border-top: 1px solid rgb(238, 238, 238); border-bottom: 1px solid rgb(238, 238, 238); padding: 14px 0px; margin: 0px 0px 36px; }\n.lr-figure { margin: 36px 0px; }\n.lr-figure-img { background: linear-gradient(135deg, rgb(42, 63, 106), rgb(91, 140, 255) 60%, rgb(201, 163, 255)); border-radius: 6px; height: 320px; display: grid; place-items: center; color: rgba(255, 255, 255, 0.5); font-family: monospace; font-size: 11px; text-transform: uppercase; letter-spacing: 0.2em; }\n.lr-figure figcaption { margin-top: 10px; font-size: 13px; color: rgb(107, 107, 107); font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; }\n.longread ul, .longread ol { padding-left: 1.4em; margin: 0px 0px 24px; }\n.longread li { font-size: 17px; line-height: 1.7; color: rgb(42, 42, 42); margin-bottom: 10px; }\n.longread blockquote { margin: 32px 0px; padding: 0px 0px 0px 22px; border-left: 3px solid rgb(91, 140, 255); }\n.longread blockquote p { font-size: 22px; font-style: italic; line-height: 1.55; color: rgb(26, 26, 26); }\n.longread blockquote cite { display: block; font-size: 13px; color: rgb(107, 107, 107); font-style: normal; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; margin-top: 6px; }\n.longread pre { background: rgb(14, 17, 23); color: rgb(226, 232, 240); padding: 18px 20px; border-radius: 6px; font-size: 13px; line-height: 1.6; overflow-x: auto; margin: 0px 0px 28px; }\n.longread code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }\n.lr-callout { background: rgb(240, 244, 255); border: 1px solid rgb(214, 224, 255); border-radius: 8px; padding: 18px 22px; margin: 32px 0px; }\n.lr-callout h4 { font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; font-size: 13px; text-transform: uppercase; letter-spacing: 0.1em; color: rgb(91, 140, 255); margin: 0px 0px 8px; }\n.lr-callout p { font-size: 16px; margin: 0px; }\n.lr-table { width: 100%; border-collapse: collapse; margin: 0px 0px 28px; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; }\n.lr-table th, .lr-table td { padding: 10px 12px; text-align: left; border-bottom: 1px solid rgb(238, 238, 238); font-size: 14px; }\n.lr-table th { color: rgb(107, 107, 107); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; }\n.lr-link { color: rgb(91, 140, 255); text-decoration: underline; text-underline-offset: 2px; }\n.lr-divider { border-width: 1px 0px 0px; border-style: solid none none; border-color: rgb(238, 238, 238) currentcolor currentcolor; border-image: initial; margin: 48px 0px; }\n.lr-footer { font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; }\n.lr-tags { display: flex; gap: 8px; margin: 0px 0px 16px; }\n.lr-tag { background: rgb(244, 246, 250); border: 1px solid rgb(230, 233, 239); border-radius: 999px; padding: 4px 12px; font-size: 12px; color: rgb(68, 68, 68); }\n.lr-also { font-size: 14px; color: rgb(107, 107, 107); }",
-      "capturedAt": "2026-04-27T00:50:05.818Z",
+      "capturedAt": "2026-04-29T04:42:19.170Z",
       "viewport": {
         "width": 1280,
         "height": 800
@@ -906,7 +893,7 @@
         ]
       },
       "css": "* { box-sizing: border-box; }\nhtml, body { margin: 0px; padding: 0px; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; color: rgb(17, 17, 17); background: rgb(255, 255, 255); }\n.nav { display: flex; gap: 20px; align-items: center; padding: 16px 32px; background: rgb(17, 17, 17); color: white; }\n.nav a { color: rgb(204, 204, 204); text-decoration: none; font-size: 14px; }\n.nav a:hover { color: white; }\n.nav .brand { font-weight: 700; font-size: 18px; color: white; margin-right: auto; letter-spacing: 1px; }\n.main { padding: 48px 32px; max-width: 960px; width: 100%; margin: 0px auto; min-height: calc(-110px + 800px); }\n.main h1 { font-size: 40px; margin: 0px 0px 16px; }\n.main h2 { font-size: 22px; margin: 24px 0px 12px; }\n.main p { font-size: 16px; line-height: 1.6; color: rgb(51, 51, 51); }\n.hero { background: linear-gradient(135deg, rgb(13, 31, 60), rgb(26, 58, 106)); color: white; border-radius: 12px; padding: 48px; }\n.hero h1 { color: white; }\n.hero p { color: rgb(196, 209, 232); font-size: 18px; }\n.hero .cta { display: inline-block; margin-top: 16px; padding: 10px 18px; background: white; color: rgb(13, 31, 60); border-radius: 6px; font-weight: 600; }\n.posts { display: grid; gap: 12px; margin-top: 24px; }\n.post-link { display: block; padding: 16px 20px; background: rgb(244, 246, 250); border-radius: 8px; border: 1px solid rgb(230, 233, 239); text-decoration: none; color: rgb(17, 17, 17); }\n.post-link h3 { margin: 0px 0px 4px; font-size: 16px; }\n.post-link p { margin: 0px; color: rgb(102, 102, 102); font-size: 13px; }\n.stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 16px; }\n.stat { background: white; border: 1px solid rgb(230, 233, 239); border-radius: 8px; padding: 18px; }\n.stat .num { font-size: 28px; font-weight: 700; }\n.stat .label { font-size: 12px; color: rgb(136, 136, 136); text-transform: uppercase; letter-spacing: 0.5px; }\n.footer { padding: 16px 32px; color: rgb(136, 136, 136); font-size: 12px; border-top: 1px solid rgb(234, 234, 234); }\n.longread { max-width: 720px; margin: 0px auto; font-family: Georgia, \"Times New Roman\", serif; color: rgb(26, 26, 26); }\n.longread h1, .longread h2, .longread h3, .longread h4 { font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; letter-spacing: -0.01em; }\n.lr-eyebrow { text-transform: uppercase; letter-spacing: 0.12em; font-size: 12px; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; color: rgb(107, 107, 107); margin: 0px 0px 14px; }\n.longread h1 { font-size: 44px; line-height: 1.15; margin: 0px 0px 18px; }\n.longread h2 { font-size: 26px; line-height: 1.3; margin: 56px 0px 14px; }\n.longread h3 { font-size: 19px; line-height: 1.4; margin: 36px 0px 10px; }\n.longread h4 { font-size: 15px; margin: 0px 0px 8px; }\n.lr-lede { font-size: 22px; line-height: 1.55; color: rgb(42, 42, 42); font-style: italic; margin: 0px 0px 24px; }\n.longread p { font-size: 18px; line-height: 1.75; color: rgb(42, 42, 42); margin: 0px 0px 20px; }\n.lr-byline { display: flex; justify-content: space-between; align-items: center; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; font-size: 13px; color: rgb(107, 107, 107); border-top: 1px solid rgb(238, 238, 238); border-bottom: 1px solid rgb(238, 238, 238); padding: 14px 0px; margin: 0px 0px 36px; }\n.lr-figure { margin: 36px 0px; }\n.lr-figure-img { background: linear-gradient(135deg, rgb(42, 63, 106), rgb(91, 140, 255) 60%, rgb(201, 163, 255)); border-radius: 6px; height: 320px; display: grid; place-items: center; color: rgba(255, 255, 255, 0.5); font-family: monospace; font-size: 11px; text-transform: uppercase; letter-spacing: 0.2em; }\n.lr-figure figcaption { margin-top: 10px; font-size: 13px; color: rgb(107, 107, 107); font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; }\n.longread ul, .longread ol { padding-left: 1.4em; margin: 0px 0px 24px; }\n.longread li { font-size: 17px; line-height: 1.7; color: rgb(42, 42, 42); margin-bottom: 10px; }\n.longread blockquote { margin: 32px 0px; padding: 0px 0px 0px 22px; border-left: 3px solid rgb(91, 140, 255); }\n.longread blockquote p { font-size: 22px; font-style: italic; line-height: 1.55; color: rgb(26, 26, 26); }\n.longread blockquote cite { display: block; font-size: 13px; color: rgb(107, 107, 107); font-style: normal; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; margin-top: 6px; }\n.longread pre { background: rgb(14, 17, 23); color: rgb(226, 232, 240); padding: 18px 20px; border-radius: 6px; font-size: 13px; line-height: 1.6; overflow-x: auto; margin: 0px 0px 28px; }\n.longread code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }\n.lr-callout { background: rgb(240, 244, 255); border: 1px solid rgb(214, 224, 255); border-radius: 8px; padding: 18px 22px; margin: 32px 0px; }\n.lr-callout h4 { font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; font-size: 13px; text-transform: uppercase; letter-spacing: 0.1em; color: rgb(91, 140, 255); margin: 0px 0px 8px; }\n.lr-callout p { font-size: 16px; margin: 0px; }\n.lr-table { width: 100%; border-collapse: collapse; margin: 0px 0px 28px; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; }\n.lr-table th, .lr-table td { padding: 10px 12px; text-align: left; border-bottom: 1px solid rgb(238, 238, 238); font-size: 14px; }\n.lr-table th { color: rgb(107, 107, 107); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; }\n.lr-link { color: rgb(91, 140, 255); text-decoration: underline; text-underline-offset: 2px; }\n.lr-divider { border-width: 1px 0px 0px; border-style: solid none none; border-color: rgb(238, 238, 238) currentcolor currentcolor; border-image: initial; margin: 48px 0px; }\n.lr-footer { font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; }\n.lr-tags { display: flex; gap: 8px; margin: 0px 0px 16px; }\n.lr-tag { background: rgb(244, 246, 250); border: 1px solid rgb(230, 233, 239); border-radius: 999px; padding: 4px 12px; font-size: 12px; color: rgb(68, 68, 68); }\n.lr-also { font-size: 14px; color: rgb(107, 107, 107); }",
-      "capturedAt": "2026-04-27T00:50:07.111Z",
+      "capturedAt": "2026-04-29T04:42:20.698Z",
       "viewport": {
         "width": 1280,
         "height": 800
@@ -1060,10 +1047,7 @@
                     "kind": "el",
                     "tag": "h1",
                     "attrs": {},
-                    "style": {
-                      "margin-bottom": "-11px",
-                      "font-size": "64px"
-                    },
+                    "style": {},
                     "children": [
                       {
                         "id": "t3-n11",
@@ -1153,12 +1137,9 @@
                             "tag": "div",
                             "attrs": {},
                             "style": {
-                              "margin-top": "23px",
-                              "font-size": "18px",
-                              "color": "#ae00ff",
-                              "margin-right": "23px",
-                              "margin-bottom": "23px",
-                              "margin-left": "23px"
+                              "margin-top": "6px",
+                              "font-size": "12px",
+                              "color": "#ae00ff"
                             },
                             "children": [
                               {
@@ -1238,12 +1219,9 @@
                             "tag": "div",
                             "attrs": {},
                             "style": {
-                              "margin-top": "23px",
-                              "font-size": "18px",
-                              "color": "#ae00ff",
-                              "margin-right": "23px",
-                              "margin-bottom": "23px",
-                              "margin-left": "23px"
+                              "margin-top": "6px",
+                              "font-size": "12px",
+                              "color": "#ae00ff"
                             },
                             "children": [
                               {
@@ -1323,12 +1301,9 @@
                             "tag": "div",
                             "attrs": {},
                             "style": {
-                              "margin-top": "23px",
-                              "font-size": "18px",
-                              "color": "#ae00ff",
-                              "margin-right": "23px",
-                              "margin-bottom": "23px",
-                              "margin-left": "23px"
+                              "margin-top": "6px",
+                              "font-size": "12px",
+                              "color": "#d23a3a"
                             },
                             "children": [
                               {
@@ -1408,12 +1383,9 @@
                             "tag": "div",
                             "attrs": {},
                             "style": {
-                              "margin-top": "23px",
-                              "font-size": "18px",
-                              "color": "#ae00ff",
-                              "margin-right": "23px",
-                              "margin-bottom": "23px",
-                              "margin-left": "23px"
+                              "margin-top": "6px",
+                              "font-size": "12px",
+                              "color": "#d23a3a"
                             },
                             "children": [
                               {
@@ -1564,7 +1536,7 @@
         ]
       },
       "css": "* { box-sizing: border-box; }\nhtml, body { margin: 0px; padding: 0px; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; color: rgb(17, 17, 17); background: rgb(255, 255, 255); }\n.nav { display: flex; gap: 20px; align-items: center; padding: 16px 32px; background: rgb(17, 17, 17); color: white; }\n.nav a { color: rgb(204, 204, 204); text-decoration: none; font-size: 14px; }\n.nav a:hover { color: white; }\n.nav .brand { font-weight: 700; font-size: 18px; color: white; margin-right: auto; letter-spacing: 1px; }\n.main { padding: 48px 32px; max-width: 960px; width: 100%; margin: 0px auto; min-height: calc(-110px + 800px); }\n.main h1 { font-size: 40px; margin: 0px 0px 16px; }\n.main h2 { font-size: 22px; margin: 24px 0px 12px; }\n.main p { font-size: 16px; line-height: 1.6; color: rgb(51, 51, 51); }\n.hero { background: linear-gradient(135deg, rgb(13, 31, 60), rgb(26, 58, 106)); color: white; border-radius: 12px; padding: 48px; }\n.hero h1 { color: white; }\n.hero p { color: rgb(196, 209, 232); font-size: 18px; }\n.hero .cta { display: inline-block; margin-top: 16px; padding: 10px 18px; background: white; color: rgb(13, 31, 60); border-radius: 6px; font-weight: 600; }\n.posts { display: grid; gap: 12px; margin-top: 24px; }\n.post-link { display: block; padding: 16px 20px; background: rgb(244, 246, 250); border-radius: 8px; border: 1px solid rgb(230, 233, 239); text-decoration: none; color: rgb(17, 17, 17); }\n.post-link h3 { margin: 0px 0px 4px; font-size: 16px; }\n.post-link p { margin: 0px; color: rgb(102, 102, 102); font-size: 13px; }\n.stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 16px; }\n.stat { background: white; border: 1px solid rgb(230, 233, 239); border-radius: 8px; padding: 18px; }\n.stat .num { font-size: 28px; font-weight: 700; }\n.stat .label { font-size: 12px; color: rgb(136, 136, 136); text-transform: uppercase; letter-spacing: 0.5px; }\n.footer { padding: 16px 32px; color: rgb(136, 136, 136); font-size: 12px; border-top: 1px solid rgb(234, 234, 234); }\n.longread { max-width: 720px; margin: 0px auto; font-family: Georgia, \"Times New Roman\", serif; color: rgb(26, 26, 26); }\n.longread h1, .longread h2, .longread h3, .longread h4 { font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; letter-spacing: -0.01em; }\n.lr-eyebrow { text-transform: uppercase; letter-spacing: 0.12em; font-size: 12px; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; color: rgb(107, 107, 107); margin: 0px 0px 14px; }\n.longread h1 { font-size: 44px; line-height: 1.15; margin: 0px 0px 18px; }\n.longread h2 { font-size: 26px; line-height: 1.3; margin: 56px 0px 14px; }\n.longread h3 { font-size: 19px; line-height: 1.4; margin: 36px 0px 10px; }\n.longread h4 { font-size: 15px; margin: 0px 0px 8px; }\n.lr-lede { font-size: 22px; line-height: 1.55; color: rgb(42, 42, 42); font-style: italic; margin: 0px 0px 24px; }\n.longread p { font-size: 18px; line-height: 1.75; color: rgb(42, 42, 42); margin: 0px 0px 20px; }\n.lr-byline { display: flex; justify-content: space-between; align-items: center; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; font-size: 13px; color: rgb(107, 107, 107); border-top: 1px solid rgb(238, 238, 238); border-bottom: 1px solid rgb(238, 238, 238); padding: 14px 0px; margin: 0px 0px 36px; }\n.lr-figure { margin: 36px 0px; }\n.lr-figure-img { background: linear-gradient(135deg, rgb(42, 63, 106), rgb(91, 140, 255) 60%, rgb(201, 163, 255)); border-radius: 6px; height: 320px; display: grid; place-items: center; color: rgba(255, 255, 255, 0.5); font-family: monospace; font-size: 11px; text-transform: uppercase; letter-spacing: 0.2em; }\n.lr-figure figcaption { margin-top: 10px; font-size: 13px; color: rgb(107, 107, 107); font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; }\n.longread ul, .longread ol { padding-left: 1.4em; margin: 0px 0px 24px; }\n.longread li { font-size: 17px; line-height: 1.7; color: rgb(42, 42, 42); margin-bottom: 10px; }\n.longread blockquote { margin: 32px 0px; padding: 0px 0px 0px 22px; border-left: 3px solid rgb(91, 140, 255); }\n.longread blockquote p { font-size: 22px; font-style: italic; line-height: 1.55; color: rgb(26, 26, 26); }\n.longread blockquote cite { display: block; font-size: 13px; color: rgb(107, 107, 107); font-style: normal; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; margin-top: 6px; }\n.longread pre { background: rgb(14, 17, 23); color: rgb(226, 232, 240); padding: 18px 20px; border-radius: 6px; font-size: 13px; line-height: 1.6; overflow-x: auto; margin: 0px 0px 28px; }\n.longread code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }\n.lr-callout { background: rgb(240, 244, 255); border: 1px solid rgb(214, 224, 255); border-radius: 8px; padding: 18px 22px; margin: 32px 0px; }\n.lr-callout h4 { font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; font-size: 13px; text-transform: uppercase; letter-spacing: 0.1em; color: rgb(91, 140, 255); margin: 0px 0px 8px; }\n.lr-callout p { font-size: 16px; margin: 0px; }\n.lr-table { width: 100%; border-collapse: collapse; margin: 0px 0px 28px; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; }\n.lr-table th, .lr-table td { padding: 10px 12px; text-align: left; border-bottom: 1px solid rgb(238, 238, 238); font-size: 14px; }\n.lr-table th { color: rgb(107, 107, 107); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; }\n.lr-link { color: rgb(91, 140, 255); text-decoration: underline; text-underline-offset: 2px; }\n.lr-divider { border-width: 1px 0px 0px; border-style: solid none none; border-color: rgb(238, 238, 238) currentcolor currentcolor; border-image: initial; margin: 48px 0px; }\n.lr-footer { font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; }\n.lr-tags { display: flex; gap: 8px; margin: 0px 0px 16px; }\n.lr-tag { background: rgb(244, 246, 250); border: 1px solid rgb(230, 233, 239); border-radius: 999px; padding: 4px 12px; font-size: 12px; color: rgb(68, 68, 68); }\n.lr-also { font-size: 14px; color: rgb(107, 107, 107); }",
-      "capturedAt": "2026-04-27T00:50:08.399Z",
+      "capturedAt": "2026-04-29T04:42:22.239Z",
       "viewport": {
         "width": 1280,
         "height": 800
@@ -1711,12 +1683,7 @@
                   "data-spidey-component": "InnerLayoutRouter",
                   "data-spidey-props": "{\"parallelRouterKey\":\"children\",\"url\":\"/blog/example\",\"tree\":[[\"slug\",\"example\",\"d\"],{}],\"childNodes\":{},\"segmentPath\":[\"children\",\"blog\",\"children\",[\"slug\",\"example\",\"d\"],\"children\"],\"cacheKey\":\"__PAGE__\",\"isActive\":true}"
                 },
-                "style": {
-                  "text-align": "left",
-                  "display": "flex",
-                  "flex-direction": "row",
-                  "justify-content": "flex-end"
-                },
+                "style": {},
                 "children": [
                   {
                     "id": "t4-n12",
@@ -1837,7 +1804,7 @@
               {
                 "id": "t4-n28",
                 "kind": "text",
-                "value": "© Globex · next.js app"
+                "value": "© Globex · next.js app router"
               }
             ]
           },
@@ -1854,7 +1821,7 @@
         ]
       },
       "css": "* { box-sizing: border-box; }\nhtml, body { margin: 0px; padding: 0px; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; color: rgb(17, 17, 17); background: rgb(255, 255, 255); }\n.nav { display: flex; gap: 20px; align-items: center; padding: 16px 32px; background: rgb(17, 17, 17); color: white; }\n.nav a { color: rgb(204, 204, 204); text-decoration: none; font-size: 14px; }\n.nav a:hover { color: white; }\n.nav .brand { font-weight: 700; font-size: 18px; color: white; margin-right: auto; letter-spacing: 1px; }\n.main { padding: 48px 32px; max-width: 960px; width: 100%; margin: 0px auto; min-height: calc(-110px + 800px); }\n.main h1 { font-size: 40px; margin: 0px 0px 16px; }\n.main h2 { font-size: 22px; margin: 24px 0px 12px; }\n.main p { font-size: 16px; line-height: 1.6; color: rgb(51, 51, 51); }\n.hero { background: linear-gradient(135deg, rgb(13, 31, 60), rgb(26, 58, 106)); color: white; border-radius: 12px; padding: 48px; }\n.hero h1 { color: white; }\n.hero p { color: rgb(196, 209, 232); font-size: 18px; }\n.hero .cta { display: inline-block; margin-top: 16px; padding: 10px 18px; background: white; color: rgb(13, 31, 60); border-radius: 6px; font-weight: 600; }\n.posts { display: grid; gap: 12px; margin-top: 24px; }\n.post-link { display: block; padding: 16px 20px; background: rgb(244, 246, 250); border-radius: 8px; border: 1px solid rgb(230, 233, 239); text-decoration: none; color: rgb(17, 17, 17); }\n.post-link h3 { margin: 0px 0px 4px; font-size: 16px; }\n.post-link p { margin: 0px; color: rgb(102, 102, 102); font-size: 13px; }\n.stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 16px; }\n.stat { background: white; border: 1px solid rgb(230, 233, 239); border-radius: 8px; padding: 18px; }\n.stat .num { font-size: 28px; font-weight: 700; }\n.stat .label { font-size: 12px; color: rgb(136, 136, 136); text-transform: uppercase; letter-spacing: 0.5px; }\n.footer { padding: 16px 32px; color: rgb(136, 136, 136); font-size: 12px; border-top: 1px solid rgb(234, 234, 234); }\n.longread { max-width: 720px; margin: 0px auto; font-family: Georgia, \"Times New Roman\", serif; color: rgb(26, 26, 26); }\n.longread h1, .longread h2, .longread h3, .longread h4 { font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; letter-spacing: -0.01em; }\n.lr-eyebrow { text-transform: uppercase; letter-spacing: 0.12em; font-size: 12px; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; color: rgb(107, 107, 107); margin: 0px 0px 14px; }\n.longread h1 { font-size: 44px; line-height: 1.15; margin: 0px 0px 18px; }\n.longread h2 { font-size: 26px; line-height: 1.3; margin: 56px 0px 14px; }\n.longread h3 { font-size: 19px; line-height: 1.4; margin: 36px 0px 10px; }\n.longread h4 { font-size: 15px; margin: 0px 0px 8px; }\n.lr-lede { font-size: 22px; line-height: 1.55; color: rgb(42, 42, 42); font-style: italic; margin: 0px 0px 24px; }\n.longread p { font-size: 18px; line-height: 1.75; color: rgb(42, 42, 42); margin: 0px 0px 20px; }\n.lr-byline { display: flex; justify-content: space-between; align-items: center; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; font-size: 13px; color: rgb(107, 107, 107); border-top: 1px solid rgb(238, 238, 238); border-bottom: 1px solid rgb(238, 238, 238); padding: 14px 0px; margin: 0px 0px 36px; }\n.lr-figure { margin: 36px 0px; }\n.lr-figure-img { background: linear-gradient(135deg, rgb(42, 63, 106), rgb(91, 140, 255) 60%, rgb(201, 163, 255)); border-radius: 6px; height: 320px; display: grid; place-items: center; color: rgba(255, 255, 255, 0.5); font-family: monospace; font-size: 11px; text-transform: uppercase; letter-spacing: 0.2em; }\n.lr-figure figcaption { margin-top: 10px; font-size: 13px; color: rgb(107, 107, 107); font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; }\n.longread ul, .longread ol { padding-left: 1.4em; margin: 0px 0px 24px; }\n.longread li { font-size: 17px; line-height: 1.7; color: rgb(42, 42, 42); margin-bottom: 10px; }\n.longread blockquote { margin: 32px 0px; padding: 0px 0px 0px 22px; border-left: 3px solid rgb(91, 140, 255); }\n.longread blockquote p { font-size: 22px; font-style: italic; line-height: 1.55; color: rgb(26, 26, 26); }\n.longread blockquote cite { display: block; font-size: 13px; color: rgb(107, 107, 107); font-style: normal; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; margin-top: 6px; }\n.longread pre { background: rgb(14, 17, 23); color: rgb(226, 232, 240); padding: 18px 20px; border-radius: 6px; font-size: 13px; line-height: 1.6; overflow-x: auto; margin: 0px 0px 28px; }\n.longread code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }\n.lr-callout { background: rgb(240, 244, 255); border: 1px solid rgb(214, 224, 255); border-radius: 8px; padding: 18px 22px; margin: 32px 0px; }\n.lr-callout h4 { font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; font-size: 13px; text-transform: uppercase; letter-spacing: 0.1em; color: rgb(91, 140, 255); margin: 0px 0px 8px; }\n.lr-callout p { font-size: 16px; margin: 0px; }\n.lr-table { width: 100%; border-collapse: collapse; margin: 0px 0px 28px; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; }\n.lr-table th, .lr-table td { padding: 10px 12px; text-align: left; border-bottom: 1px solid rgb(238, 238, 238); font-size: 14px; }\n.lr-table th { color: rgb(107, 107, 107); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; }\n.lr-link { color: rgb(91, 140, 255); text-decoration: underline; text-underline-offset: 2px; }\n.lr-divider { border-width: 1px 0px 0px; border-style: solid none none; border-color: rgb(238, 238, 238) currentcolor currentcolor; border-image: initial; margin: 48px 0px; }\n.lr-footer { font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; }\n.lr-tags { display: flex; gap: 8px; margin: 0px 0px 16px; }\n.lr-tag { background: rgb(244, 246, 250); border: 1px solid rgb(230, 233, 239); border-radius: 999px; padding: 4px 12px; font-size: 12px; color: rgb(68, 68, 68); }\n.lr-also { font-size: 14px; color: rgb(107, 107, 107); }",
-      "capturedAt": "2026-04-27T00:50:09.649Z",
+      "capturedAt": "2026-04-29T04:42:23.780Z",
       "viewport": {
         "width": 1280,
         "height": 800
@@ -2182,6 +2149,58 @@
                     ]
                   },
                   {
+                    "id": "t5-n40",
+                    "kind": "el",
+                    "tag": "p",
+                    "attrs": {},
+                    "style": {},
+                    "children": [
+                      {
+                        "id": "t5-n33",
+                        "kind": "text",
+                        "value": "Strong claim up front: "
+                      },
+                      {
+                        "id": "t5-n35",
+                        "kind": "el",
+                        "tag": "strong",
+                        "attrs": {},
+                        "style": {},
+                        "children": [
+                          {
+                            "id": "t5-n34",
+                            "kind": "text",
+                            "value": "most of the value of splitting a monolith comes from things that have nothing to do with microservices."
+                          }
+                        ]
+                      },
+                      {
+                        "id": "t5-n36",
+                        "kind": "text",
+                        "value": " The decoupling forces you to write down what each piece is for. The boundary forces you to be explicit about ownership. The deploy story forces you to take observability seriously. You could get most of the same wins by just"
+                      },
+                      {
+                        "id": "t5-n38",
+                        "kind": "el",
+                        "tag": "em",
+                        "attrs": {},
+                        "style": {},
+                        "children": [
+                          {
+                            "id": "t5-n37",
+                            "kind": "text",
+                            "value": "writing things down"
+                          }
+                        ]
+                      },
+                      {
+                        "id": "t5-n39",
+                        "kind": "text",
+                        "value": " in a single repo. We didn't. We split things up. I'm not arguing that was wrong, but I want to be honest about which wins came from which decisions."
+                      }
+                    ]
+                  },
+                  {
                     "id": "t5-n42",
                     "kind": "el",
                     "tag": "h2",
@@ -2322,59 +2341,67 @@
                     ]
                   },
                   {
-                    "id": "u-4e74e89a",
+                    "id": "t5-n62",
                     "kind": "el",
-                    "tag": "p",
-                    "attrs": {
-                      "data-spidey-primitive": "text"
-                    },
-                    "style": {
-                      "margin": "0",
-                      "margin-bottom": "29px"
-                    },
+                    "tag": "h3",
+                    "attrs": {},
+                    "style": {},
                     "children": [
                       {
-                        "id": "u-70052c8f",
+                        "id": "t5-n61",
                         "kind": "text",
-                        "value": "tex1"
+                        "value": "The specific decision that paid off"
                       }
                     ]
                   },
                   {
-                    "id": "u-1a14b137",
+                    "id": "t5-n64",
                     "kind": "el",
                     "tag": "p",
-                    "attrs": {
-                      "data-spidey-primitive": "text"
-                    },
-                    "style": {
-                      "margin": "0",
-                      "margin-bottom": "29px"
-                    },
+                    "attrs": {},
+                    "style": {},
                     "children": [
                       {
-                        "id": "u-cae5ff11",
+                        "id": "t5-n63",
                         "kind": "text",
-                        "value": "tex3"
+                        "value": "Of all the architecture choices, the one I would make again without flinching is keeping our auth flow inside the original monolith for two extra years. Auth is the worst place to discover you don't understand microservices. We carved off the easy domains first — billing, notifications, search — and let auth keep shipping inside the boring well-trodden codebase. By the time we finally split it out we had built up enough operational maturity that the move was uneventful. The version of us that did it on day one would have shipped at least one critical security incident out of impatience."
                       }
                     ]
                   },
                   {
-                    "id": "u-cf485841",
+                    "id": "t5-n69",
                     "kind": "el",
-                    "tag": "p",
-                    "attrs": {
-                      "data-spidey-primitive": "text"
-                    },
-                    "style": {
-                      "margin": "0",
-                      "margin-bottom": "68px"
-                    },
+                    "tag": "blockquote",
+                    "attrs": {},
+                    "style": {},
                     "children": [
                       {
-                        "id": "u-7bee1120",
-                        "kind": "text",
-                        "value": "tex2"
+                        "id": "t5-n66",
+                        "kind": "el",
+                        "tag": "p",
+                        "attrs": {},
+                        "style": {},
+                        "children": [
+                          {
+                            "id": "t5-n65",
+                            "kind": "text",
+                            "value": "The most expensive mistakes are made when you're moving fast on something you don't fully understand yet, in a domain that's unforgiving of mistakes. Auth is one of those domains."
+                          }
+                        ]
+                      },
+                      {
+                        "id": "t5-n68",
+                        "kind": "el",
+                        "tag": "cite",
+                        "attrs": {},
+                        "style": {},
+                        "children": [
+                          {
+                            "id": "t5-n67",
+                            "kind": "text",
+                            "value": "— Aitor Mendes, infra lead at Stripe (paraphrased, sorry Aitor)"
+                          }
+                        ]
                       }
                     ]
                   },
@@ -2498,34 +2525,6 @@
                         ]
                       },
                       {
-                        "id": "t5-n93",
-                        "kind": "el",
-                        "tag": "li",
-                        "attrs": {},
-                        "style": {},
-                        "children": [
-                          {
-                            "id": "t5-n91",
-                            "kind": "el",
-                            "tag": "strong",
-                            "attrs": {},
-                            "style": {},
-                            "children": [
-                              {
-                                "id": "t5-n90",
-                                "kind": "text",
-                                "value": "Two oncall rotations is one too few."
-                              }
-                            ]
-                          },
-                          {
-                            "id": "t5-n92",
-                            "kind": "text",
-                            "value": " A single rotation gets exhausted and starts paging the wrong team."
-                          }
-                        ]
-                      },
-                      {
                         "id": "t5-n89",
                         "kind": "el",
                         "tag": "li",
@@ -2550,6 +2549,34 @@
                             "id": "t5-n88",
                             "kind": "text",
                             "value": " If you can't describe the failure modes in advance, you don't understand the service well enough to have built it."
+                          }
+                        ]
+                      },
+                      {
+                        "id": "t5-n93",
+                        "kind": "el",
+                        "tag": "li",
+                        "attrs": {},
+                        "style": {},
+                        "children": [
+                          {
+                            "id": "t5-n91",
+                            "kind": "el",
+                            "tag": "strong",
+                            "attrs": {},
+                            "style": {},
+                            "children": [
+                              {
+                                "id": "t5-n90",
+                                "kind": "text",
+                                "value": "Two oncall rotations is one too few."
+                              }
+                            ]
+                          },
+                          {
+                            "id": "t5-n92",
+                            "kind": "text",
+                            "value": " A single rotation gets exhausted and starts paging the wrong team."
                           }
                         ]
                       }
@@ -2671,6 +2698,34 @@
                     ]
                   },
                   {
+                    "id": "t5-n114",
+                    "kind": "el",
+                    "tag": "p",
+                    "attrs": {},
+                    "style": {},
+                    "children": [
+                      {
+                        "id": "t5-n111",
+                        "kind": "text",
+                        "value": "We picked Postgres for everything except the obvious cases. Three people argued for a document store; one argued for a graph database; the room got tired and went with Postgres. Two years later, the same three people each told me, separately, that Postgres was the right call. "
+                      },
+                      {
+                        "id": "t5-n113",
+                        "kind": "el",
+                        "tag": "em",
+                        "attrs": {},
+                        "style": {},
+                        "children": [
+                          {
+                            "id": "t5-n112",
+                            "kind": "text",
+                            "value": "Boring choices age well."
+                          }
+                        ]
+                      }
+                    ]
+                  },
+                  {
                     "id": "t5-n122",
                     "kind": "el",
                     "tag": "aside",
@@ -2723,34 +2778,6 @@
                             "id": "t5-n120",
                             "kind": "text",
                             "value": ". We probably spend more engineering hours on query tuning than on capacity planning, deployment automation, and incident response combined. Nobody warns you about this in the architecture books."
-                          }
-                        ]
-                      }
-                    ]
-                  },
-                  {
-                    "id": "t5-n114",
-                    "kind": "el",
-                    "tag": "p",
-                    "attrs": {},
-                    "style": {},
-                    "children": [
-                      {
-                        "id": "t5-n111",
-                        "kind": "text",
-                        "value": "We picked Postgres for everything except the obvious cases. Three people argued for a document store; one argued for a graph database; the room got tired and went with Postgres. Two years later, the same three people each told me, separately, that Postgres was the right call. "
-                      },
-                      {
-                        "id": "t5-n113",
-                        "kind": "el",
-                        "tag": "em",
-                        "attrs": {},
-                        "style": {},
-                        "children": [
-                          {
-                            "id": "t5-n112",
-                            "kind": "text",
-                            "value": "Boring choices age well."
                           }
                         ]
                       }
@@ -3564,160 +3591,6 @@
                         ]
                       }
                     ]
-                  },
-                  {
-                    "id": "u-4ba531c7",
-                    "kind": "el",
-                    "tag": "p",
-                    "attrs": {
-                      "data-spidey-primitive": "text"
-                    },
-                    "style": {
-                      "margin": "0"
-                    },
-                    "children": [
-                      {
-                        "id": "u-159b03df",
-                        "kind": "text",
-                        "value": "Text"
-                      }
-                    ]
-                  },
-                  {
-                    "id": "u-655170de",
-                    "kind": "el",
-                    "tag": "img",
-                    "attrs": {
-                      "src": "data:image/svg+xml;utf8,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%20200%20140'%20preserveAspectRatio%3D'none'%3E%3Crect%20width%3D'100%25'%20height%3D'100%25'%20fill%3D'%2523eef0f4'%2F%3E%3Cpath%20d%3D'M0%200L200%20140M200%200L0%20140'%20stroke%3D'%2523bbb'%20stroke-width%3D'1'%2F%3E%3C%2Fsvg%3E",
-                      "alt": "",
-                      "data-spidey-primitive": "image"
-                    },
-                    "style": {
-                      "width": "200px",
-                      "height": "140px"
-                    },
-                    "children": []
-                  },
-                  {
-                    "id": "u-239b4156",
-                    "kind": "el",
-                    "tag": "p",
-                    "attrs": {
-                      "data-spidey-primitive": "text"
-                    },
-                    "style": {
-                      "margin": "0"
-                    },
-                    "children": [
-                      {
-                        "id": "u-1dec1ba9",
-                        "kind": "text",
-                        "value": "Textjdjdjjosjdopjasdpojasdjapsod"
-                      },
-                      {
-                        "id": "u-84120de2",
-                        "kind": "el",
-                        "tag": "p",
-                        "attrs": {
-                          "data-spidey-primitive": "text"
-                        },
-                        "style": {
-                          "margin": "0"
-                        },
-                        "children": [
-                          {
-                            "id": "u-336cd968",
-                            "kind": "text",
-                            "value": "Textjdjdjjosjdopjasdpojasdjapsod"
-                          },
-                          {
-                            "id": "t5-n62",
-                            "kind": "el",
-                            "tag": "h3",
-                            "attrs": {},
-                            "style": {},
-                            "children": [
-                              {
-                                "id": "t5-n61",
-                                "kind": "text",
-                                "value": "The specific decision that paid off"
-                              }
-                            ]
-                          }
-                        ]
-                      },
-                      {
-                        "id": "u-a11c00f9",
-                        "kind": "el",
-                        "tag": "p",
-                        "attrs": {
-                          "data-spidey-primitive": "text"
-                        },
-                        "style": {
-                          "margin": "0"
-                        },
-                        "children": [
-                          {
-                            "id": "u-3bef5611",
-                            "kind": "text",
-                            "value": "Textjdjdjjosjdopjasdpojasdjapsod"
-                          }
-                        ]
-                      }
-                    ]
-                  },
-                  {
-                    "id": "t5-n64",
-                    "kind": "el",
-                    "tag": "p",
-                    "attrs": {},
-                    "style": {},
-                    "children": [
-                      {
-                        "id": "t5-n63",
-                        "kind": "text",
-                        "value": "Of all the architecture choices, the one I would make again without flinching is keeping our auth flow inside the original monolith for two extra years. Auth is the worst place to discover you don't understand microservices. We carved off the easy domains first — billing, notifications, search — and let auth keep shipping inside the boring well-trodden codebase. By the time we finally split it out we had built up enough operational maturity that the move was uneventful. The version of us that did it on day one would have shipped at least one critical security incident out of impatience."
-                      },
-                      {
-                        "id": "t5-n66",
-                        "kind": "el",
-                        "tag": "p",
-                        "attrs": {},
-                        "style": {},
-                        "children": [
-                          {
-                            "id": "t5-n65",
-                            "kind": "text",
-                            "value": "The most expensive mistakes are made when you're moving fast on something you don't fully understand yet, in a domain that's unforgiving of mistakes. Auth is one of those domains."
-                          }
-                        ]
-                      }
-                    ]
-                  },
-                  {
-                    "id": "t5-n69",
-                    "kind": "el",
-                    "tag": "blockquote",
-                    "attrs": {},
-                    "style": {
-                      "border-color": "#ff0000"
-                    },
-                    "children": [
-                      {
-                        "id": "t5-n68",
-                        "kind": "el",
-                        "tag": "cite",
-                        "attrs": {},
-                        "style": {},
-                        "children": [
-                          {
-                            "id": "t5-n67",
-                            "kind": "text",
-                            "value": "— Aitor Mendes, infra lead at Stripe (paraphrased, sorry Aitor)"
-                          }
-                        ]
-                      }
-                    ]
                   }
                 ]
               }
@@ -3752,7 +3625,7 @@
         ]
       },
       "css": "* { box-sizing: border-box; }\nhtml, body { margin: 0px; padding: 0px; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; color: rgb(17, 17, 17); background: rgb(255, 255, 255); }\n.nav { display: flex; gap: 20px; align-items: center; padding: 16px 32px; background: rgb(17, 17, 17); color: white; }\n.nav a { color: rgb(204, 204, 204); text-decoration: none; font-size: 14px; }\n.nav a:hover { color: white; }\n.nav .brand { font-weight: 700; font-size: 18px; color: white; margin-right: auto; letter-spacing: 1px; }\n.main { padding: 48px 32px; max-width: 960px; width: 100%; margin: 0px auto; min-height: calc(-110px + 800px); }\n.main h1 { font-size: 40px; margin: 0px 0px 16px; }\n.main h2 { font-size: 22px; margin: 24px 0px 12px; }\n.main p { font-size: 16px; line-height: 1.6; color: rgb(51, 51, 51); }\n.hero { background: linear-gradient(135deg, rgb(13, 31, 60), rgb(26, 58, 106)); color: white; border-radius: 12px; padding: 48px; }\n.hero h1 { color: white; }\n.hero p { color: rgb(196, 209, 232); font-size: 18px; }\n.hero .cta { display: inline-block; margin-top: 16px; padding: 10px 18px; background: white; color: rgb(13, 31, 60); border-radius: 6px; font-weight: 600; }\n.posts { display: grid; gap: 12px; margin-top: 24px; }\n.post-link { display: block; padding: 16px 20px; background: rgb(244, 246, 250); border-radius: 8px; border: 1px solid rgb(230, 233, 239); text-decoration: none; color: rgb(17, 17, 17); }\n.post-link h3 { margin: 0px 0px 4px; font-size: 16px; }\n.post-link p { margin: 0px; color: rgb(102, 102, 102); font-size: 13px; }\n.stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 16px; }\n.stat { background: white; border: 1px solid rgb(230, 233, 239); border-radius: 8px; padding: 18px; }\n.stat .num { font-size: 28px; font-weight: 700; }\n.stat .label { font-size: 12px; color: rgb(136, 136, 136); text-transform: uppercase; letter-spacing: 0.5px; }\n.footer { padding: 16px 32px; color: rgb(136, 136, 136); font-size: 12px; border-top: 1px solid rgb(234, 234, 234); }\n.longread { max-width: 720px; margin: 0px auto; font-family: Georgia, \"Times New Roman\", serif; color: rgb(26, 26, 26); }\n.longread h1, .longread h2, .longread h3, .longread h4 { font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; letter-spacing: -0.01em; }\n.lr-eyebrow { text-transform: uppercase; letter-spacing: 0.12em; font-size: 12px; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; color: rgb(107, 107, 107); margin: 0px 0px 14px; }\n.longread h1 { font-size: 44px; line-height: 1.15; margin: 0px 0px 18px; }\n.longread h2 { font-size: 26px; line-height: 1.3; margin: 56px 0px 14px; }\n.longread h3 { font-size: 19px; line-height: 1.4; margin: 36px 0px 10px; }\n.longread h4 { font-size: 15px; margin: 0px 0px 8px; }\n.lr-lede { font-size: 22px; line-height: 1.55; color: rgb(42, 42, 42); font-style: italic; margin: 0px 0px 24px; }\n.longread p { font-size: 18px; line-height: 1.75; color: rgb(42, 42, 42); margin: 0px 0px 20px; }\n.lr-byline { display: flex; justify-content: space-between; align-items: center; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; font-size: 13px; color: rgb(107, 107, 107); border-top: 1px solid rgb(238, 238, 238); border-bottom: 1px solid rgb(238, 238, 238); padding: 14px 0px; margin: 0px 0px 36px; }\n.lr-figure { margin: 36px 0px; }\n.lr-figure-img { background: linear-gradient(135deg, rgb(42, 63, 106), rgb(91, 140, 255) 60%, rgb(201, 163, 255)); border-radius: 6px; height: 320px; display: grid; place-items: center; color: rgba(255, 255, 255, 0.5); font-family: monospace; font-size: 11px; text-transform: uppercase; letter-spacing: 0.2em; }\n.lr-figure figcaption { margin-top: 10px; font-size: 13px; color: rgb(107, 107, 107); font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; }\n.longread ul, .longread ol { padding-left: 1.4em; margin: 0px 0px 24px; }\n.longread li { font-size: 17px; line-height: 1.7; color: rgb(42, 42, 42); margin-bottom: 10px; }\n.longread blockquote { margin: 32px 0px; padding: 0px 0px 0px 22px; border-left: 3px solid rgb(91, 140, 255); }\n.longread blockquote p { font-size: 22px; font-style: italic; line-height: 1.55; color: rgb(26, 26, 26); }\n.longread blockquote cite { display: block; font-size: 13px; color: rgb(107, 107, 107); font-style: normal; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; margin-top: 6px; }\n.longread pre { background: rgb(14, 17, 23); color: rgb(226, 232, 240); padding: 18px 20px; border-radius: 6px; font-size: 13px; line-height: 1.6; overflow-x: auto; margin: 0px 0px 28px; }\n.longread code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }\n.lr-callout { background: rgb(240, 244, 255); border: 1px solid rgb(214, 224, 255); border-radius: 8px; padding: 18px 22px; margin: 32px 0px; }\n.lr-callout h4 { font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; font-size: 13px; text-transform: uppercase; letter-spacing: 0.1em; color: rgb(91, 140, 255); margin: 0px 0px 8px; }\n.lr-callout p { font-size: 16px; margin: 0px; }\n.lr-table { width: 100%; border-collapse: collapse; margin: 0px 0px 28px; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; }\n.lr-table th, .lr-table td { padding: 10px 12px; text-align: left; border-bottom: 1px solid rgb(238, 238, 238); font-size: 14px; }\n.lr-table th { color: rgb(107, 107, 107); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; }\n.lr-link { color: rgb(91, 140, 255); text-decoration: underline; text-underline-offset: 2px; }\n.lr-divider { border-width: 1px 0px 0px; border-style: solid none none; border-color: rgb(238, 238, 238) currentcolor currentcolor; border-image: initial; margin: 48px 0px; }\n.lr-footer { font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; }\n.lr-tags { display: flex; gap: 8px; margin: 0px 0px 16px; }\n.lr-tag { background: rgb(244, 246, 250); border: 1px solid rgb(230, 233, 239); border-radius: 999px; padding: 4px 12px; font-size: 12px; color: rgb(68, 68, 68); }\n.lr-also { font-size: 14px; color: rgb(107, 107, 107); }",
-      "capturedAt": "2026-04-27T00:50:11.029Z",
+      "capturedAt": "2026-04-29T04:42:25.506Z",
       "viewport": {
         "width": 1280,
         "height": 800
@@ -3826,7 +3699,7 @@
         ]
       },
       "css": "* { box-sizing: border-box; }\nhtml, body { margin: 0px; padding: 0px; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; color: rgb(17, 17, 17); background: rgb(255, 255, 255); }\n.nav { display: flex; gap: 20px; align-items: center; padding: 16px 32px; background: rgb(17, 17, 17); color: white; }\n.nav a { color: rgb(204, 204, 204); text-decoration: none; font-size: 14px; }\n.nav a:hover { color: white; }\n.nav .brand { font-weight: 700; font-size: 18px; color: white; margin-right: auto; letter-spacing: 1px; }\n.main { padding: 48px 32px; max-width: 960px; width: 100%; margin: 0px auto; min-height: calc(-110px + 800px); }\n.main h1 { font-size: 40px; margin: 0px 0px 16px; }\n.main h2 { font-size: 22px; margin: 24px 0px 12px; }\n.main p { font-size: 16px; line-height: 1.6; color: rgb(51, 51, 51); }\n.hero { background: linear-gradient(135deg, rgb(13, 31, 60), rgb(26, 58, 106)); color: white; border-radius: 12px; padding: 48px; }\n.hero h1 { color: white; }\n.hero p { color: rgb(196, 209, 232); font-size: 18px; }\n.hero .cta { display: inline-block; margin-top: 16px; padding: 10px 18px; background: white; color: rgb(13, 31, 60); border-radius: 6px; font-weight: 600; }\n.posts { display: grid; gap: 12px; margin-top: 24px; }\n.post-link { display: block; padding: 16px 20px; background: rgb(244, 246, 250); border-radius: 8px; border: 1px solid rgb(230, 233, 239); text-decoration: none; color: rgb(17, 17, 17); }\n.post-link h3 { margin: 0px 0px 4px; font-size: 16px; }\n.post-link p { margin: 0px; color: rgb(102, 102, 102); font-size: 13px; }\n.stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 16px; }\n.stat { background: white; border: 1px solid rgb(230, 233, 239); border-radius: 8px; padding: 18px; }\n.stat .num { font-size: 28px; font-weight: 700; }\n.stat .label { font-size: 12px; color: rgb(136, 136, 136); text-transform: uppercase; letter-spacing: 0.5px; }\n.footer { padding: 16px 32px; color: rgb(136, 136, 136); font-size: 12px; border-top: 1px solid rgb(234, 234, 234); }\n.longread { max-width: 720px; margin: 0px auto; font-family: Georgia, \"Times New Roman\", serif; color: rgb(26, 26, 26); }\n.longread h1, .longread h2, .longread h3, .longread h4 { font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; letter-spacing: -0.01em; }\n.lr-eyebrow { text-transform: uppercase; letter-spacing: 0.12em; font-size: 12px; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; color: rgb(107, 107, 107); margin: 0px 0px 14px; }\n.longread h1 { font-size: 44px; line-height: 1.15; margin: 0px 0px 18px; }\n.longread h2 { font-size: 26px; line-height: 1.3; margin: 56px 0px 14px; }\n.longread h3 { font-size: 19px; line-height: 1.4; margin: 36px 0px 10px; }\n.longread h4 { font-size: 15px; margin: 0px 0px 8px; }\n.lr-lede { font-size: 22px; line-height: 1.55; color: rgb(42, 42, 42); font-style: italic; margin: 0px 0px 24px; }\n.longread p { font-size: 18px; line-height: 1.75; color: rgb(42, 42, 42); margin: 0px 0px 20px; }\n.lr-byline { display: flex; justify-content: space-between; align-items: center; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; font-size: 13px; color: rgb(107, 107, 107); border-top: 1px solid rgb(238, 238, 238); border-bottom: 1px solid rgb(238, 238, 238); padding: 14px 0px; margin: 0px 0px 36px; }\n.lr-figure { margin: 36px 0px; }\n.lr-figure-img { background: linear-gradient(135deg, rgb(42, 63, 106), rgb(91, 140, 255) 60%, rgb(201, 163, 255)); border-radius: 6px; height: 320px; display: grid; place-items: center; color: rgba(255, 255, 255, 0.5); font-family: monospace; font-size: 11px; text-transform: uppercase; letter-spacing: 0.2em; }\n.lr-figure figcaption { margin-top: 10px; font-size: 13px; color: rgb(107, 107, 107); font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; }\n.longread ul, .longread ol { padding-left: 1.4em; margin: 0px 0px 24px; }\n.longread li { font-size: 17px; line-height: 1.7; color: rgb(42, 42, 42); margin-bottom: 10px; }\n.longread blockquote { margin: 32px 0px; padding: 0px 0px 0px 22px; border-left: 3px solid rgb(91, 140, 255); }\n.longread blockquote p { font-size: 22px; font-style: italic; line-height: 1.55; color: rgb(26, 26, 26); }\n.longread blockquote cite { display: block; font-size: 13px; color: rgb(107, 107, 107); font-style: normal; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; margin-top: 6px; }\n.longread pre { background: rgb(14, 17, 23); color: rgb(226, 232, 240); padding: 18px 20px; border-radius: 6px; font-size: 13px; line-height: 1.6; overflow-x: auto; margin: 0px 0px 28px; }\n.longread code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }\n.lr-callout { background: rgb(240, 244, 255); border: 1px solid rgb(214, 224, 255); border-radius: 8px; padding: 18px 22px; margin: 32px 0px; }\n.lr-callout h4 { font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; font-size: 13px; text-transform: uppercase; letter-spacing: 0.1em; color: rgb(91, 140, 255); margin: 0px 0px 8px; }\n.lr-callout p { font-size: 16px; margin: 0px; }\n.lr-table { width: 100%; border-collapse: collapse; margin: 0px 0px 28px; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; }\n.lr-table th, .lr-table td { padding: 10px 12px; text-align: left; border-bottom: 1px solid rgb(238, 238, 238); font-size: 14px; }\n.lr-table th { color: rgb(107, 107, 107); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; }\n.lr-link { color: rgb(91, 140, 255); text-decoration: underline; text-underline-offset: 2px; }\n.lr-divider { border-width: 1px 0px 0px; border-style: solid none none; border-color: rgb(238, 238, 238) currentcolor currentcolor; border-image: initial; margin: 48px 0px; }\n.lr-footer { font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; }\n.lr-tags { display: flex; gap: 8px; margin: 0px 0px 16px; }\n.lr-tag { background: rgb(244, 246, 250); border: 1px solid rgb(230, 233, 239); border-radius: 999px; padding: 4px 12px; font-size: 12px; color: rgb(68, 68, 68); }\n.lr-also { font-size: 14px; color: rgb(107, 107, 107); }",
-      "capturedAt": "2026-04-27T00:50:12.273Z",
+      "capturedAt": "2026-04-29T04:42:26.969Z",
       "viewport": {
         "width": 1280,
         "height": 800
@@ -3836,8 +3709,7 @@
         "name": "Button",
         "file": "components/Button.tsx",
         "propsUsed": {
-          "label": "dignissimos capio deprimo",
-          "onClick": "__spidey_noop__"
+          "label": "dignissimos capio deprimo"
         }
       },
       "title": "Globex Demo",
@@ -3982,7 +3854,7 @@
         ]
       },
       "css": "* { box-sizing: border-box; }\nhtml, body { margin: 0px; padding: 0px; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; color: rgb(17, 17, 17); background: rgb(255, 255, 255); }\n.nav { display: flex; gap: 20px; align-items: center; padding: 16px 32px; background: rgb(17, 17, 17); color: white; }\n.nav a { color: rgb(204, 204, 204); text-decoration: none; font-size: 14px; }\n.nav a:hover { color: white; }\n.nav .brand { font-weight: 700; font-size: 18px; color: white; margin-right: auto; letter-spacing: 1px; }\n.main { padding: 48px 32px; max-width: 960px; width: 100%; margin: 0px auto; min-height: calc(-110px + 800px); }\n.main h1 { font-size: 40px; margin: 0px 0px 16px; }\n.main h2 { font-size: 22px; margin: 24px 0px 12px; }\n.main p { font-size: 16px; line-height: 1.6; color: rgb(51, 51, 51); }\n.hero { background: linear-gradient(135deg, rgb(13, 31, 60), rgb(26, 58, 106)); color: white; border-radius: 12px; padding: 48px; }\n.hero h1 { color: white; }\n.hero p { color: rgb(196, 209, 232); font-size: 18px; }\n.hero .cta { display: inline-block; margin-top: 16px; padding: 10px 18px; background: white; color: rgb(13, 31, 60); border-radius: 6px; font-weight: 600; }\n.posts { display: grid; gap: 12px; margin-top: 24px; }\n.post-link { display: block; padding: 16px 20px; background: rgb(244, 246, 250); border-radius: 8px; border: 1px solid rgb(230, 233, 239); text-decoration: none; color: rgb(17, 17, 17); }\n.post-link h3 { margin: 0px 0px 4px; font-size: 16px; }\n.post-link p { margin: 0px; color: rgb(102, 102, 102); font-size: 13px; }\n.stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 16px; }\n.stat { background: white; border: 1px solid rgb(230, 233, 239); border-radius: 8px; padding: 18px; }\n.stat .num { font-size: 28px; font-weight: 700; }\n.stat .label { font-size: 12px; color: rgb(136, 136, 136); text-transform: uppercase; letter-spacing: 0.5px; }\n.footer { padding: 16px 32px; color: rgb(136, 136, 136); font-size: 12px; border-top: 1px solid rgb(234, 234, 234); }\n.longread { max-width: 720px; margin: 0px auto; font-family: Georgia, \"Times New Roman\", serif; color: rgb(26, 26, 26); }\n.longread h1, .longread h2, .longread h3, .longread h4 { font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; letter-spacing: -0.01em; }\n.lr-eyebrow { text-transform: uppercase; letter-spacing: 0.12em; font-size: 12px; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; color: rgb(107, 107, 107); margin: 0px 0px 14px; }\n.longread h1 { font-size: 44px; line-height: 1.15; margin: 0px 0px 18px; }\n.longread h2 { font-size: 26px; line-height: 1.3; margin: 56px 0px 14px; }\n.longread h3 { font-size: 19px; line-height: 1.4; margin: 36px 0px 10px; }\n.longread h4 { font-size: 15px; margin: 0px 0px 8px; }\n.lr-lede { font-size: 22px; line-height: 1.55; color: rgb(42, 42, 42); font-style: italic; margin: 0px 0px 24px; }\n.longread p { font-size: 18px; line-height: 1.75; color: rgb(42, 42, 42); margin: 0px 0px 20px; }\n.lr-byline { display: flex; justify-content: space-between; align-items: center; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; font-size: 13px; color: rgb(107, 107, 107); border-top: 1px solid rgb(238, 238, 238); border-bottom: 1px solid rgb(238, 238, 238); padding: 14px 0px; margin: 0px 0px 36px; }\n.lr-figure { margin: 36px 0px; }\n.lr-figure-img { background: linear-gradient(135deg, rgb(42, 63, 106), rgb(91, 140, 255) 60%, rgb(201, 163, 255)); border-radius: 6px; height: 320px; display: grid; place-items: center; color: rgba(255, 255, 255, 0.5); font-family: monospace; font-size: 11px; text-transform: uppercase; letter-spacing: 0.2em; }\n.lr-figure figcaption { margin-top: 10px; font-size: 13px; color: rgb(107, 107, 107); font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; }\n.longread ul, .longread ol { padding-left: 1.4em; margin: 0px 0px 24px; }\n.longread li { font-size: 17px; line-height: 1.7; color: rgb(42, 42, 42); margin-bottom: 10px; }\n.longread blockquote { margin: 32px 0px; padding: 0px 0px 0px 22px; border-left: 3px solid rgb(91, 140, 255); }\n.longread blockquote p { font-size: 22px; font-style: italic; line-height: 1.55; color: rgb(26, 26, 26); }\n.longread blockquote cite { display: block; font-size: 13px; color: rgb(107, 107, 107); font-style: normal; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; margin-top: 6px; }\n.longread pre { background: rgb(14, 17, 23); color: rgb(226, 232, 240); padding: 18px 20px; border-radius: 6px; font-size: 13px; line-height: 1.6; overflow-x: auto; margin: 0px 0px 28px; }\n.longread code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }\n.lr-callout { background: rgb(240, 244, 255); border: 1px solid rgb(214, 224, 255); border-radius: 8px; padding: 18px 22px; margin: 32px 0px; }\n.lr-callout h4 { font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; font-size: 13px; text-transform: uppercase; letter-spacing: 0.1em; color: rgb(91, 140, 255); margin: 0px 0px 8px; }\n.lr-callout p { font-size: 16px; margin: 0px; }\n.lr-table { width: 100%; border-collapse: collapse; margin: 0px 0px 28px; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; }\n.lr-table th, .lr-table td { padding: 10px 12px; text-align: left; border-bottom: 1px solid rgb(238, 238, 238); font-size: 14px; }\n.lr-table th { color: rgb(107, 107, 107); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; }\n.lr-link { color: rgb(91, 140, 255); text-decoration: underline; text-underline-offset: 2px; }\n.lr-divider { border-width: 1px 0px 0px; border-style: solid none none; border-color: rgb(238, 238, 238) currentcolor currentcolor; border-image: initial; margin: 48px 0px; }\n.lr-footer { font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; }\n.lr-tags { display: flex; gap: 8px; margin: 0px 0px 16px; }\n.lr-tag { background: rgb(244, 246, 250); border: 1px solid rgb(230, 233, 239); border-radius: 999px; padding: 4px 12px; font-size: 12px; color: rgb(68, 68, 68); }\n.lr-also { font-size: 14px; color: rgb(107, 107, 107); }",
-      "capturedAt": "2026-04-27T00:50:13.581Z",
+      "capturedAt": "2026-04-29T04:42:28.448Z",
       "viewport": {
         "width": 1280,
         "height": 800
@@ -4006,14 +3878,14 @@
       "id": "component:StatCard-4191da",
       "status": "ok",
       "tree": {
-        "id": "t8-n10",
+        "id": "t8-n6",
         "kind": "el",
         "tag": "body",
         "attrs": {},
         "style": {},
         "children": [
           {
-            "id": "t8-n9",
+            "id": "t8-n5",
             "kind": "el",
             "tag": "div",
             "attrs": {
@@ -4028,12 +3900,12 @@
             },
             "children": [
               {
-                "id": "t8-n8",
+                "id": "t8-n4",
                 "kind": "el",
                 "tag": "div",
                 "attrs": {
                   "data-spidey-component": "StatCard",
-                  "data-spidey-props": "{\"label\":\"cupressus velut caelestis cruciamentum\",\"value\":\"defessus\",\"delta\":35}"
+                  "data-spidey-props": "{\"label\":\"cupressus velut caelestis cruciamentum\",\"value\":\"defessus\"}"
                 },
                 "style": {
                   "background": "white",
@@ -4078,37 +3950,6 @@
                         "value": "defessus"
                       }
                     ]
-                  },
-                  {
-                    "id": "t8-n7",
-                    "kind": "el",
-                    "tag": "div",
-                    "attrs": {},
-                    "style": {
-                      "margin-top": "23px",
-                      "font-size": "18px",
-                      "color": "#ae00ff",
-                      "margin-right": "23px",
-                      "margin-bottom": "23px",
-                      "margin-left": "23px"
-                    },
-                    "children": [
-                      {
-                        "id": "t8-n4",
-                        "kind": "text",
-                        "value": "▲35%35%"
-                      },
-                      {
-                        "id": "t8-n5",
-                        "kind": "text",
-                        "value": "35"
-                      },
-                      {
-                        "id": "t8-n6",
-                        "kind": "text",
-                        "value": "%"
-                      }
-                    ]
                   }
                 ]
               }
@@ -4117,7 +3958,7 @@
         ]
       },
       "css": "* { box-sizing: border-box; }\nhtml, body { margin: 0px; padding: 0px; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; color: rgb(17, 17, 17); background: rgb(255, 255, 255); }\n.nav { display: flex; gap: 20px; align-items: center; padding: 16px 32px; background: rgb(17, 17, 17); color: white; }\n.nav a { color: rgb(204, 204, 204); text-decoration: none; font-size: 14px; }\n.nav a:hover { color: white; }\n.nav .brand { font-weight: 700; font-size: 18px; color: white; margin-right: auto; letter-spacing: 1px; }\n.main { padding: 48px 32px; max-width: 960px; width: 100%; margin: 0px auto; min-height: calc(-110px + 800px); }\n.main h1 { font-size: 40px; margin: 0px 0px 16px; }\n.main h2 { font-size: 22px; margin: 24px 0px 12px; }\n.main p { font-size: 16px; line-height: 1.6; color: rgb(51, 51, 51); }\n.hero { background: linear-gradient(135deg, rgb(13, 31, 60), rgb(26, 58, 106)); color: white; border-radius: 12px; padding: 48px; }\n.hero h1 { color: white; }\n.hero p { color: rgb(196, 209, 232); font-size: 18px; }\n.hero .cta { display: inline-block; margin-top: 16px; padding: 10px 18px; background: white; color: rgb(13, 31, 60); border-radius: 6px; font-weight: 600; }\n.posts { display: grid; gap: 12px; margin-top: 24px; }\n.post-link { display: block; padding: 16px 20px; background: rgb(244, 246, 250); border-radius: 8px; border: 1px solid rgb(230, 233, 239); text-decoration: none; color: rgb(17, 17, 17); }\n.post-link h3 { margin: 0px 0px 4px; font-size: 16px; }\n.post-link p { margin: 0px; color: rgb(102, 102, 102); font-size: 13px; }\n.stat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 16px; }\n.stat { background: white; border: 1px solid rgb(230, 233, 239); border-radius: 8px; padding: 18px; }\n.stat .num { font-size: 28px; font-weight: 700; }\n.stat .label { font-size: 12px; color: rgb(136, 136, 136); text-transform: uppercase; letter-spacing: 0.5px; }\n.footer { padding: 16px 32px; color: rgb(136, 136, 136); font-size: 12px; border-top: 1px solid rgb(234, 234, 234); }\n.longread { max-width: 720px; margin: 0px auto; font-family: Georgia, \"Times New Roman\", serif; color: rgb(26, 26, 26); }\n.longread h1, .longread h2, .longread h3, .longread h4 { font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; letter-spacing: -0.01em; }\n.lr-eyebrow { text-transform: uppercase; letter-spacing: 0.12em; font-size: 12px; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; color: rgb(107, 107, 107); margin: 0px 0px 14px; }\n.longread h1 { font-size: 44px; line-height: 1.15; margin: 0px 0px 18px; }\n.longread h2 { font-size: 26px; line-height: 1.3; margin: 56px 0px 14px; }\n.longread h3 { font-size: 19px; line-height: 1.4; margin: 36px 0px 10px; }\n.longread h4 { font-size: 15px; margin: 0px 0px 8px; }\n.lr-lede { font-size: 22px; line-height: 1.55; color: rgb(42, 42, 42); font-style: italic; margin: 0px 0px 24px; }\n.longread p { font-size: 18px; line-height: 1.75; color: rgb(42, 42, 42); margin: 0px 0px 20px; }\n.lr-byline { display: flex; justify-content: space-between; align-items: center; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; font-size: 13px; color: rgb(107, 107, 107); border-top: 1px solid rgb(238, 238, 238); border-bottom: 1px solid rgb(238, 238, 238); padding: 14px 0px; margin: 0px 0px 36px; }\n.lr-figure { margin: 36px 0px; }\n.lr-figure-img { background: linear-gradient(135deg, rgb(42, 63, 106), rgb(91, 140, 255) 60%, rgb(201, 163, 255)); border-radius: 6px; height: 320px; display: grid; place-items: center; color: rgba(255, 255, 255, 0.5); font-family: monospace; font-size: 11px; text-transform: uppercase; letter-spacing: 0.2em; }\n.lr-figure figcaption { margin-top: 10px; font-size: 13px; color: rgb(107, 107, 107); font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; }\n.longread ul, .longread ol { padding-left: 1.4em; margin: 0px 0px 24px; }\n.longread li { font-size: 17px; line-height: 1.7; color: rgb(42, 42, 42); margin-bottom: 10px; }\n.longread blockquote { margin: 32px 0px; padding: 0px 0px 0px 22px; border-left: 3px solid rgb(91, 140, 255); }\n.longread blockquote p { font-size: 22px; font-style: italic; line-height: 1.55; color: rgb(26, 26, 26); }\n.longread blockquote cite { display: block; font-size: 13px; color: rgb(107, 107, 107); font-style: normal; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; margin-top: 6px; }\n.longread pre { background: rgb(14, 17, 23); color: rgb(226, 232, 240); padding: 18px 20px; border-radius: 6px; font-size: 13px; line-height: 1.6; overflow-x: auto; margin: 0px 0px 28px; }\n.longread code { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }\n.lr-callout { background: rgb(240, 244, 255); border: 1px solid rgb(214, 224, 255); border-radius: 8px; padding: 18px 22px; margin: 32px 0px; }\n.lr-callout h4 { font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; font-size: 13px; text-transform: uppercase; letter-spacing: 0.1em; color: rgb(91, 140, 255); margin: 0px 0px 8px; }\n.lr-callout p { font-size: 16px; margin: 0px; }\n.lr-table { width: 100%; border-collapse: collapse; margin: 0px 0px 28px; font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; }\n.lr-table th, .lr-table td { padding: 10px 12px; text-align: left; border-bottom: 1px solid rgb(238, 238, 238); font-size: 14px; }\n.lr-table th { color: rgb(107, 107, 107); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em; }\n.lr-link { color: rgb(91, 140, 255); text-decoration: underline; text-underline-offset: 2px; }\n.lr-divider { border-width: 1px 0px 0px; border-style: solid none none; border-color: rgb(238, 238, 238) currentcolor currentcolor; border-image: initial; margin: 48px 0px; }\n.lr-footer { font-family: -apple-system, BlinkMacSystemFont, \"Segoe UI\", Roboto, sans-serif; }\n.lr-tags { display: flex; gap: 8px; margin: 0px 0px 16px; }\n.lr-tag { background: rgb(244, 246, 250); border: 1px solid rgb(230, 233, 239); border-radius: 999px; padding: 4px 12px; font-size: 12px; color: rgb(68, 68, 68); }\n.lr-also { font-size: 14px; color: rgb(107, 107, 107); }",
-      "capturedAt": "2026-04-27T00:50:14.862Z",
+      "capturedAt": "2026-04-29T04:42:29.967Z",
       "viewport": {
         "width": 1280,
         "height": 800
@@ -4128,14 +3969,13 @@
         "file": "components/StatCard.tsx",
         "propsUsed": {
           "label": "cupressus velut caelestis cruciamentum",
-          "value": "defessus",
-          "delta": 35
+          "value": "defessus"
         }
       },
       "title": "Globex Demo",
       "containerSize": {
         "width": 372,
-        "height": 143
+        "height": 122
       },
       "htmlAttrs": {
         "lang": "en"
@@ -4206,5 +4046,5 @@
       }
     }
   ],
-  "editedAt": "2026-04-29T03:27:46.208Z"
+  "editedAt": "2026-04-29T05:25:20.717Z"
 }
