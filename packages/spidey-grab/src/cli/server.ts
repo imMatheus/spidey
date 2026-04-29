@@ -1,0 +1,154 @@
+import { createServer, IncomingMessage, ServerResponse } from "node:http";
+import { readFileSync, existsSync } from "node:fs";
+import { resolve, dirname } from "node:path";
+import { fileURLToPath } from "node:url";
+import { WebSocketServer, WebSocket } from "ws";
+import { jobStore } from "./jobs";
+import { runJob } from "./agent";
+import type { CreateJobRequest, CreateJobResponse, ServerEvent } from "../protocol";
+
+interface ServerOpts {
+  port: number;
+  cwd: string;
+  claudeBin: string;
+}
+
+export function startServer(opts: ServerOpts) {
+  const injectPath = resolveInjectBundle();
+
+  const httpServer = createServer((req, res) => {
+    setCors(res);
+
+    if (req.method === "OPTIONS") {
+      res.writeHead(204);
+      res.end();
+      return;
+    }
+
+    const url = req.url || "/";
+
+    if (req.method === "GET" && (url === "/" || url === "/health")) {
+      res.writeHead(200, { "content-type": "application/json" });
+      res.end(JSON.stringify({ ok: true, service: "spidey-grab", cwd: opts.cwd }));
+      return;
+    }
+
+    if (req.method === "GET" && (url === "/spidey-grab.js" || url === "/inject.js")) {
+      serveInjectBundle(res, injectPath);
+      return;
+    }
+
+    if (req.method === "POST" && url === "/jobs") {
+      handleCreateJob(req, res, opts);
+      return;
+    }
+
+    res.writeHead(404, { "content-type": "text/plain" });
+    res.end("not found");
+  });
+
+  const wss = new WebSocketServer({ server: httpServer, path: "/ws" });
+  wss.on("connection", (socket) => {
+    const hello: ServerEvent = { type: "hello", jobs: jobStore.list() };
+    sendSafe(socket, hello);
+    const unsubscribe = jobStore.subscribe((event) => sendSafe(socket, event));
+    socket.on("close", unsubscribe);
+    socket.on("error", () => {});
+  });
+
+  httpServer.listen(opts.port, () => {
+    printBanner(opts);
+  });
+
+  const shutdown = () => {
+    jobStore.cancelAll();
+    wss.close();
+    httpServer.close(() => process.exit(0));
+    setTimeout(() => process.exit(0), 1000).unref();
+  };
+  process.on("SIGINT", shutdown);
+  process.on("SIGTERM", shutdown);
+}
+
+function handleCreateJob(req: IncomingMessage, res: ServerResponse, opts: ServerOpts) {
+  let body = "";
+  req.on("data", (chunk) => {
+    body += chunk;
+    if (body.length > 1_000_000) {
+      req.destroy();
+    }
+  });
+  req.on("end", () => {
+    let parsed: CreateJobRequest;
+    try {
+      parsed = JSON.parse(body);
+    } catch {
+      res.writeHead(400, { "content-type": "application/json" });
+      res.end(JSON.stringify({ error: "invalid json" }));
+      return;
+    }
+    if (!parsed?.prompt || typeof parsed.prompt !== "string") {
+      res.writeHead(400, { "content-type": "application/json" });
+      res.end(JSON.stringify({ error: "prompt is required" }));
+      return;
+    }
+    const jobId = runJob(parsed, { cwd: opts.cwd, claudeBin: opts.claudeBin });
+    const body_: CreateJobResponse = { jobId };
+    res.writeHead(202, { "content-type": "application/json" });
+    res.end(JSON.stringify(body_));
+  });
+}
+
+function serveInjectBundle(res: ServerResponse, injectPath: string) {
+  if (!existsSync(injectPath)) {
+    res.writeHead(500, { "content-type": "text/plain" });
+    res.end(`spidey-grab inject bundle not found at ${injectPath}. Run 'bun run build' in packages/spidey-grab.`);
+    return;
+  }
+  const content = readFileSync(injectPath);
+  res.writeHead(200, {
+    "content-type": "application/javascript; charset=utf-8",
+    "cache-control": "no-store",
+  });
+  res.end(content);
+}
+
+function setCors(res: ServerResponse) {
+  res.setHeader("access-control-allow-origin", "*");
+  res.setHeader("access-control-allow-methods", "GET,POST,OPTIONS");
+  res.setHeader("access-control-allow-headers", "content-type");
+}
+
+function sendSafe(socket: WebSocket, event: ServerEvent) {
+  if (socket.readyState !== socket.OPEN) return;
+  try {
+    socket.send(JSON.stringify(event));
+  } catch {
+    // ignore
+  }
+}
+
+function resolveInjectBundle(): string {
+  const here = typeof __dirname === "string" ? __dirname : dirname(fileURLToPath(import.meta.url));
+  return resolve(here, "..", "inject.js");
+}
+
+function printBanner(opts: ServerOpts) {
+  const tag = `<script src="http://localhost:${opts.port}/spidey-grab.js"></script>`;
+  const lines = [
+    "",
+    "  spidey-grab is running",
+    "",
+    `  port: ${opts.port}`,
+    `  cwd:  ${opts.cwd}`,
+    `  claude: ${opts.claudeBin}`,
+    "",
+    "  paste this into your app's <head>:",
+    "",
+    `    ${tag}`,
+    "",
+    "  ctrl+c to stop",
+    "",
+  ];
+  process.stdout.write(lines.join("\n") + "\n");
+}

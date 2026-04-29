@@ -20,11 +20,11 @@ function Layout({ children }: { children: React.ReactNode }) {
 function Home() {
   return (
     <Layout>
-      <h1>Welcome to Acme</h1>
+      <h1 style={{ color: 'red' }}>Welcome to Acme</h1>
       <p className="lead">
         A demo Vite app for testing Spidey. Each link is a different route.
       </p>
-      <div className="card-grid">
+      <div className="card-grid" style={{ gridTemplateColumns: '1fr' }}>
         <div className="card">
           <h3>Fast</h3>
           <p>HMR, instant cold starts.</p>
@@ -45,14 +45,14 @@ function Home() {
 function About() {
   return (
     <Layout>
-      <h1>About</h1>
+      <h1 style={{ color: 'orange' }}>About</h1>
       <p>Acme is a fictional company that exists only inside this demo.</p>
       <ul>
         <li>Founded in 2026</li>
         <li>Headquartered nowhere</li>
-        <li>Specializes in stress-testing canvas viewers</li>
+        <li>Specializes in stress-testing canvas viewers under heavy load, with a particular focus on edge cases, unusual viewport configurations, and ensuring smooth performance across a wide range of devices and browsers</li>
       </ul>
-      <ColorBox variant="green" text="matheus tester" />
+      <ColorBox variant="red" text="matheus tester" />
     </Layout>
   )
 }

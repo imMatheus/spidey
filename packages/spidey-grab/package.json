@@ -1,0 +1,30 @@
+{
+  "name": "spidey-grab",
+  "version": "0.1.0",
+  "description": "Visual element-level Claude prompts for any local React app",
+  "private": true,
+  "type": "module",
+  "bin": {
+    "spidey-grab": "./bin/spidey-grab.cjs"
+  },
+  "files": [
+    "bin",
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "start": "node bin/spidey-grab.js",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "bippy": "^0.5.39",
+    "ws": "^8.20.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/ws": "^8.5.12",
+    "tsup": "^8.5.1",
+    "typescript": "^5.5.0"
+  }
+}
