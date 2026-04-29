@@ -45,7 +45,7 @@ function Home() {
 function About() {
   return (
     <Layout>
-      <h1 style={{ color: 'orange' }}>About</h1>
+      <h1 style={{ color: 'green' }}>About</h1>
       <p>Acme is a fictional company that exists only inside this demo.</p>
       <ul>
         <li>Founded in 2026 by a small group of engineers passionate about building reliable, well-tested canvas tooling</li>

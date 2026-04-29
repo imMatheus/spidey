@@ -90,6 +90,18 @@ export class OverlayLayer {
     this.positionEntry(entry);
   }
 
+  updateRefinder(id: symbol, refinder: Refinder) {
+    const entry = this.anchored.get(id);
+    if (!entry) return;
+    entry.refinder = refinder;
+  }
+
+  setAnimatingPosition(id: symbol, animating: boolean) {
+    const entry = this.anchored.get(id);
+    if (!entry) return;
+    entry.outline.classList.toggle("animating-position", animating);
+  }
+
   setState(id: symbol, state: OutlineState) {
     const entry = this.anchored.get(id);
     if (!entry) return;

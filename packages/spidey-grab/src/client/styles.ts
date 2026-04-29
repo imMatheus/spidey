@@ -177,6 +177,22 @@ export const STYLES = `
 .outline.failed { border-color: var(--ds-red-700); }
 .outline.fading { opacity: 0; }
 
+.outline.animating-position {
+  transition:
+    left 280ms cubic-bezier(.175, .885, .32, 1.1),
+    top 280ms cubic-bezier(.175, .885, .32, 1.1),
+    width 280ms cubic-bezier(.175, .885, .32, 1.1),
+    height 280ms cubic-bezier(.175, .885, .32, 1.1),
+    border-color 150ms ease,
+    opacity 400ms ease;
+}
+
+.prompt-box.animating-position {
+  transition:
+    left 280ms cubic-bezier(.175, .885, .32, 1.1),
+    top 280ms cubic-bezier(.175, .885, .32, 1.1);
+}
+
 .tag-label {
   position: fixed;
   background: var(--ds-blue-700);

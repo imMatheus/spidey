@@ -6,23 +6,39 @@ export interface PromptBoxOpts {
   resolved: ResolvedTarget;
   clickX?: number;
   clickY?: number;
-  onSubmit: (prompt: string) => void;
+  onSubmit: (prompt: string, target: Element, resolved: ResolvedTarget) => void;
   onCancel: () => void;
+  onNavigate?: (
+    current: Element,
+    direction: "up" | "down" | "left" | "right",
+  ) => Promise<{ target: Element; resolved: ResolvedTarget } | null>;
 }
+
+const POSITION_ANIM_MS = 280;
 
 export class PromptBox {
   private el: HTMLDivElement;
   private textarea: HTMLTextAreaElement;
+  private fileSpan: HTMLSpanElement;
+  private tagSpan: HTMLSpanElement;
   private opts: PromptBoxOpts;
   private rafId: number | null = null;
   private boundKey: (e: KeyboardEvent) => void;
   private boundDown: (e: PointerEvent) => void;
   private destroyed = false;
+
+  private currentTarget: Element;
+  private currentResolved: ResolvedTarget;
   private clickOffsetX: number | null = null;
   private clickOffsetY: number | null = null;
+  private animationTimer: number | null = null;
+  private navigating = false;
 
   constructor(opts: PromptBoxOpts) {
     this.opts = opts;
+    this.currentTarget = opts.target;
+    this.currentResolved = opts.resolved;
+
     if (opts.clickX !== undefined && opts.clickY !== undefined) {
       const rect = opts.target.getBoundingClientRect();
       this.clickOffsetX = opts.clickX - rect.left;
@@ -36,12 +52,12 @@ export class PromptBox {
     meta.className = "meta";
     const fileSpan = document.createElement("span");
     fileSpan.className = "file";
-    fileSpan.textContent = formatLocation(opts.resolved);
     const tagSpan = document.createElement("span");
-    tagSpan.textContent = `<${(opts.target.tagName || "").toLowerCase()}>`;
     meta.appendChild(fileSpan);
     meta.appendChild(tagSpan);
     el.appendChild(meta);
+    this.fileSpan = fileSpan;
+    this.tagSpan = tagSpan;
 
     const textarea = document.createElement("textarea");
     textarea.placeholder = "describe the change...";
@@ -53,7 +69,7 @@ export class PromptBox {
     row.className = "row";
     const hint = document.createElement("span");
     hint.className = "hint";
-    hint.textContent = "enter to send · shift+enter newline · esc cancel";
+    hint.textContent = "enter to send · ↑↓←→ navigate · esc cancel";
     const button = document.createElement("button");
     button.textContent = "send";
     button.addEventListener("click", () => this.submit());
@@ -63,6 +79,8 @@ export class PromptBox {
 
     opts.parent.appendChild(el);
     this.el = el;
+
+    this.updateMeta();
 
     this.boundKey = (e) => this.onKey(e);
     this.boundDown = (e) => this.onDocumentDown(e);
@@ -81,15 +99,66 @@ export class PromptBox {
     if (this.destroyed) return;
     this.destroyed = true;
     if (this.rafId !== null) cancelAnimationFrame(this.rafId);
+    if (this.animationTimer !== null) clearTimeout(this.animationTimer);
     this.textarea.removeEventListener("keydown", this.boundKey);
     window.removeEventListener("pointerdown", this.boundDown, true);
     this.el.remove();
   }
 
+  getCurrentTarget(): Element {
+    return this.currentTarget;
+  }
+
+  getCurrentResolved(): ResolvedTarget {
+    return this.currentResolved;
+  }
+
+  setTarget(target: Element, resolved: ResolvedTarget) {
+    this.currentTarget = target;
+    this.currentResolved = resolved;
+
+    // re-center the box on the new element so it doesn't drift after several
+    // navigations. We reset to the element's horizontal middle.
+    const rect = target.getBoundingClientRect();
+    this.clickOffsetX = rect.width / 2;
+    this.clickOffsetY = rect.height / 2;
+
+    this.updateMeta();
+    this.beginPositionAnimation();
+  }
+
+  private beginPositionAnimation() {
+    this.el.classList.add("animating-position");
+    if (this.animationTimer !== null) clearTimeout(this.animationTimer);
+    this.animationTimer = window.setTimeout(() => {
+      this.el.classList.remove("animating-position");
+      this.animationTimer = null;
+    }, POSITION_ANIM_MS + 40);
+  }
+
+  private updateMeta() {
+    this.fileSpan.textContent = formatLocation(this.currentResolved);
+    this.tagSpan.textContent = `<${(this.currentTarget.tagName || "").toLowerCase()}>`;
+  }
+
   private submit() {
     const value = this.textarea.value.trim();
     if (!value) return;
-    this.opts.onSubmit(value);
+    this.opts.onSubmit(value, this.currentTarget, this.currentResolved);
+  }
+
+  private async tryNavigate(direction: "up" | "down" | "left" | "right") {
+    if (!this.opts.onNavigate || this.navigating) return;
+    this.navigating = true;
+    try {
+      const result = await this.opts.onNavigate(this.currentTarget, direction);
+      if (this.destroyed) return;
+      if (result) {
+        this.setTarget(result.target, result.resolved);
+      }
+    } finally {
+      this.navigating = false;
+    }
   }
 
   private onKey(e: KeyboardEvent) {
@@ -103,6 +172,26 @@ export class PromptBox {
       e.preventDefault();
       e.stopPropagation();
       this.submit();
+      return;
+    }
+    if (
+      (e.key === "ArrowUp" ||
+        e.key === "ArrowDown" ||
+        e.key === "ArrowLeft" ||
+        e.key === "ArrowRight") &&
+      this.textarea.value.length === 0
+    ) {
+      e.preventDefault();
+      e.stopPropagation();
+      const dir =
+        e.key === "ArrowUp"
+          ? "up"
+          : e.key === "ArrowDown"
+            ? "down"
+            : e.key === "ArrowLeft"
+              ? "left"
+              : "right";
+      void this.tryNavigate(dir);
     }
   }
 
@@ -123,19 +212,15 @@ export class PromptBox {
   }
 
   private position() {
-    const rect = this.opts.target.getBoundingClientRect();
+    const rect = this.currentTarget.getBoundingClientRect();
     const boxWidth = this.el.offsetWidth || 360;
     const boxHeight = this.el.offsetHeight || 100;
     const margin = 8;
 
-    // Anchor horizontally on the click point if we have one (centered on the
-    // click, but kept inside the element's horizontal bounds where possible),
-    // otherwise fall back to the element's left edge.
     let left: number;
     if (this.clickOffsetX !== null) {
       const anchorX = rect.left + this.clickOffsetX;
       left = anchorX - boxWidth / 2;
-      // keep the box within the element's bounds horizontally if it fits
       if (boxWidth <= rect.width) {
         left = Math.max(rect.left, Math.min(left, rect.right - boxWidth));
       }

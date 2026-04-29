@@ -136,11 +136,12 @@ function boot() {
   async function openPromptFor(target: Element, clickX?: number, clickY?: number) {
     closePromptBox();
     const resolved = await resolveTarget(target);
-    const fp = buildFingerprint(target, resolved);
+    const initialFp = buildFingerprint(target, resolved);
+    let currentFp = initialFp;
 
     selectedOutlineId = overlay.attach(target, "selected", {
       withBadge: false,
-      refinder: () => findByFingerprint(fp),
+      refinder: () => findByFingerprint(currentFp),
     });
 
     activePromptBox = new PromptBox({
@@ -149,16 +150,17 @@ function boot() {
       resolved,
       clickX,
       clickY,
-      onSubmit: async (prompt) => {
+      onSubmit: async (prompt, submittedTarget, submittedResolved) => {
         const box = activePromptBox;
         activePromptBox = null;
         box?.destroy();
         clearSelected();
 
+        const fp = buildFingerprint(submittedTarget, submittedResolved);
         const req: CreateJobRequest = {
           prompt,
-          source: resolved.source,
-          context: resolved.context,
+          source: submittedResolved.source,
+          context: submittedResolved.context,
         };
 
         try {
@@ -172,7 +174,7 @@ function boot() {
             return;
           }
           const body = (await res.json()) as CreateJobResponse;
-          status.track(body.jobId, target, fp, { persist: true });
+          status.track(body.jobId, submittedTarget, fp, { persist: true });
         } catch (err) {
           console.error("[spidey-grab] could not reach daemon", err);
         }
@@ -180,7 +182,60 @@ function boot() {
       onCancel: () => {
         closePromptBox();
       },
+      onNavigate: async (current, direction) => {
+        const next =
+          direction === "up"
+            ? navigateUp(current)
+            : direction === "down"
+              ? navigateDown(current)
+              : direction === "left"
+                ? navigatePrevSibling(current)
+                : navigateNextSibling(current);
+        if (!next) return null;
+        const nextResolved = await resolveTarget(next);
+        const nextFp = buildFingerprint(next, nextResolved);
+        if (selectedOutlineId !== null) {
+          overlay.setAnimatingPosition(selectedOutlineId, true);
+          overlay.retarget(selectedOutlineId, next);
+          overlay.updateRefinder(selectedOutlineId, () => findByFingerprint(nextFp));
+          // clear the animating-position class after the transition window so
+          // future scroll/resize positioning doesn't lag through the transition.
+          window.setTimeout(() => {
+            if (selectedOutlineId !== null) {
+              overlay.setAnimatingPosition(selectedOutlineId, false);
+            }
+          }, 320);
+        }
+        currentFp = nextFp;
+        return { target: next, resolved: nextResolved };
+      },
     });
+  }
+
+  function navigateUp(target: Element): Element | null {
+    let parent = target.parentElement;
+    while (parent && isOwnNode(parent)) parent = parent.parentElement;
+    if (!parent) return null;
+    if (parent === document.documentElement) return null;
+    return parent;
+  }
+
+  function navigateDown(target: Element): Element | null {
+    let child: Element | null = target.firstElementChild;
+    while (child && isOwnNode(child)) child = child.nextElementSibling;
+    return child;
+  }
+
+  function navigatePrevSibling(target: Element): Element | null {
+    let sib: Element | null = target.previousElementSibling;
+    while (sib && isOwnNode(sib)) sib = sib.previousElementSibling;
+    return sib;
+  }
+
+  function navigateNextSibling(target: Element): Element | null {
+    let sib: Element | null = target.nextElementSibling;
+    while (sib && isOwnNode(sib)) sib = sib.nextElementSibling;
+    return sib;
   }
 
   function recoverFromHello(event: Extract<ServerEvent, { type: "hello" }>) {
