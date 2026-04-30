@@ -241,6 +241,25 @@ export const STYLES = `
 .outline.running {
   border-color: var(--ds-amber-700);
   box-shadow: 0 0 0 1px color-mix(in oklch, var(--ds-amber-700) 25%, transparent);
+  overflow: hidden;
+}
+.outline.running::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    color-mix(in oklch, var(--ds-amber-700) 22%, transparent) 50%,
+    transparent 100%
+  );
+  transform: translateX(-100%);
+  animation: spidey-shimmer 1.6s ease-in-out infinite;
+}
+@keyframes spidey-shimmer {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
 }
 .outline.done { border-color: var(--ds-green-700); }
 .outline.failed { border-color: var(--ds-red-700); }
