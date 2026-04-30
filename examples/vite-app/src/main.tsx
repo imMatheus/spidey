@@ -76,7 +76,7 @@ function About() {
 
 function Products() {
   const items = [
-    { id: 1, name: 'Widget', price: '$10', tone: 'ok' as const },
+    { id: 1, name: 'skrt', price: '$10', tone: 'ok' as const },
     { id: 2, name: 'Gizmo', price: '$25', tone: 'warn' as const },
     { id: 3, name: 'Doohickey', price: '$8', tone: 'info' as const },
     { id: 4, name: 'Sprocket', price: '$15', tone: 'ok' as const },
