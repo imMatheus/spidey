@@ -26,7 +26,7 @@ export function Layout({ children }: { children: ReactNode }) {
             to="/"
             className="flex items-center gap-2 no-underline text-zinc-900 dark:text-zinc-100 font-semibold"
           >
-            <span className="w-7 h-7 rounded-lg bg-gradient-to-br from-indigo-500 to-fuchsia-400 text-white grid place-items-center font-bold text-sm">
+            <span className="w-7 h-7 rounded-lg bg-gradient-to-br from-indigo-500 to-fuchsia-400 hover:from-green-500 hover:to-green-400 text-white grid place-items-center font-bold text-sm transition-all duration-500 hover:rotate-180">
               L
             </span>
             <span className="text-[15px] tracking-tight">Lattice</span>
