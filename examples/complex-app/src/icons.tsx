@@ -120,3 +120,14 @@ export const SparkIcon = (p: SVGProps<SVGSVGElement>) => (
     <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
   </svg>
 );
+export const SunIcon = (p: SVGProps<SVGSVGElement>) => (
+  <svg {...svg(p)}>
+    <circle cx="12" cy="12" r="4" />
+    <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" />
+  </svg>
+);
+export const MoonIcon = (p: SVGProps<SVGSVGElement>) => (
+  <svg {...svg(p)}>
+    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+  </svg>
+);

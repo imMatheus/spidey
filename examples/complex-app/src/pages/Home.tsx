@@ -52,18 +52,18 @@ const TESTIMONIALS = [
 export function Home() {
   return (
     <Layout>
-      <section className="hero">
-        <div className="hero-inner">
+      <section className="grid grid-cols-[1.1fr_1fr] gap-10 items-center pt-14 pb-10">
+        <div>
           <Badge tone="brand" dot>
             v0.1 preview
           </Badge>
-          <h1 className="hero-title">Edit your live app like a Figma file.</h1>
-          <p className="hero-lede">
-            Lattice walks every route, captures the rendered DOM, and hands you
-            a board of design tiles. Move, restyle, even rewrite content — then
-            sync the diff back to your real code.
+          <h1 className="text-5xl leading-[1.05] tracking-tight my-4 text-zinc-900 dark:text-zinc-100">
+            Edit your live app like a Figma file.
+          </h1>
+          <p className="text-lg leading-relaxed text-zinc-500 dark:text-zinc-400 max-w-[540px] mt-0 mb-7">
+            Edit your live app visually and sync changes back to code.
           </p>
-          <div className="hero-cta">
+          <div className="flex gap-3">
             <Button size="lg" iconRight={<ChevronRightIcon />}>
               Get started
             </Button>
@@ -71,24 +71,30 @@ export function Home() {
               View on GitHub
             </Button>
           </div>
-          <div className="hero-meta">
-            <span className="hero-meta-item">
-              <span className="hero-meta-dot dot-emerald" /> 12k weekly captures
+          <div className="flex gap-6 mt-8 text-xs text-zinc-500 dark:text-zinc-400">
+            <span className="inline-flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full inline-block bg-emerald-500" />{" "}
+              12k weekly captures
             </span>
-            <span className="hero-meta-item">
-              <span className="hero-meta-dot dot-amber" /> 3.4k design teams
+            <span className="inline-flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full inline-block bg-amber-500" />{" "}
+              3.4k design teams
             </span>
-            <span className="hero-meta-item">
-              <span className="hero-meta-dot dot-violet" /> 41 frameworks
+            <span className="inline-flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full inline-block bg-violet-500" />{" "}
+              41 frameworks
             </span>
           </div>
         </div>
-        <div className="hero-art" aria-hidden>
-          <div className="hero-art-grid">
+        <div
+          className="relative overflow-hidden rounded-2xl p-6 aspect-[1.1] grid place-items-center bg-gradient-to-br from-[#1e1b3a] via-indigo-600 to-fuchsia-300"
+          aria-hidden
+        >
+          <div className="grid grid-cols-4 gap-3 w-full h-full">
             {Array.from({ length: 12 }).map((_, i) => (
               <div
                 key={i}
-                className="hero-art-tile"
+                className="bg-white/10 border border-white/20 rounded-lg [animation:pulse-tile_3s_ease-in-out_infinite]"
                 style={{ animationDelay: `${i * 80}ms` }}
               />
             ))}
@@ -96,40 +102,56 @@ export function Home() {
         </div>
       </section>
 
-      <section className="section">
-        <div className="section-head">
-          <h2>Why Lattice</h2>
-          <p className="section-lede">
+      <section className="py-10">
+        <div className="text-center mb-8">
+          <h2 className="text-[28px] my-0 mb-2 text-zinc-900 dark:text-zinc-100 font-semibold">
+            Why Lattice
+          </h2>
+          <p className="text-[15px] text-zinc-500 dark:text-zinc-400 mx-auto max-w-[540px]">
             Built so the design surface is the codebase, not a parallel world.
           </p>
         </div>
-        <div className="feature-grid">
+        <div className="grid grid-cols-3 gap-4">
           {FEATURES.map((f) => (
             <Card key={f.title} hoverable>
-              <div className="feature-icon">{f.icon}</div>
-              <div className="feature-title">{f.title}</div>
-              <p className="feature-body">{f.body}</p>
+              <div className="w-10 h-10 grid place-items-center bg-indigo-50 dark:bg-indigo-950/60 text-indigo-600 dark:text-indigo-300 rounded-lg">
+                {f.icon}
+              </div>
+              <div className="text-base font-semibold text-zinc-900 dark:text-zinc-100">
+                {f.title}
+              </div>
+              <p className="text-sm text-zinc-500 dark:text-zinc-400 m-0 leading-relaxed">
+                {f.body}
+              </p>
             </Card>
           ))}
         </div>
       </section>
 
-      <section className="section">
-        <div className="section-head">
-          <h2>Designers ship faster</h2>
-          <p className="section-lede">
+      <section className="py-10">
+        <div className="text-center mb-8">
+          <h2 className="text-[28px] my-0 mb-2 text-zinc-900 dark:text-zinc-100 font-semibold">
+            Designers ship faster
+          </h2>
+          <p className="text-[15px] text-zinc-500 dark:text-zinc-400 mx-auto max-w-[540px]">
             A few teams that switched off the redline shuffle.
           </p>
         </div>
-        <div className="testimonial-grid">
+        <div className="grid grid-cols-3 gap-4">
           {TESTIMONIALS.map((t) => (
             <Card key={t.name} elevated>
-              <p className="testimonial-quote">"{t.quote}"</p>
-              <div className="testimonial-byline">
+              <p className="text-[15px] leading-relaxed m-0 mb-4 text-zinc-800 dark:text-zinc-200">
+                "{t.quote}"
+              </p>
+              <div className="flex items-center gap-2.5">
                 <Avatar name={t.name} size="sm" />
                 <div>
-                  <div className="testimonial-name">{t.name}</div>
-                  <div className="testimonial-role">{t.role}</div>
+                  <div className="text-[13px] font-semibold text-zinc-900 dark:text-zinc-100">
+                    {t.name}
+                  </div>
+                  <div className="text-xs text-zinc-500 dark:text-zinc-400">
+                    {t.role}
+                  </div>
                 </div>
               </div>
             </Card>
@@ -137,18 +159,26 @@ export function Home() {
         </div>
       </section>
 
-      <section className="cta">
-        <div className="cta-inner">
-          <h2>Try it on your own repo.</h2>
-          <p>One command. No config.</p>
-          <pre className="cta-code">
+      <section className="my-12 bg-gradient-to-br from-[#15172b] to-[#2d2a5f] rounded-2xl p-12 text-white text-center">
+        <div>
+          <h2 className="text-[28px] m-0 mb-1.5 font-semibold">
+            Try it on your own repo.
+          </h2>
+          <p className="text-white/70 m-0 mb-5">One command. No config.</p>
+          <pre className="inline-block bg-black/40 border border-white/10 px-4 py-2.5 rounded-lg font-mono text-[13px] m-0 mb-5">
             <code>$ bunx lattice generate</code>
           </pre>
-          <div className="cta-row">
-            <Link to="/products" className="cta-link">
+          <div className="flex gap-6 justify-center">
+            <Link
+              to="/products"
+              className="text-white/85 hover:text-white no-underline text-sm"
+            >
               Browse the demo store →
             </Link>
-            <Link to="/dashboard" className="cta-link">
+            <Link
+              to="/dashboard"
+              className="text-white/85 hover:text-white no-underline text-sm"
+            >
               Open the demo dashboard →
             </Link>
           </div>

@@ -1,5 +1,12 @@
 type Rounded = "none" | "sm" | "md" | "full";
 
+const ROUND: Record<Rounded, string> = {
+  none: "rounded-none",
+  sm: "rounded",
+  md: "rounded-lg",
+  full: "rounded-full",
+};
+
 export function Skeleton({
   width,
   height = 12,
@@ -11,7 +18,7 @@ export function Skeleton({
 }) {
   return (
     <span
-      className={`skel skel-r-${rounded}`}
+      className={`inline-block align-middle bg-[linear-gradient(90deg,#eef0f2_0%,#f7f8fa_50%,#eef0f2_100%)] dark:bg-[linear-gradient(90deg,#27272a_0%,#3f3f46_50%,#27272a_100%)] [background-size:200%_100%] [animation:shimmer_1.4s_ease-in-out_infinite] ${ROUND[rounded]}`}
       style={{ width, height }}
     />
   );
@@ -19,7 +26,7 @@ export function Skeleton({
 
 export function SkeletonText({ lines = 3 }: { lines?: number }) {
   return (
-    <span className="skel-text">
+    <span className="flex flex-col gap-1.5">
       {Array.from({ length: lines }).map((_, i) => (
         <Skeleton
           key={i}

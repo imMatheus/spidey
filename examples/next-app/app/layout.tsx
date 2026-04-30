@@ -9,6 +9,9 @@ export const metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
+      <head>
+        <script src="http://localhost:7878/spidey-grab.js" async />
+      </head>
       <body>
         <Navbar />
         <main className="main">{children}</main>
