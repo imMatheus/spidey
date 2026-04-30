@@ -13,8 +13,8 @@
   ],
   "scripts": {
     "build": "tsup",
-    "dev": "tsup --watch",
-    "start": "node bin/spidey-grab.js",
+    "dev": "bun scripts/dev.ts",
+    "start": "node bin/spidey-grab.cjs",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

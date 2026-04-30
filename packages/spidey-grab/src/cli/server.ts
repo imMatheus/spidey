@@ -268,6 +268,10 @@ function sendSafe(socket: WebSocket, event: ServerEvent) {
 }
 
 function resolveInjectBundle(): string {
+  // Dev runs the CLI from src/cli/ via bun --watch, so the relative path
+  // wouldn't land on dist/inject.js — let the dev orchestrator point at the
+  // built bundle explicitly.
+  if (process.env.SPIDEY_GRAB_INJECT_BUNDLE) return process.env.SPIDEY_GRAB_INJECT_BUNDLE;
   const here = typeof __dirname === "string" ? __dirname : dirname(fileURLToPath(import.meta.url));
   return resolve(here, "..", "inject.js");
 }
