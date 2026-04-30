@@ -37,14 +37,14 @@ function Layout({ children }: { children: React.ReactNode }) {
 function Home() {
   return (
     <Layout>
-      <h1 style={{ color: 'red' }}>Welcome to Acme</h1>
+      <h1 style={{ color: 'green' }}>Welcome to Acme</h1>
       <p className="lead" style={{ fontSize: '24px' }}>
         A demo Vite app for testing Spidey.
       </p>
       <div className="card-grid" style={{ gridTemplateColumns: '1fr' }}>
         <div className="card">
           <h3>Fast</h3>
-          <p style={{ fontWeight: 'bold', color: 'red' }}>Hot module replacement keeps your edits reflected in the browser instantly, and cold starts spin up in a fraction of the time you'd expect from a traditional bundler.</p>
+          <p style={{ fontWeight: 'bold', color: 'blue' }}>Hot module replacement keeps your edits reflected in the browser instantly, and cold starts spin up in a fraction of the time you'd expect from a traditional bundler.</p>
         </div>
         <div className="card">
           <h3>Typed</h3>
