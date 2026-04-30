@@ -95,3 +95,19 @@ export interface JobThreadChangesResponse {
   additions: number;
   deletions: number;
 }
+
+export interface JobThreadCommitRequest {
+  /** When true, run `git push` after the commit. Failures here surface in `pushError` but the commit itself still counts as ok. */
+  push?: boolean;
+}
+
+export interface JobThreadCommitResponse {
+  ok: boolean;
+  sha?: string;
+  filesCommitted?: string[];
+  /** Set when no files were dirty in the working tree (i.e. changes were already committed or reverted). */
+  nothingToCommit?: boolean;
+  pushed?: boolean;
+  pushError?: string;
+  error?: string;
+}

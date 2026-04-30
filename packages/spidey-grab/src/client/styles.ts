@@ -449,6 +449,7 @@ export const STYLES = `
 .diff-sidebar-meta {
   margin-top: 6px;
   font-size: 12px;
+  display: flex;
   color: var(--ds-gray-700);
   font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   white-space: nowrap;
@@ -479,9 +480,203 @@ export const STYLES = `
 }
 
 .diff-sidebar-tabs-strip {
+  position: relative;
+  z-index: 2;
   flex-shrink: 0;
   border-bottom: 1px solid hsla(var(--ds-gray-1000-value), 0.06);
   display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.diff-sidebar-commit-group {
+  position: relative;
+  display: inline-flex;
+  align-items: stretch;
+  height: 28px;
+  margin: 12px;
+  border-radius: 6px;
+  background: var(--ds-background-100);
+  box-shadow: 0 0 0 1px hsla(var(--ds-gray-1000-value), 0.12);
+  flex-shrink: 0;
+  transition: box-shadow 120ms ease;
+}
+.diff-sidebar-commit-group:hover {
+  box-shadow: 0 0 0 1px hsla(var(--ds-gray-1000-value), 0.2);
+}
+.diff-sidebar-commit-group.committing { pointer-events: none; }
+.diff-sidebar-commit-group.success {
+  box-shadow: 0 0 0 1px var(--ds-green-900);
+}
+.diff-sidebar-commit-group.failed {
+  box-shadow: 0 0 0 1px var(--ds-red-900);
+}
+
+.diff-sidebar-commit-action,
+.diff-sidebar-commit-toggle {
+  background: transparent;
+  border: none;
+  color: var(--ds-gray-1000);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  user-select: none;
+  transition: background 120ms ease, color 120ms ease;
+}
+.diff-sidebar-commit-action {
+  border-radius: 6px 0 0 6px;
+}
+.diff-sidebar-commit-toggle {
+  border-radius: 0 6px 6px 0;
+}
+
+.commit-icon-wrap {
+  display: inline-flex;
+  width: 14px;
+  height: 14px;
+  position: relative;
+  flex-shrink: 0;
+  /* motion.js animates transforms on this element; keep transform-origin centered */
+  transform-origin: center;
+}
+.commit-status-icon {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  fill: none;
+  stroke: currentColor;
+}
+.commit-status-icon .ring-track {
+  stroke-width: 1.6;
+  stroke-opacity: 0.22;
+  transition: stroke-opacity 220ms ease;
+}
+.commit-status-icon .ring-arc {
+  stroke-width: 1.8;
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: commit-icon-spin 0.85s linear infinite;
+  transition: opacity 200ms ease;
+  opacity: 1;
+}
+.commit-status-icon .check,
+.commit-status-icon .cross {
+  stroke-width: 2;
+  stroke-dashoffset: 1;
+  transition: stroke-dashoffset 320ms cubic-bezier(.65, 0, .35, 1) 80ms;
+}
+.commit-status-icon.done .ring-track {
+  stroke-opacity: 1;
+}
+.commit-status-icon.done .ring-arc {
+  opacity: 0;
+  animation-play-state: paused;
+}
+.commit-status-icon.done .check {
+  stroke-dashoffset: 0;
+}
+.commit-status-icon.failed .ring-arc {
+  opacity: 0;
+  animation-play-state: paused;
+}
+.commit-status-icon.failed .ring-track {
+  stroke-opacity: 1;
+}
+.commit-status-icon.failed .cross {
+  stroke-dashoffset: 0;
+}
+@keyframes commit-icon-spin {
+  to { transform: rotate(360deg); }
+}
+.diff-sidebar-commit-action:hover,
+.diff-sidebar-commit-toggle:hover {
+  background: hsla(var(--ds-gray-1000-value), 0.05);
+}
+.diff-sidebar-commit-action:disabled,
+.diff-sidebar-commit-toggle:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.diff-sidebar-commit-toggle {
+  padding: 0 8px;
+  border-left: 1px solid hsla(var(--ds-gray-1000-value), 0.12);
+}
+.diff-sidebar-commit-toggle svg {
+  width: 12px;
+  height: 12px;
+  transition: transform 160ms ease;
+}
+.diff-sidebar-commit-group.menu-open .diff-sidebar-commit-toggle svg {
+  transform: rotate(180deg);
+}
+.diff-sidebar-commit-group.success .diff-sidebar-commit-action,
+.diff-sidebar-commit-group.success .diff-sidebar-commit-toggle {
+  color: var(--ds-green-900);
+}
+.diff-sidebar-commit-group.failed .diff-sidebar-commit-action,
+.diff-sidebar-commit-group.failed .diff-sidebar-commit-toggle {
+  color: var(--ds-red-900);
+}
+
+.diff-sidebar-commit-menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  right: 0;
+  min-width: 180px;
+  background: var(--ds-background-100);
+  border-radius: 8px;
+  box-shadow: var(--ds-shadow-menu);
+  padding: 4px;
+  display: flex;
+  flex-direction: column;
+  z-index: 10;
+  opacity: 0;
+  transform: scale(0.96) translateY(-4px);
+  transform-origin: top right;
+  transition:
+    opacity 140ms cubic-bezier(.175, .885, .32, 1.1),
+    transform 140ms cubic-bezier(.175, .885, .32, 1.1);
+  pointer-events: none;
+}
+.diff-sidebar-commit-menu.open {
+  opacity: 1;
+  transform: scale(1) translateY(0);
+  pointer-events: auto;
+}
+.diff-sidebar-commit-menu-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 6px 10px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ds-gray-1000);
+  cursor: pointer;
+  user-select: none;
+  background: transparent;
+  border: none;
+  text-align: left;
+  font-family: inherit;
+}
+.diff-sidebar-commit-menu-item:hover {
+  background: hsla(var(--ds-gray-1000-value), 0.05);
+}
+.diff-sidebar-commit-menu-item.selected .check {
+  visibility: visible;
+}
+.diff-sidebar-commit-menu-item .check {
+  visibility: hidden;
+  width: 12px;
+  height: 12px;
+  flex-shrink: 0;
+  color: var(--ds-gray-700);
 }
 .diff-sidebar-tabs {
   position: relative;
@@ -718,6 +913,8 @@ export const STYLES = `
   border-radius: 8px;
   overflow: hidden;
   background: var(--ds-background-100);
+  --diffs-font-size: 11px;
+  --diffs-line-height: 16px;
 }
 .file-block-head {
   display: flex;

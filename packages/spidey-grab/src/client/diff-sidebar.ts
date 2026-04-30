@@ -4,9 +4,11 @@ import type {
   FileDiff,
   JobDiffBundle,
   JobThreadChangesResponse,
+  JobThreadCommitResponse,
   JobThreadResponse,
   ServerEvent,
 } from "../protocol";
+import { animate as motionAnimate } from "motion";
 import type { JobSocket } from "./socket";
 import { renderDiff } from "./diff-render";
 
@@ -84,6 +86,15 @@ export class DiffSidebar {
   private chatTabEl: HTMLDivElement | null = null;
   private changesTabEl: HTMLDivElement | null = null;
   private changesCountEl: HTMLSpanElement | null = null;
+  private commitGroupEl: HTMLDivElement | null = null;
+  private commitActionEl: HTMLButtonElement | null = null;
+  private commitToggleEl: HTMLButtonElement | null = null;
+  private commitMenuEl: HTMLDivElement | null = null;
+  private commitMenuOpen = false;
+  private commitMenuOutsideHandler: ((e: PointerEvent) => void) | null = null;
+  private commitResetTimer: number | null = null;
+  private committing = false;
+  private commitMode: "commit" | "commit-push" = readCommitMode();
 
   constructor(opts: DiffSidebarOpts) {
     this.opts = opts;
@@ -177,6 +188,16 @@ export class DiffSidebar {
       this.chatTabEl = null;
       this.changesTabEl = null;
       this.changesCountEl = null;
+      this.commitGroupEl = null;
+      this.commitActionEl = null;
+      this.commitToggleEl = null;
+      this.commitMenuEl = null;
+      this.closeCommitMenu();
+      if (this.commitResetTimer != null) {
+        clearTimeout(this.commitResetTimer);
+        this.commitResetTimer = null;
+      }
+      this.committing = false;
       this.removeTimer = null;
     }, 320);
     writePersistedSidebar(null);
@@ -359,6 +380,45 @@ export class DiffSidebar {
 
     strip.appendChild(tabs);
 
+    const group = document.createElement("div");
+    group.className = "diff-sidebar-commit-group";
+
+    const action = document.createElement("button");
+    action.type = "button";
+    action.className = "diff-sidebar-commit-action";
+    action.appendChild(textSpan(commitModeLabel(this.commitMode)));
+    action.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      void this.commitThread();
+    });
+    group.appendChild(action);
+
+    const toggle = document.createElement("button");
+    toggle.type = "button";
+    toggle.className = "diff-sidebar-commit-toggle";
+    toggle.title = "Choose commit action";
+    toggle.innerHTML = COMMIT_CHEVRON_SVG;
+    toggle.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      this.toggleCommitMenu();
+    });
+    group.appendChild(toggle);
+
+    const menu = document.createElement("div");
+    menu.className = "diff-sidebar-commit-menu";
+    menu.appendChild(this.buildCommitMenuItem("commit", "Commit"));
+    menu.appendChild(this.buildCommitMenuItem("commit-push", "Commit & push"));
+    group.appendChild(menu);
+
+    strip.appendChild(group);
+    this.commitGroupEl = group;
+    this.commitActionEl = action;
+    this.commitToggleEl = toggle;
+    this.commitMenuEl = menu;
+    this.refreshCommitModeUI();
+
     this.tabsStripEl = strip;
     this.tabsEl = tabs;
     this.indicatorEl = indicator;
@@ -366,6 +426,193 @@ export class DiffSidebar {
     this.changesTabEl = changesTab;
     this.changesCountEl = countSpan;
     return strip;
+  }
+
+  private buildCommitMenuItem(mode: "commit" | "commit-push", label: string): HTMLButtonElement {
+    const item = document.createElement("button");
+    item.type = "button";
+    item.className = "diff-sidebar-commit-menu-item";
+    if (this.commitMode === mode) item.classList.add("selected");
+    item.dataset.mode = mode;
+    item.appendChild(textSpan(label));
+    const check = document.createElement("span");
+    check.className = "check";
+    check.innerHTML = COMMIT_CHECK_SVG;
+    item.appendChild(check);
+    item.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      this.setCommitMode(mode);
+      this.closeCommitMenu();
+    });
+    return item;
+  }
+
+  private setCommitMode(mode: "commit" | "commit-push") {
+    if (this.commitMode === mode) return;
+    this.commitMode = mode;
+    writeCommitMode(mode);
+    this.refreshCommitModeUI();
+  }
+
+  private refreshCommitModeUI() {
+    if (this.commitActionEl) {
+      this.commitActionEl.replaceChildren(textSpan(commitModeLabel(this.commitMode)));
+      this.commitActionEl.title = commitModeTitle(this.commitMode);
+    }
+    if (this.commitMenuEl) {
+      const items = this.commitMenuEl.querySelectorAll<HTMLElement>(".diff-sidebar-commit-menu-item");
+      for (const item of Array.from(items)) {
+        item.classList.toggle("selected", item.dataset.mode === this.commitMode);
+      }
+    }
+  }
+
+  private toggleCommitMenu() {
+    if (this.commitMenuOpen) this.closeCommitMenu();
+    else this.openCommitMenu();
+  }
+
+  private openCommitMenu() {
+    if (this.commitMenuOpen || !this.commitGroupEl || !this.commitMenuEl) return;
+    this.commitMenuOpen = true;
+    this.commitGroupEl.classList.add("menu-open");
+    requestAnimationFrame(() => {
+      if (this.commitMenuOpen && this.commitMenuEl) this.commitMenuEl.classList.add("open");
+    });
+    const handler = (e: PointerEvent) => {
+      if (!this.commitGroupEl) return;
+      const path = e.composedPath();
+      if (path.includes(this.commitGroupEl)) return;
+      this.closeCommitMenu();
+    };
+    this.commitMenuOutsideHandler = handler;
+    window.addEventListener("pointerdown", handler, true);
+  }
+
+  private closeCommitMenu() {
+    if (!this.commitMenuOpen) return;
+    this.commitMenuOpen = false;
+    this.commitGroupEl?.classList.remove("menu-open");
+    this.commitMenuEl?.classList.remove("open");
+    if (this.commitMenuOutsideHandler) {
+      window.removeEventListener("pointerdown", this.commitMenuOutsideHandler, true);
+      this.commitMenuOutsideHandler = null;
+    }
+  }
+
+  private async commitThread() {
+    if (this.committing || !this.rootJobId || !this.commitGroupEl) return;
+    const group = this.commitGroupEl;
+    const actionEl = this.commitActionEl;
+    const mode = this.commitMode;
+    if (this.commitResetTimer != null) {
+      clearTimeout(this.commitResetTimer);
+      this.commitResetTimer = null;
+    }
+    group.classList.remove("success", "failed");
+    group.classList.add("committing");
+
+    const loadingLabel = mode === "commit-push" ? "Committing & pushing…" : "Committing…";
+    const iconWrap = buildCommitStatusIcon();
+    const labelSpan = textSpan(loadingLabel);
+    labelSpan.className = "commit-label";
+
+    if (actionEl) {
+      actionEl.disabled = true;
+      actionEl.replaceChildren(iconWrap, labelSpan);
+      // bouncy entrance for the icon so it doesn't just appear
+      motionAnimate(
+        iconWrap,
+        { opacity: [0, 1], scale: [0.4, 1] },
+        { duration: 0.22, ease: [0.22, 1, 0.36, 1] },
+      );
+    }
+    if (this.commitToggleEl) this.commitToggleEl.disabled = true;
+    this.committing = true;
+
+    try {
+      const res = await fetch(
+        `${this.opts.baseUrl}jobs/${encodeURIComponent(this.rootJobId)}/thread/commit`,
+        {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ push: mode === "commit-push" }),
+        },
+      );
+      const body = (await res.json().catch(() => ({}))) as JobThreadCommitResponse;
+
+      let label = "";
+      let cls: "success" | "failed" = "failed";
+      if (body.ok && body.sha) {
+        cls = "success";
+        const shortSha = body.sha.slice(0, 7);
+        if (mode === "commit-push") {
+          if (body.pushed) label = `Pushed ${shortSha}`;
+          else label = body.pushError ? "Commit ok · push failed" : `Committed ${shortSha}`;
+          if (!body.pushed && body.pushError && this.commitGroupEl) this.commitGroupEl.title = body.pushError;
+        } else {
+          label = `Committed ${shortSha}`;
+        }
+      } else if (body.nothingToCommit) {
+        cls = "success";
+        label = "Nothing to commit";
+      } else {
+        cls = "failed";
+        label = body.error ? "Commit failed" : `Commit failed (${res.status})`;
+        if (body.error && this.commitGroupEl) this.commitGroupEl.title = body.error;
+      }
+      group.classList.remove("committing");
+      group.classList.add(cls);
+      labelSpan.textContent = label;
+
+      const iconSvg = iconWrap.firstElementChild as SVGElement | null;
+      if (iconSvg) {
+        if (cls === "success") {
+          // morph spinner → check: arc fades, ring fills, check draws in (CSS),
+          // and the whole icon does a small punch via motion.
+          iconSvg.classList.add("done");
+          motionAnimate(
+            iconWrap,
+            { scale: [1, 1.18, 1] },
+            { duration: 0.45, ease: [0.22, 1, 0.36, 1] },
+          );
+        } else {
+          iconSvg.classList.add("failed");
+          motionAnimate(
+            iconWrap,
+            { rotate: [0, -8, 8, -6, 6, 0] },
+            { duration: 0.45, ease: "easeInOut" },
+          );
+        }
+      }
+    } catch (err) {
+      group.classList.remove("committing");
+      group.classList.add("failed");
+      labelSpan.textContent = "Commit failed";
+      const iconSvg = iconWrap.firstElementChild as SVGElement | null;
+      iconSvg?.classList.add("failed");
+      if (this.commitGroupEl) this.commitGroupEl.title = (err as Error).message;
+    } finally {
+      this.committing = false;
+      if (actionEl) actionEl.disabled = false;
+      if (this.commitToggleEl) this.commitToggleEl.disabled = false;
+      this.commitResetTimer = window.setTimeout(() => {
+        if (this.commitGroupEl !== group) return;
+        group.classList.remove("success", "failed");
+        group.title = "";
+        // shrink the icon out before swapping back to the static label
+        motionAnimate(
+          iconWrap,
+          { opacity: [1, 0], scale: [1, 0.4] },
+          { duration: 0.18, ease: "easeIn" },
+        ).finished.then(() => {
+          if (this.commitGroupEl !== group) return;
+          this.refreshCommitModeUI();
+        });
+        this.commitResetTimer = null;
+      }, 3000);
+    }
   }
 
   private updateChangesCount() {
@@ -777,6 +1024,54 @@ function iconSpan(svg: string): HTMLSpanElement {
 const CHAT_ICON_SVG = `<svg viewBox="0 0 16 16" stroke-linejoin="round" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M11.75 0.189331L12.2803 0.719661L15.2803 3.71966L15.8107 4.24999L15.2803 4.78032L5.15901 14.9016C4.45575 15.6049 3.50192 16 2.50736 16H0.75H0V15.25V13.4926C0 12.4981 0.395088 11.5442 1.09835 10.841L11.2197 0.719661L11.75 0.189331ZM11.75 2.31065L9.81066 4.24999L11.75 6.18933L13.6893 4.24999L11.75 2.31065ZM2.15901 11.9016L8.75 5.31065L10.6893 7.24999L4.09835 13.841C3.67639 14.2629 3.1041 14.5 2.50736 14.5H1.5V13.4926C1.5 12.8959 1.73705 12.3236 2.15901 11.9016ZM9 16H16V14.5H9V16Z"/></svg>`;
 
 const CHANGES_ICON_SVG = `<svg viewBox="0 0 16 16" stroke-linejoin="round" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M14.5 13.5V6.5V5.41421C14.5 5.149 14.3946 4.89464 14.2071 4.70711L9.79289 0.292893C9.60536 0.105357 9.351 0 9.08579 0H8H3H1.5V1.5V13.5C1.5 14.8807 2.61929 16 4 16H12C13.3807 16 14.5 14.8807 14.5 13.5ZM13 13.5V6.5H9.5H8V5V1.5H3V13.5C3 14.0523 3.44772 14.5 4 14.5H12C12.5523 14.5 13 14.0523 13 13.5ZM9.5 5V2.12132L12.3787 5H9.5ZM5.13 5.00062H4.505V6.25062H5.13H6H6.625V5.00062H6H5.13ZM4.505 8H5.13H11H11.625V9.25H11H5.13H4.505V8ZM5.13 11H4.505V12.25H5.13H11H11.625V11H11H5.13Z"/></svg>`;
+
+const COMMIT_CHEVRON_SVG = `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3.5 6L8 10.5L12.5 6"/></svg>`;
+
+const COMMIT_CHECK_SVG = `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8.5L6.5 12L13 4"/></svg>`;
+
+const COMMIT_MODE_KEY = "spidey-grab:commit-mode:v1";
+
+function readCommitMode(): "commit" | "commit-push" {
+  try {
+    const raw = localStorage.getItem(COMMIT_MODE_KEY);
+    if (raw === "commit" || raw === "commit-push") return raw;
+  } catch {
+    // ignore
+  }
+  return "commit";
+}
+
+function writeCommitMode(mode: "commit" | "commit-push") {
+  try {
+    localStorage.setItem(COMMIT_MODE_KEY, mode);
+  } catch {
+    // ignore
+  }
+}
+
+function commitModeLabel(mode: "commit" | "commit-push"): string {
+  return mode === "commit-push" ? "Commit & push" : "Commit";
+}
+
+function commitModeTitle(mode: "commit" | "commit-push"): string {
+  return mode === "commit-push"
+    ? "git commit the files in this thread, then push to the remote"
+    : "git commit the files touched in this thread";
+}
+
+/** Builds a 14×14 status icon that starts as a spinning arc and morphs into a
+ *  checkmark when the parent SVG gets the `.done` class. */
+function buildCommitStatusIcon(): HTMLSpanElement {
+  const wrap = document.createElement("span");
+  wrap.className = "commit-icon-wrap";
+  wrap.innerHTML = `<svg class="commit-status-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" aria-hidden="true">
+  <circle class="ring-track" cx="8" cy="8" r="6" />
+  <circle class="ring-arc" cx="8" cy="8" r="6" pathLength="100" stroke-dasharray="22 78" stroke-linecap="round" />
+  <path class="check" d="M5 8.5 L7.2 10.7 L11.2 6.5" pathLength="1" stroke-dasharray="1 1" stroke-dashoffset="1" stroke-linecap="round" stroke-linejoin="round" />
+  <path class="cross" d="M5.5 5.5 L10.5 10.5 M10.5 5.5 L5.5 10.5" pathLength="1" stroke-dasharray="1 1" stroke-dashoffset="1" stroke-linecap="round" />
+</svg>`;
+  return wrap;
+}
 
 function renderFileBlock(file: FileDiff): HTMLDivElement {
   const block = document.createElement("div");

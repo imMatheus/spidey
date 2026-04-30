@@ -163,7 +163,7 @@ export class TriggerButton {
     const itemsAnim = animate(
       newChildren,
       { opacity: [0, 1], y: [6, 0] },
-      { duration: 0.24, delay: stagger(0.03, { start: 0.05 }), ease: [0.22, 1, 0.36, 1] },
+      { duration: 0.24, delay: stagger(0.03, { start: 0.05 } as Parameters<typeof stagger>[1]), ease: [0.22, 1, 0.36, 1] },
     );
 
     await Promise.all([heightAnim.finished, itemsAnim.finished]);
@@ -264,24 +264,14 @@ export class TriggerButton {
   }
 }
 
-const ICON = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="24" height="24" aria-hidden="true">
-  <g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M12 14 L4 10 L6 14"/>
-    <path d="M12 16 L2 16 L4 19"/>
-    <path d="M12 18 L4 22 L7 22"/>
-    <path d="M13 20 L8 26 L11 25"/>
-    <path d="M20 14 L28 10 L26 14"/>
-    <path d="M20 16 L30 16 L28 19"/>
-    <path d="M20 18 L28 22 L25 22"/>
-    <path d="M19 20 L24 26 L21 25"/>
-  </g>
-  <ellipse cx="16" cy="19" rx="6" ry="7" fill="currentColor"/>
-  <path d="M14 17 L18 17 L15 20 L18 23 L14 23 L17 20 Z" style="fill: var(--ds-red-700)"/>
-  <circle cx="16" cy="13" r="4" fill="currentColor"/>
-  <circle cx="14.5" cy="12" r="0.9" style="fill: hsla(var(--ds-gray-1000-value), 0.55)"/>
-  <circle cx="17.5" cy="12" r="0.9" style="fill: hsla(var(--ds-gray-1000-value), 0.55)"/>
-  <circle cx="14.5" cy="12.2" r="0.4" style="fill: var(--ds-gray-100)"/>
-  <circle cx="17.5" cy="12.2" r="0.4" style="fill: var(--ds-gray-100)"/>
-  <path d="M15 15.5 Q14 17 15 17.5" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
-  <path d="M17 15.5 Q18 17 17 17.5" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/>
+const ICON = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+  <path d="M10 19.655A6 6 0 0 1 6 14v-3a4 4 0 0 1 4-4h4a4 4 0 0 1 4 3.97"/>
+  <path d="M14 15.003a1 1 0 0 1 1.517-.859l4.997 2.997a1 1 0 0 1 0 1.718l-4.997 2.997a1 1 0 0 1-1.517-.86z"/>
+  <path d="M14.12 3.88 16 2"/>
+  <path d="M21 5a4 4 0 0 1-3.55 3.97"/>
+  <path d="M3 21a4 4 0 0 1 3.81-4"/>
+  <path d="M3 5a4 4 0 0 0 3.55 3.97"/>
+  <path d="M6 13H2"/>
+  <path d="m8 2 1.88 1.88"/>
+  <path d="M9 7.13V6a3 3 0 1 1 6 0v1.13"/>
 </svg>`;
