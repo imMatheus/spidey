@@ -4,7 +4,9 @@
   "version": "0.1.0",
   "workspaces": [
     "packages/*",
-    "examples/*"
+    "examples/vite-app",
+    "examples/next-app",
+    "examples/complex-app"
   ],
   "scripts": {
     "build": "cd packages/viewer && bun run build",

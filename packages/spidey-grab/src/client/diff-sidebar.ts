@@ -794,10 +794,7 @@ function renderFileBlock(file: FileDiff): HTMLDivElement {
   head.appendChild(counts);
   block.appendChild(head);
 
-  const pre = document.createElement("pre");
-  pre.className = "diff-pre";
-  pre.appendChild(renderDiff(file.patch));
-  block.appendChild(pre);
+  block.appendChild(renderDiff(file.patch));
   return block;
 }
 

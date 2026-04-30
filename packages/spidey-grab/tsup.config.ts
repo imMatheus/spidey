@@ -1,4 +1,14 @@
 import { defineConfig } from "tsup";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+
+// @pierre/diffs's exports field doesn't expose the web-components side-effect
+// file, so reach into node_modules directly.
+const here = path.dirname(fileURLToPath(import.meta.url));
+const pierreWebComponents = path.join(
+  here,
+  "node_modules/@pierre/diffs/dist/components/web-components.js",
+);
 
 export default defineConfig([
   {
@@ -25,5 +35,11 @@ export default defineConfig([
     minify: true,
     clean: false,
     outExtension: () => ({ js: ".js" }),
+    esbuildOptions(options) {
+      options.alias = {
+        ...(options.alias ?? {}),
+        "@pierre/diffs/web-components": pierreWebComponents,
+      };
+    },
   },
 ]);

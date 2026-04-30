@@ -1,27 +1,100 @@
-type LineKind = "add" | "del" | "hunk" | "meta" | "context";
+import { FileDiff, preloadHighlighter, processFile } from "@pierre/diffs";
+import "@pierre/diffs/web-components";
 
-export function renderDiff(patch: string): DocumentFragment {
-  const frag = document.createDocumentFragment();
-  // skip the per-file header lines that createTwoFilesPatch emits as the
-  // first 4 lines (===, ---, +++, blank) — the sidebar already shows the file
-  // name above the diff block.
-  const lines = patch.split("\n");
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i];
-    const kind = classify(line);
-    if (kind === "meta") continue;
-    const div = document.createElement("div");
-    div.className = `diff-line ${kind}`;
-    div.textContent = line.length > 0 ? line : " ";
-    frag.appendChild(div);
+const HIGHLIGHTER_OPTS = {
+  themes: ["github-light"] as const,
+  langs: ["typescript", "javascript", "tsx", "jsx", "json", "css", "html", "markdown"] as const,
+  preferredHighlighter: "shiki-js" as const,
+};
+
+let highlighterPromise: Promise<void> | undefined;
+function ensureHighlighter(): Promise<void> {
+  if (!highlighterPromise) {
+    highlighterPromise = preloadHighlighter({
+      themes: [...HIGHLIGHTER_OPTS.themes],
+      langs: [...HIGHLIGHTER_OPTS.langs],
+      preferredHighlighter: HIGHLIGHTER_OPTS.preferredHighlighter,
+    });
   }
-  return frag;
+  return highlighterPromise;
 }
 
-function classify(line: string): LineKind {
-  if (line.startsWith("@@")) return "hunk";
-  if (line.startsWith("---") || line.startsWith("+++") || line.startsWith("Index:") || line.startsWith("===")) return "meta";
-  if (line.startsWith("+")) return "add";
-  if (line.startsWith("-")) return "del";
-  return "context";
+export function renderDiff(patch: string): HTMLElement {
+  const host = document.createElement("div");
+  host.className = "diff-host";
+
+  const fileDiff = processFile(dedentPatch(patch));
+  if (!fileDiff) {
+    host.textContent = patch;
+    return host;
+  }
+
+  const component = new FileDiff({
+    disableFileHeader: true,
+    diffStyle: "unified",
+    overflow: "wrap",
+    hunkSeparators: "simple",
+    theme: "github-light",
+    themeType: "light",
+    preferredHighlighter: HIGHLIGHTER_OPTS.preferredHighlighter,
+  });
+
+  const renderInto = () => {
+    component.render({ fileDiff, containerWrapper: host });
+  };
+
+  renderInto();
+  ensureHighlighter().then(renderInto).catch(() => {});
+
+  return host;
+}
+
+// Strip the common leading whitespace from each hunk so visually-indented
+// code lines up at column 0 in the rendered diff.
+function dedentPatch(patch: string): string {
+  const lines = patch.split("\n");
+  let i = 0;
+  while (i < lines.length) {
+    if (lines[i].startsWith("@@")) {
+      let j = i + 1;
+      while (j < lines.length && !lines[j].startsWith("@@")) j++;
+      dedentHunk(lines, i + 1, j);
+      i = j;
+    } else {
+      i++;
+    }
+  }
+  return lines.join("\n");
+}
+
+function dedentHunk(lines: string[], start: number, end: number): void {
+  let common: string | null = null;
+  for (let k = start; k < end; k++) {
+    const l = lines[k];
+    if (l.length === 0) continue;
+    const c = l[0];
+    if (c !== "+" && c !== "-" && c !== " ") continue;
+    const content = l.slice(1);
+    if (content.trim() === "") continue;
+    const indent = /^[ \t]*/.exec(content)?.[0] ?? "";
+    common = common === null ? indent : commonPrefix(common, indent);
+    if (common === "") return;
+  }
+  if (!common) return;
+  const len = common.length;
+  for (let k = start; k < end; k++) {
+    const l = lines[k];
+    if (l.length === 0) continue;
+    const c = l[0];
+    if (c !== "+" && c !== "-" && c !== " ") continue;
+    const content = l.slice(1);
+    if (content.length < len) continue;
+    lines[k] = c + content.slice(len);
+  }
+}
+
+function commonPrefix(a: string, b: string): string {
+  let i = 0;
+  while (i < a.length && i < b.length && a[i] === b[i]) i++;
+  return a.slice(0, i);
 }
