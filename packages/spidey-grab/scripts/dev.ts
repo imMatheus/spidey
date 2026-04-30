@@ -20,8 +20,27 @@ import path from "node:path";
 
 const PKG = path.resolve(import.meta.dirname, "..");
 const REPO = path.resolve(PKG, "../..");
-const VITE_APP = path.join(REPO, "examples/vite-app");
+const EXAMPLES_DIR = path.join(REPO, "examples");
 const INJECT_BUNDLE = path.join(PKG, "dist/inject.js");
+
+const DEFAULT_EXAMPLE = "vite-app";
+
+function parseExample(argv: string[]): string {
+  for (let i = 0; i < argv.length; i++) {
+    const a = argv[i];
+    if (a === "--example" || a === "-e") return argv[++i] ?? DEFAULT_EXAMPLE;
+    if (a.startsWith("--example=")) return a.slice("--example=".length);
+    if (!a.startsWith("-")) return a;
+  }
+  return DEFAULT_EXAMPLE;
+}
+
+const exampleName = parseExample(process.argv.slice(2));
+const EXAMPLE_DIR = path.join(EXAMPLES_DIR, exampleName);
+if (!existsSync(path.join(EXAMPLE_DIR, "package.json"))) {
+  console.error(`[dev] unknown example "${exampleName}" — no package.json at ${EXAMPLE_DIR}`);
+  process.exit(1);
+}
 
 const procs: Bun.Subprocess[] = [];
 let shuttingDown = false;
@@ -62,14 +81,14 @@ if (!existsSync(INJECT_BUNDLE)) {
 }
 
 start("tsup", ["bunx", "tsup", "--watch"], PKG);
-start("cli",  ["bun", "--watch", "src/cli/index.ts", "--cwd", VITE_APP], PKG, {
+start("cli",  ["bun", "--watch", "src/cli/index.ts", "--cwd", EXAMPLE_DIR], PKG, {
   SPIDEY_GRAB_INJECT_BUNDLE: INJECT_BUNDLE,
 });
-start("vite", ["bun", "run", "dev"], VITE_APP);
+start("example", ["bun", "run", "dev"], EXAMPLE_DIR);
 
 console.log(
   `\nspidey-grab dev:` +
-    `\n  CLI         http://localhost:7878/spidey-grab.js (rebuilt on save)` +
-    `\n  vite-app    http://localhost:5400/` +
+    `\n  CLI       http://localhost:7878/spidey-grab.js (rebuilt on save)` +
+    `\n  example   ${exampleName} (see its dev script for the port)` +
     `\n`,
 );
