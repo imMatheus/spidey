@@ -37,10 +37,10 @@ const TESTIMONIALS = [
       "Cut our redline cycle from days to a single afternoon. Engineering pushed merged styles the same evening.",
   },
   {
-    name: "Mei Tanaka",
-    role: "Frontend, Halycon",
+    name: "Jordan Park",
+    role: "Staff engineer, Pinecrest",
     quote:
-      "I edit our real components, not a Figma cosplay. The diff lands on the right file every time.",
+      "Our marketing site used to need a sprint per refresh. Now product can iterate live and we just review the PR.",
   },
   {
     name: "Aaron Boyd",
