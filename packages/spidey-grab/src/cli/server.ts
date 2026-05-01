@@ -207,7 +207,7 @@ async function handleCommitThread(
   const commitResult = commitFiles(opts.cwd, files, generated.message);
   const body: JobThreadCommitResponse = commitResult;
 
-  if (commitResult.ok && parsed.push) {
+  if ((commitResult.ok || commitResult.nothingToCommit) && parsed.push) {
     const pushResult = pushCurrentBranch(opts.cwd);
     body.pushed = pushResult.ok;
     if (!pushResult.ok) body.pushError = pushResult.error;

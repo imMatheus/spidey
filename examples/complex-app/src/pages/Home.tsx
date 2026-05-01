@@ -64,10 +64,14 @@ export function Home() {
             Edit your live app visually and sync changes back to code.
           </p>
           <div className="flex gap-3">
-            <Button size="lg" iconRight={<ChevronRightIcon />}>
+            <Button
+              size="lg"
+              iconRight={<ChevronRightIcon />}
+              className="px-7 py-4 text-base"
+            >
               Get started
             </Button>
-            <Button size="lg" variant="ghost">
+            <Button size="lg" variant="ghost" className="px-7 py-4 text-base">
               View on GitHub
             </Button>
           </div>

@@ -400,13 +400,14 @@ export const STYLES = `
 .prompt-box button {
   background: var(--ds-gray-1000);
   color: var(--ds-gray-100);
-  border: none;
+  border: 1px solid hsla(0, 0%, 100%, 0.08);
   border-radius: 6px;
   padding: 6px 12px;
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
   font-family: inherit;
+  box-shadow: 0 1px 2px hsla(var(--ds-gray-1000-value), 0.18), 0 2px 6px hsla(var(--ds-gray-1000-value), 0.12);
 }
 .prompt-box button:hover { background: var(--ds-gray-900); }
 .prompt-box button:disabled { opacity: 0.5; cursor: not-allowed; }

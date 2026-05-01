@@ -26,12 +26,41 @@ interface PendingTurn {
   error?: string;
 }
 
+type CommitTerminal = "ready-to-push" | "pushed";
+
 interface SidebarPersistedState {
   rootJobId: string;
   pending?: { jobId: string; prompt: string };
 }
 
 const SIDEBAR_STORAGE_KEY = "spidey-grab:sidebar:v1";
+// Keyed by rootJobId so terminal state outlives sidebar hide/show, which
+// always clears the SIDEBAR_STORAGE_KEY slot.
+const COMMIT_TERMINAL_STORAGE_KEY = "spidey-grab:commit-terminal:v1";
+
+function readCommitTerminalMap(): Record<string, CommitTerminal> {
+  try {
+    const raw = sessionStorage.getItem(COMMIT_TERMINAL_STORAGE_KEY);
+    return raw ? (JSON.parse(raw) as Record<string, CommitTerminal>) : {};
+  } catch {
+    return {};
+  }
+}
+
+function writeCommitTerminal(rootJobId: string, value: CommitTerminal | null) {
+  try {
+    const map = readCommitTerminalMap();
+    if (value === null) delete map[rootJobId];
+    else map[rootJobId] = value;
+    sessionStorage.setItem(COMMIT_TERMINAL_STORAGE_KEY, JSON.stringify(map));
+  } catch {
+    // ignore
+  }
+}
+
+function readCommitTerminal(rootJobId: string): CommitTerminal | null {
+  return readCommitTerminalMap()[rootJobId] ?? null;
+}
 
 function readPersistedSidebar(): SidebarPersistedState | null {
   try {
@@ -95,6 +124,10 @@ export class DiffSidebar {
   private commitResetTimer: number | null = null;
   private committing = false;
   private commitMode: "commit" | "commit-push" = readCommitMode();
+  // Once a commit has been made for this thread, the button progresses to a
+  // terminal state and never reverts to plain "Commit". Persisted across hide/
+  // show + page reloads via sessionStorage.
+  private commitTerminal: CommitTerminal | null = null;
 
   constructor(opts: DiffSidebarOpts) {
     this.opts = opts;
@@ -141,6 +174,8 @@ export class DiffSidebar {
         status: "running",
       };
     }
+    // Recover terminal commit state if we're re-opening the same thread.
+    this.commitTerminal = readCommitTerminal(this.rootJobId);
     this.cachedChanges = null;
     this.persistState();
     this.renderSidebar();
@@ -456,15 +491,46 @@ export class DiffSidebar {
   }
 
   private refreshCommitModeUI() {
+    if (this.commitTerminal) {
+      this.applyCommitTerminalUI();
+      return;
+    }
     if (this.commitActionEl) {
+      this.commitActionEl.disabled = false;
       this.commitActionEl.replaceChildren(textSpan(commitModeLabel(this.commitMode)));
       this.commitActionEl.title = commitModeTitle(this.commitMode);
     }
+    if (this.commitToggleEl) this.commitToggleEl.disabled = false;
     if (this.commitMenuEl) {
       const items = this.commitMenuEl.querySelectorAll<HTMLElement>(".diff-sidebar-commit-menu-item");
       for (const item of Array.from(items)) {
         item.classList.toggle("selected", item.dataset.mode === this.commitMode);
       }
+    }
+  }
+
+  private applyCommitTerminalUI() {
+    if (!this.commitGroupEl || !this.commitActionEl || !this.commitToggleEl) return;
+    this.commitGroupEl.classList.remove("committing", "failed");
+    this.commitGroupEl.title = "";
+    // mode toggle is irrelevant once a commit has been made
+    this.commitToggleEl.disabled = true;
+
+    if (this.commitTerminal === "pushed") {
+      this.commitGroupEl.classList.add("success");
+      this.commitActionEl.disabled = true;
+      this.commitActionEl.title = "Already pushed";
+      const iconWrap = buildCommitStatusIcon();
+      const iconSvg = iconWrap.firstElementChild as SVGElement | null;
+      iconSvg?.classList.add("done");
+      const labelSpan = textSpan("Pushed");
+      labelSpan.className = "commit-label";
+      this.commitActionEl.replaceChildren(iconWrap, labelSpan);
+    } else {
+      this.commitGroupEl.classList.remove("success");
+      this.commitActionEl.disabled = false;
+      this.commitActionEl.title = "Push the commit to the remote";
+      this.commitActionEl.replaceChildren(textSpan("Push commit"));
     }
   }
 
@@ -503,9 +569,13 @@ export class DiffSidebar {
 
   private async commitThread() {
     if (this.committing || !this.rootJobId || !this.commitGroupEl) return;
+    if (this.commitTerminal === "pushed") return; // permanent terminal — nothing to do
     const group = this.commitGroupEl;
     const actionEl = this.commitActionEl;
-    const mode = this.commitMode;
+    // From "ready-to-push" the action button does a push, regardless of the
+    // chosen commit mode. Otherwise it follows the dropdown selection.
+    const isPushOnly = this.commitTerminal === "ready-to-push";
+    const shouldPush = isPushOnly || this.commitMode === "commit-push";
     if (this.commitResetTimer != null) {
       clearTimeout(this.commitResetTimer);
       this.commitResetTimer = null;
@@ -513,7 +583,11 @@ export class DiffSidebar {
     group.classList.remove("success", "failed");
     group.classList.add("committing");
 
-    const loadingLabel = mode === "commit-push" ? "Committing & pushing…" : "Committing…";
+    const loadingLabel = isPushOnly
+      ? "Pushing…"
+      : shouldPush
+        ? "Committing & pushing…"
+        : "Committing…";
     const iconWrap = buildCommitStatusIcon();
     const labelSpan = textSpan(loadingLabel);
     labelSpan.className = "commit-label";
@@ -521,7 +595,6 @@ export class DiffSidebar {
     if (actionEl) {
       actionEl.disabled = true;
       actionEl.replaceChildren(iconWrap, labelSpan);
-      // bouncy entrance for the icon so it doesn't just appear
       motionAnimate(
         iconWrap,
         { opacity: [0, 1], scale: [0.4, 1] },
@@ -531,37 +604,45 @@ export class DiffSidebar {
     if (this.commitToggleEl) this.commitToggleEl.disabled = true;
     this.committing = true;
 
+    let nextTerminal: CommitTerminal | null = this.commitTerminal;
     try {
       const res = await fetch(
         `${this.opts.baseUrl}jobs/${encodeURIComponent(this.rootJobId)}/thread/commit`,
         {
           method: "POST",
           headers: { "content-type": "application/json" },
-          body: JSON.stringify({ push: mode === "commit-push" }),
+          body: JSON.stringify({ push: shouldPush }),
         },
       );
       const body = (await res.json().catch(() => ({}))) as JobThreadCommitResponse;
 
+      // The commit succeeds either by making a new commit (body.ok && body.sha)
+      // or by being a no-op when the thread was already committed (body.nothingToCommit).
+      const commitSucceeded = body.ok || body.nothingToCommit;
       let label = "";
       let cls: "success" | "failed" = "failed";
-      if (body.ok && body.sha) {
-        cls = "success";
-        const shortSha = body.sha.slice(0, 7);
-        if (mode === "commit-push") {
-          if (body.pushed) label = `Pushed ${shortSha}`;
-          else label = body.pushError ? "Commit ok · push failed" : `Committed ${shortSha}`;
-          if (!body.pushed && body.pushError && this.commitGroupEl) this.commitGroupEl.title = body.pushError;
+
+      if (commitSucceeded && shouldPush) {
+        if (body.pushed) {
+          cls = "success";
+          label = "Pushed";
+          nextTerminal = "pushed";
         } else {
-          label = `Committed ${shortSha}`;
+          cls = "failed";
+          label = "Push failed";
+          nextTerminal = "ready-to-push";
+          if (body.pushError && this.commitGroupEl) this.commitGroupEl.title = body.pushError;
         }
-      } else if (body.nothingToCommit) {
+      } else if (commitSucceeded) {
         cls = "success";
-        label = "Nothing to commit";
+        label = "Push commit";
+        nextTerminal = "ready-to-push";
       } else {
         cls = "failed";
         label = body.error ? "Commit failed" : `Commit failed (${res.status})`;
         if (body.error && this.commitGroupEl) this.commitGroupEl.title = body.error;
       }
+
       group.classList.remove("committing");
       group.classList.add(cls);
       labelSpan.textContent = label;
@@ -569,8 +650,6 @@ export class DiffSidebar {
       const iconSvg = iconWrap.firstElementChild as SVGElement | null;
       if (iconSvg) {
         if (cls === "success") {
-          // morph spinner → check: arc fades, ring fills, check draws in (CSS),
-          // and the whole icon does a small punch via motion.
           iconSvg.classList.add("done");
           motionAnimate(
             iconWrap,
@@ -589,29 +668,39 @@ export class DiffSidebar {
     } catch (err) {
       group.classList.remove("committing");
       group.classList.add("failed");
-      labelSpan.textContent = "Commit failed";
+      labelSpan.textContent = isPushOnly ? "Push failed" : "Commit failed";
       const iconSvg = iconWrap.firstElementChild as SVGElement | null;
       iconSvg?.classList.add("failed");
       if (this.commitGroupEl) this.commitGroupEl.title = (err as Error).message;
     } finally {
       this.committing = false;
-      if (actionEl) actionEl.disabled = false;
-      if (this.commitToggleEl) this.commitToggleEl.disabled = false;
-      this.commitResetTimer = window.setTimeout(() => {
-        if (this.commitGroupEl !== group) return;
-        group.classList.remove("success", "failed");
-        group.title = "";
-        // shrink the icon out before swapping back to the static label
-        motionAnimate(
-          iconWrap,
-          { opacity: [1, 0], scale: [1, 0.4] },
-          { duration: 0.18, ease: "easeIn" },
-        ).finished.then(() => {
+      this.commitTerminal = nextTerminal;
+      if (this.rootJobId) writeCommitTerminal(this.rootJobId, nextTerminal);
+
+      if (this.commitTerminal === "pushed") {
+        // permanent — keep success state, lock both buttons
+        if (actionEl) actionEl.disabled = true;
+        if (this.commitToggleEl) this.commitToggleEl.disabled = true;
+      } else {
+        if (actionEl) actionEl.disabled = false;
+        if (this.commitToggleEl) this.commitToggleEl.disabled = this.commitTerminal != null;
+        // After 3s, fade the celebratory icon and either revert to the mode
+        // label (no terminal) or settle into the persistent terminal label.
+        this.commitResetTimer = window.setTimeout(() => {
           if (this.commitGroupEl !== group) return;
-          this.refreshCommitModeUI();
-        });
-        this.commitResetTimer = null;
-      }, 3000);
+          group.classList.remove("success", "failed");
+          group.title = "";
+          motionAnimate(
+            iconWrap,
+            { opacity: [1, 0], scale: [1, 0.4] },
+            { duration: 0.18, ease: "easeIn" },
+          ).finished.then(() => {
+            if (this.commitGroupEl !== group) return;
+            this.refreshCommitModeUI();
+          });
+          this.commitResetTimer = null;
+        }, 3000);
+      }
     }
   }
 

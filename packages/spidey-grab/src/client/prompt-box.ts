@@ -71,7 +71,7 @@ export class PromptBox {
     hint.className = "hint";
     hint.textContent = "↑↓←→ navigate · esc cancel";
     const button = document.createElement("button");
-    button.textContent = "send";
+    button.textContent = "Send";
     button.addEventListener("click", () => this.submit());
     row.appendChild(hint);
     row.appendChild(button);
