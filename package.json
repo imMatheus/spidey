@@ -1,21 +1,36 @@
 {
-  "name": "spidey-monorepo",
-  "private": true,
+  "name": "spidey-grab",
   "version": "0.1.0",
-  "workspaces": [
-    "packages/*",
-    "examples/vite-app",
-    "examples/next-app",
-    "examples/complex-app"
+  "description": "Visual element-level Claude prompts for any local React app",
+  "private": true,
+  "type": "module",
+  "bin": {
+    "spidey-grab": "./bin/spidey-grab.cjs"
+  },
+  "files": [
+    "bin",
+    "dist"
   ],
   "scripts": {
-    "build": "cd packages/viewer && bun run build",
+    "build": "tsup",
     "dev": "bun scripts/dev.ts",
-    "spidey": "bun packages/cli/src/index.ts",
+    "start": "node bin/spidey-grab.cjs",
+    "typecheck": "tsc --noEmit",
     "example:vite": "cd examples/vite-app && bun run dev",
     "example:next": "cd examples/next-app && bun run dev"
   },
+  "dependencies": {
+    "@pierre/diffs": "^1.1.20",
+    "bippy": "^0.5.39",
+    "diff": "^7.0.0",
+    "motion": "^12.38.0",
+    "ws": "^8.20.0"
+  },
   "devDependencies": {
+    "@types/diff": "^7.0.0",
+    "@types/node": "^22.0.0",
+    "@types/ws": "^8.5.12",
+    "tsup": "^8.5.1",
     "typescript": "^5.5.0"
   }
 }

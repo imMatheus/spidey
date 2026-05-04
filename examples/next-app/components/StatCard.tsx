@@ -28,7 +28,7 @@ export function StatCard({ label, value, delta }: StatCardProps) {
           style={{
             marginTop: 6,
             fontSize: 12,
-            color: positive ? "#ae00ff" : "#d23a3a",
+            color: positive ? "#1ca34a" : "#d23a3a",
           }}
         >
           {positive ? "▲" : "▼"}{Math.abs(delta)}%

@@ -1,11 +1,11 @@
 {
-  "extends": "../../tsconfig.base.json",
+  "extends": "./tsconfig.base.json",
   "compilerOptions": {
-    "rootDir": "src",
+    "rootDir": "src2",
     "outDir": "dist",
     "noEmit": false,
     "declaration": false,
     "types": ["node"]
   },
-  "include": ["src/**/*"]
+  "include": ["src/**/*", "tsup.config.ts"]
 }

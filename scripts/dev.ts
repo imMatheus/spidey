@@ -1,37 +1,67 @@
 /**
- * Run both processes the viewer needs in dev:
- *   1) the CLI's view-server (provides /spidey-projects*.json + the autosave
- *      PUT endpoint) backed by both example spidey.json files
- *   2) `vite dev` for the viewer app, which proxies the data endpoints to
- *      (1) and gives HMR
+ * One-stop dev harness for spidey-grab. Runs three processes in parallel:
  *
- * Either side exiting takes the other down so the terminal isn't left with
- * a zombie. Ctrl-C cleans up both.
+ *   1) tsup --watch    → keeps dist/inject.js fresh (the IIFE bundle the CLI
+ *                        serves to browsers; rebuilt on save)
+ *   2) bun --watch CLI → runs src/cli/index.ts directly from source and
+ *                        auto-restarts when any imported file changes
+ *   3) vite dev        → the example vite-app on :5400 (its index.html already
+ *                        references http://localhost:7878/spidey-grab.js)
+ *
+ * The IIFE bundle is read off disk on each request, so client changes show up
+ * on the next browser refresh without restarting the CLI. CLI changes restart
+ * the CLI itself via bun's built-in watcher.
+ *
+ * Any child exiting takes the others down so the terminal isn't left with
+ * zombies. Ctrl-C cleans up everything.
  */
-import { spawn, type ChildProcess } from "node:child_process";
+import { existsSync } from "node:fs";
 import path from "node:path";
 
-const ROOT = path.resolve(import.meta.dirname, "..");
-const BACKEND_PORT = process.env.SPIDEY_BACKEND_PORT ?? "4321";
-const VIEWER_PORT = process.env.SPIDEY_VIEWER_PORT ?? "5800";
+const PKG = path.resolve(import.meta.dirname, "..");
+const EXAMPLES_DIR = path.join(PKG, "examples");
+const INJECT_BUNDLE = path.join(PKG, "dist/inject.js");
 
-const procs: ChildProcess[] = [];
+const DEFAULT_EXAMPLE = "vite-app";
 
-function start(name: string, cmd: string, args: string[], cwd: string, env: NodeJS.ProcessEnv = {}) {
-  const child = spawn(cmd, args, {
+function parseExample(argv: string[]): string {
+  for (let i = 0; i < argv.length; i++) {
+    const a = argv[i];
+    if (a === "--example" || a === "-e") return argv[++i] ?? DEFAULT_EXAMPLE;
+    if (a.startsWith("--example=")) return a.slice("--example=".length);
+    if (!a.startsWith("-")) return a;
+  }
+  return DEFAULT_EXAMPLE;
+}
+
+const exampleName = parseExample(process.argv.slice(2));
+const EXAMPLE_DIR = path.join(EXAMPLES_DIR, exampleName);
+if (!existsSync(path.join(EXAMPLE_DIR, "package.json"))) {
+  console.error(`[dev] unknown example "${exampleName}" — no package.json at ${EXAMPLE_DIR}`);
+  process.exit(1);
+}
+
+const procs: Bun.Subprocess[] = [];
+let shuttingDown = false;
+
+function start(name: string, cmd: string[], cwd: string, extraEnv: Record<string, string> = {}) {
+  const proc = Bun.spawn(cmd, {
     cwd,
-    stdio: "inherit",
-    env: { ...process.env, ...env, FORCE_COLOR: "1" },
+    stdio: ["inherit", "inherit", "inherit"],
+    env: { ...process.env, FORCE_COLOR: "1", ...extraEnv },
   });
-  child.on("exit", (code) => {
-    console.log(`\n[${name}] exited (${code}); shutting down peer`);
+  proc.exited.then((code) => {
+    if (shuttingDown) return;
+    console.log(`\n[${name}] exited (code=${code}); shutting down peers`);
     shutdown();
   });
-  procs.push(child);
-  return child;
+  procs.push(proc);
+  return proc;
 }
 
 function shutdown() {
+  if (shuttingDown) return;
+  shuttingDown = true;
   for (const p of procs) {
     if (!p.killed) p.kill("SIGINT");
   }
@@ -41,34 +71,23 @@ function shutdown() {
 process.on("SIGINT", shutdown);
 process.on("SIGTERM", shutdown);
 
-// Backend — the CLI view-server, no auto-open (vite owns the browser)
-start(
-  "backend",
-  "bun",
-  [
-    "packages/cli/src/index.ts",
-    "view",
-    "examples/next-app/spidey.json",
-    "examples/vite-app/spidey.json",
-    "examples/complex-app/spidey.json",
-    "examples/supabase/apps/www/spidey.json",
-    "--port",
-    BACKEND_PORT,
-    "--no-open",
-  ],
-  ROOT,
-);
+// Make sure the IIFE bundle exists before the CLI starts serving — otherwise
+// the very first browser request 404s until tsup finishes its first build.
+if (!existsSync(INJECT_BUNDLE)) {
+  console.log("[init] no dist/inject.js yet, running initial build…");
+  const r = Bun.spawnSync(["bun", "run", "build"], { cwd: PKG, stdio: ["inherit", "inherit", "inherit"] });
+  if (r.exitCode !== 0) process.exit(r.exitCode ?? 1);
+}
 
-// Frontend — vite dev with HMR. Pass the backend URL through env so
-// vite.config.ts wires up the right proxy.
-start(
-  "vite",
-  "bun",
-  ["run", "dev", "--", "--port", VIEWER_PORT, "--open"],
-  path.join(ROOT, "packages/viewer"),
-  { SPIDEY_BACKEND: `http://localhost:${BACKEND_PORT}` },
-);
+start("tsup", ["bunx", "tsup", "--watch"], PKG);
+start("cli",  ["bun", "--watch", "src/cli/index.ts", "--cwd", EXAMPLE_DIR], PKG, {
+  SPIDEY_GRAB_INJECT_BUNDLE: INJECT_BUNDLE,
+});
+start("example", ["bun", "run", "dev"], EXAMPLE_DIR);
 
 console.log(
-  `\nspidey dev: viewer http://localhost:${VIEWER_PORT}  (backend :${BACKEND_PORT})\n`,
+  `\nspidey-grab dev:` +
+    `\n  CLI       http://localhost:7878/spidey-grab.js (rebuilt on save)` +
+    `\n  example   ${exampleName} (see its dev script for the port)` +
+    `\n`,
 );
