@@ -54,6 +54,10 @@ function Home() {
           <h3>Composable</h3>
           <p>Bring your own routing, state, styling. Mix and match the libraries you already love without fighting an opinionated framework, because every team has different needs and constraints. Whether you prefer React Router or TanStack Router, Redux or Zustand or Jotai, Tailwind or vanilla CSS or styled-components, the choice is entirely yours and nothing here will get in your way. This flexibility means you can adopt the tool incrementally, swap pieces out as your project evolves, and keep using the patterns your team is already productive with — no rewrites required, no lock-in, no surprises down the road.</p>
         </div>
+        <div className="card">
+          <h3>Scalable</h3>
+          <p>Add new sections and workflows as your app grows, while keeping the page structure clear and easy to maintain.</p>
+        </div>
       </div>
     </Layout>
   )

@@ -76,7 +76,12 @@ if (!existsSync(INJECT_BUNDLE)) {
   if (r.exitCode !== 0) process.exit(r.exitCode ?? 1);
 }
 
-start("tsup", ["bunx", "tsup", "--watch"], PKG);
+// `tsup --watch` (no path) watches the cwd and only ignores each config's own
+// outDir, which means writes to dist/cli trigger the plugin/IIFE configs to
+// rebuild and vice-versa — an endless rebuild loop that truncates dist/inject.js
+// mid-write and serves torn JS to the browser. Pass explicit paths to scope the
+// watcher to source files only.
+start("tsup", ["bunx", "tsup", "--watch", "src", "--watch", "tsup.config.ts"], PKG);
 start("example", ["bun", "run", "dev"], EXAMPLE_DIR);
 
 console.log(

@@ -10,6 +10,13 @@ const pierreWebComponents = path.join(
   "node_modules/@pierre/diffs/dist/components/web-components.js",
 );
 
+// Each config below watches ONLY src/** (and tsup.config.ts) when in watch
+// mode. The default tsup behaviour is to watch the cwd and only ignore the
+// current config's outDir — which means each config's outDir change re-triggers
+// every OTHER config, producing an endless rebuild loop. Locking the watch path
+// to src avoids that and stops the IIFE from being torn-down/rebuilt mid-request.
+const WATCH = ["src/**", "tsup.config.ts"];
+
 export default defineConfig([
   // CLI binary (CJS so the shebang works on every Node)
   {
@@ -24,6 +31,7 @@ export default defineConfig([
     shims: true,
     external: ["ws"],
     banner: { js: "#!/usr/bin/env node" },
+    watch: WATCH,
   },
   // Bundler plugins (ESM + CJS, dual-published). `vite`, `next`, and `react`
   // are the host's dependencies — never bundle them.
@@ -45,6 +53,7 @@ export default defineConfig([
     esbuildOptions(options) {
       options.jsx = "automatic";
     },
+    watch: WATCH,
   },
   // Browser IIFE that the daemon serves at /spidey-grab.js
   {
@@ -65,5 +74,6 @@ export default defineConfig([
         "@pierre/diffs/web-components": pierreWebComponents,
       };
     },
+    watch: WATCH,
   },
 ]);
