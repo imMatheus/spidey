@@ -37,9 +37,9 @@ function Layout({ children }: { children: React.ReactNode }) {
 function Home() {
   return (
     <Layout>
-      <h1 style={{ color: 'yellow' }}>Welcome to Acme</h1>
-      <p className="lead" style={{ fontSize: '24px' }}>
-        A demo Vite app for testing Spidey.
+      <h1 style={{ background: 'linear-gradient(90deg, red, orange, yellow, green, blue, indigo, violet)', WebkitBackgroundClip: 'text', backgroundClip: 'text', color: 'transparent' }}>Welcome to Acme</h1>
+      <p className="lead" style={{ fontSize: '24px', color: 'red' }}>
+        A demo Vite app for testing Spidey with realistic React content, interactive source mapping, visual element selection, style editing, component inspection, and fast feedback loops while changes are applied directly back to the original source files.
       </p>
       <div className="card-grid" style={{ gridTemplateColumns: '1fr' }}>
         <div className="card">

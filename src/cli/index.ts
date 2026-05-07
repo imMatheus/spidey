@@ -6,6 +6,7 @@ interface CliOpts {
   port: number;
   cwd: string;
   claudeBin: string;
+  codexBin: string;
 }
 
 function parseArgs(argv: string[]): CliOpts {
@@ -13,6 +14,7 @@ function parseArgs(argv: string[]): CliOpts {
     port: 7878,
     cwd: process.cwd(),
     claudeBin: "claude",
+    codexBin: "codex",
   };
 
   for (let i = 0; i < argv.length; i++) {
@@ -32,6 +34,10 @@ function parseArgs(argv: string[]): CliOpts {
       const v = argv[++i];
       if (!v) die("--claude-bin requires a path");
       opts.claudeBin = v;
+    } else if (arg === "--codex-bin") {
+      const v = argv[++i];
+      if (!v) die("--codex-bin requires a path");
+      opts.codexBin = v;
     } else if (arg === "--help" || arg === "-h") {
       printHelp();
       process.exit(0);
@@ -57,6 +63,7 @@ function printHelp() {
       "  --port <n>        port to listen on (default: 7878)",
       "  --cwd <path>      repo root for spawned claude jobs (default: process.cwd())",
       "  --claude-bin <p>  path to the claude binary (default: 'claude' on PATH)",
+      "  --codex-bin <p>   path to the codex binary (default: 'codex' on PATH)",
       "  -h, --help        show this help",
       "  -v, --version     print version",
       "",
@@ -87,4 +94,7 @@ function checkClaude(claudeBin: string) {
 
 const opts = parseArgs(process.argv.slice(2));
 checkClaude(opts.claudeBin);
-startServer(opts);
+startServer({ ...opts, installSignalHandlers: true, printBanner: true }).catch((err) => {
+  process.stderr.write(`spidey-grab: ${err?.message || err}\n`);
+  process.exit(1);
+});

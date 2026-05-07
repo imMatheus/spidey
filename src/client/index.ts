@@ -16,13 +16,16 @@ import { resolveTarget } from './source'
 import { buildFingerprint, findByFingerprint } from './refind'
 import { persistence } from './persistence'
 import { DiffSidebar, loadPersistedSidebar, timeChipHTML } from './diff-sidebar'
+import { agentSelection, agentLabel } from './agent'
 import type {
+  AgentKind,
   CreateJobRequest,
   CreateJobResponse,
   JobHistoryListResponse,
   JobHistorySummary,
   ServerEvent,
 } from '../protocol'
+import { AGENT_KINDS } from '../protocol'
 
 declare global {
   interface Window {
@@ -37,8 +40,21 @@ function boot() {
   const baseUrl = detectBaseUrl()
   const mount = mountShadow()
   const overlay = new OverlayLayer(mount.layer)
-  const status = new StatusManager(overlay)
   const socket = new JobSocket(baseUrl)
+  const diffSidebar = new DiffSidebar({ parent: mount.layer, baseUrl, socket })
+  const status = new StatusManager(overlay, {
+    onBadgeClick: (jobId) => {
+      const pending = pendingJobs.get(jobId)
+      // Running jobs have no history bundle yet — hand the sidebar the
+      // prompt we tracked locally so it can render the pending turn.
+      void diffSidebar.show(
+        jobId,
+        pending
+          ? { pending: { jobId, prompt: pending.prompt, agent: pending.agent } }
+          : {},
+      )
+    },
+  })
 
   // cached history list — invalidated when the daemon emits a job event that
   // would change it (new job, or any status transition that promotes a job
@@ -51,9 +67,11 @@ function boot() {
   interface PendingJob {
     prompt: string
     createdAt: number
+    agent: AgentKind
   }
   const pendingJobs = new Map<string, PendingJob>()
   let historyMenuOpen = false
+  let agentMenuOpen = false
 
   socket.on((event) => {
     if (event.type === 'hello') {
@@ -94,8 +112,6 @@ function boot() {
     clearSelected()
   }
 
-  const diffSidebar = new DiffSidebar({ parent: mount.layer, baseUrl, socket })
-
   function mainMenuItems(): MenuItem[] {
     return [
       {
@@ -109,7 +125,44 @@ function boot() {
         keepOpen: true,
         onClick: () => void openHistorySubmenu(),
       },
+      {
+        label: 'Agent',
+        kbd: agentLabel(agentSelection.get()),
+        keepOpen: true,
+        onClick: () => openAgentSubmenu(),
+      },
     ]
+  }
+
+  function buildAgentItems(): MenuItem[] {
+    const current = agentSelection.get()
+    const items: MenuItem[] = [
+      {
+        label: '← Back',
+        keepOpen: true,
+        onClick: () => {
+          agentMenuOpen = false
+          trigger.setMenuItems(mainMenuItems())
+        },
+      },
+    ]
+    for (const kind of AGENT_KINDS) {
+      items.push({
+        label: agentLabel(kind),
+        kbd: kind === current ? '✓' : '',
+        onClick: () => {
+          agentSelection.set(kind)
+          agentMenuOpen = false
+        },
+      })
+    }
+    return items
+  }
+
+  function openAgentSubmenu() {
+    agentMenuOpen = true
+    historyMenuOpen = false
+    trigger.setMenuItems(buildAgentItems())
   }
 
   const trigger = new TriggerButton({
@@ -117,7 +170,17 @@ function boot() {
     getMenuItems: mainMenuItems,
     onCloseMenu: () => {
       historyMenuOpen = false
+      agentMenuOpen = false
     },
+  })
+
+  agentSelection.onChange(() => {
+    if (agentMenuOpen) {
+      trigger.setMenuItems(buildAgentItems())
+    } else if (trigger.isOpen() && !historyMenuOpen) {
+      // refresh the main menu so the kbd label updates
+      trigger.setMenuItems(mainMenuItems())
+    }
   })
 
   const updateCounter = () => {
@@ -244,8 +307,8 @@ function boot() {
     }
   }
 
-  function trackPendingJob(jobId: string, prompt: string) {
-    pendingJobs.set(jobId, { prompt, createdAt: Date.now() })
+  function trackPendingJob(jobId: string, prompt: string, agent: AgentKind) {
+    pendingJobs.set(jobId, { prompt, createdAt: Date.now(), agent })
     if (historyMenuOpen) void refreshHistoryMenu()
   }
 
@@ -335,10 +398,12 @@ function boot() {
         clearSelected()
 
         const fp = buildFingerprint(submittedTarget, submittedResolved)
+        const submittedAgent = agentSelection.get()
         const req: CreateJobRequest = {
           prompt,
           source: submittedResolved.source,
           context: submittedResolved.context,
+          agent: submittedAgent,
         }
 
         try {
@@ -357,7 +422,7 @@ function boot() {
           }
           const body = (await res.json()) as CreateJobResponse
           status.track(body.jobId, submittedTarget, fp, { persist: true })
-          trackPendingJob(body.jobId, prompt)
+          trackPendingJob(body.jobId, prompt, submittedAgent)
         } catch (err) {
           console.error('[spidey-grab] could not reach daemon', err)
         }
@@ -424,6 +489,21 @@ function boot() {
   }
 
   function recoverFromHello(event: Extract<ServerEvent, { type: 'hello' }>) {
+    // Hydrate the local pending map from the daemon's view of running jobs.
+    // This lets the diff sidebar render an in-flight job (which has no
+    // history file yet) using the prompt the daemon kept in memory.
+    for (const j of event.jobs) {
+      if (j.status === 'running' && j.prompt && !pendingJobs.has(j.jobId)) {
+        pendingJobs.set(j.jobId, {
+          prompt: j.prompt,
+          createdAt: j.createdAt,
+          // Older daemons / pre-agent jobs come back without `agent` — claude
+          // is the safe default since that's the only thing those daemons run.
+          agent: j.agent ?? 'claude',
+        })
+      }
+    }
+
     const persisted = persistence.load()
     if (persisted.length === 0) return
     const byId = new Map(event.jobs.map((j) => [j.jobId, j]))

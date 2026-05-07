@@ -68,15 +68,27 @@ export class OverlayLayer {
   attach(
     target: Element,
     state: OutlineState,
-    opts: { withBadge: boolean; refinder?: Refinder },
+    opts: { withBadge: boolean; refinder?: Refinder; onBadgeClick?: () => void },
   ): symbol {
     const id = Symbol("anchored");
     const entry = this.createEntry(target, state, opts.withBadge);
     if (opts.refinder) entry.refinder = opts.refinder;
+    if (opts.onBadgeClick && entry.badge) {
+      this.bindBadgeClick(entry.badge, opts.onBadgeClick);
+    }
     this.anchored.set(id, entry);
     this.positionEntry(entry);
     this.ensureRaf();
     return id;
+  }
+
+  private bindBadgeClick(badge: HTMLDivElement, handler: () => void) {
+    badge.classList.add("clickable");
+    badge.addEventListener("click", (e) => {
+      e.preventDefault();
+      e.stopPropagation();
+      handler();
+    });
   }
 
   retarget(id: symbol, target: Element) {

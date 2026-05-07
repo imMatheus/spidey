@@ -332,6 +332,14 @@ export const STYLES = `
   color: var(--ds-red-200);
   cursor: help;
 }
+.badge.clickable {
+  cursor: pointer;
+  transition: transform 120ms ease, filter 120ms ease;
+}
+.badge.clickable:hover {
+  transform: translateY(-1px);
+  filter: brightness(1.08);
+}
 
 .spinner {
   display: inline-block;
@@ -812,6 +820,18 @@ export const STYLES = `
 .thread-turn .turn-meta .turn-status.running { color: var(--ds-amber-900); }
 .thread-turn .turn-meta .turn-status.done { color: var(--ds-green-900); }
 .thread-turn .turn-meta .turn-status.failed { color: var(--ds-red-900); }
+.thread-turn .turn-meta .turn-agent {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: hsla(var(--ds-gray-1000-value), 0.06);
+  color: var(--ds-gray-900);
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-size: 11px;
+  letter-spacing: 0;
+}
 .thread-turn .turn-meta .turn-status .dot {
   width: 6px;
   height: 6px;

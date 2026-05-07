@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 import type { ChildProcess } from "node:child_process";
-import type { JobSnapshot, JobStatus, ServerEvent } from "../protocol";
+import type { AgentKind, JobSnapshot, JobStatus, ServerEvent } from "../protocol";
 
 interface JobRecord extends JobSnapshot {
   child?: ChildProcess;
@@ -28,16 +28,20 @@ function snapshot(rec: JobRecord): JobSnapshot {
     step: rec.step,
     error: rec.error,
     createdAt: rec.createdAt,
+    prompt: rec.prompt,
+    agent: rec.agent,
   };
 }
 
 export const jobStore = {
-  create(): JobRecord {
+  create(opts: { prompt: string; agent: AgentKind }): JobRecord {
     const jobId = randomUUID();
     const rec: JobRecord = {
       jobId,
       status: "running",
       createdAt: Date.now(),
+      prompt: opts.prompt,
+      agent: opts.agent,
     };
     jobs.set(jobId, rec);
     emit({ type: "job:created", job: snapshot(rec) });

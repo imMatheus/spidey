@@ -11,6 +11,7 @@ const pierreWebComponents = path.join(
 );
 
 export default defineConfig([
+  // CLI binary (CJS so the shebang works on every Node)
   {
     entry: { index: "src/cli/index.ts" },
     outDir: "dist/cli",
@@ -22,7 +23,30 @@ export default defineConfig([
     clean: true,
     shims: true,
     external: ["ws"],
+    banner: { js: "#!/usr/bin/env node" },
   },
+  // Bundler plugins (ESM + CJS, dual-published). `vite`, `next`, and `react`
+  // are the host's dependencies — never bundle them.
+  {
+    entry: {
+      vite: "src/plugin/vite.ts",
+      next: "src/plugin/next.tsx",
+    },
+    outDir: "dist/plugin",
+    format: ["esm", "cjs"],
+    target: "node18",
+    platform: "node",
+    splitting: false,
+    sourcemap: false,
+    clean: false,
+    shims: true,
+    dts: true,
+    external: ["ws", "vite", "next", "react", "react/jsx-runtime"],
+    esbuildOptions(options) {
+      options.jsx = "automatic";
+    },
+  },
+  // Browser IIFE that the daemon serves at /spidey-grab.js
   {
     entry: { inject: "src/client/index.ts" },
     outDir: "dist",

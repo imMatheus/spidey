@@ -1,7 +1,6 @@
 import { createServer, IncomingMessage, ServerResponse } from "node:http";
-import { readFileSync, existsSync } from "node:fs";
-import { resolve, dirname } from "node:path";
-import { fileURLToPath } from "node:url";
+import { readFileSync, existsSync, statSync } from "node:fs";
+import { resolve } from "node:path";
 import { WebSocketServer, WebSocket } from "ws";
 import { jobStore } from "./jobs";
 import { runJob } from "./agent";
@@ -17,13 +16,26 @@ import type {
   ServerEvent,
 } from "../protocol";
 
-interface ServerOpts {
+export interface ServerOpts {
   port: number;
   cwd: string;
   claudeBin: string;
+  codexBin: string;
+  /** When true, if the requested port is taken, try the next ones (up to 20). */
+  autoPort?: boolean;
+  /** When true, install SIGINT/SIGTERM handlers that exit the process on shutdown. CLI only. */
+  installSignalHandlers?: boolean;
+  /** When true, print the banner with the script tag. CLI only. */
+  printBanner?: boolean;
 }
 
-export function startServer(opts: ServerOpts) {
+export interface ServerHandle {
+  port: number;
+  url: string;
+  close(): Promise<void>;
+}
+
+export async function startServer(opts: ServerOpts): Promise<ServerHandle> {
   const injectPath = resolveInjectBundle();
 
   const httpServer = createServer((req, res) => {
@@ -110,6 +122,9 @@ export function startServer(opts: ServerOpts) {
   });
 
   const wss = new WebSocketServer({ server: httpServer, path: "/ws" });
+  // ws re-emits the underlying http server's errors. EADDRINUSE on first
+  // listen would crash here otherwise; the http retry path handles them.
+  wss.on("error", () => {});
   wss.on("connection", (socket) => {
     const hello: ServerEvent = { type: "hello", jobs: jobStore.list() };
     sendSafe(socket, hello);
@@ -118,18 +133,68 @@ export function startServer(opts: ServerOpts) {
     socket.on("error", () => {});
   });
 
-  httpServer.listen(opts.port, () => {
-    printBanner(opts);
-  });
+  const port = await listenWithRetry(httpServer, opts.port, opts.autoPort ?? false);
 
-  const shutdown = () => {
-    jobStore.cancelAll();
-    wss.close();
-    httpServer.close(() => process.exit(0));
-    setTimeout(() => process.exit(0), 1000).unref();
+  if (opts.printBanner !== false) {
+    printBanner({ ...opts, port });
+  }
+
+  let closing: Promise<void> | null = null;
+  const close = (): Promise<void> => {
+    if (closing) return closing;
+    closing = new Promise((resolveClose) => {
+      jobStore.cancelAll();
+      wss.close();
+      httpServer.close(() => resolveClose());
+      // hard-kill after a beat so we don't hang on lingering sockets
+      setTimeout(() => resolveClose(), 1000).unref();
+    });
+    return closing;
   };
-  process.on("SIGINT", shutdown);
-  process.on("SIGTERM", shutdown);
+
+  if (opts.installSignalHandlers) {
+    const shutdown = () => {
+      void close().then(() => process.exit(0));
+      setTimeout(() => process.exit(0), 1500).unref();
+    };
+    process.on("SIGINT", shutdown);
+    process.on("SIGTERM", shutdown);
+  }
+
+  return { port, url: `http://localhost:${port}`, close };
+}
+
+function listenWithRetry(
+  server: ReturnType<typeof createServer>,
+  startPort: number,
+  autoPort: boolean,
+): Promise<number> {
+  return new Promise((resolve, reject) => {
+    const maxAttempts = autoPort ? 20 : 1;
+    let attempt = 0;
+    let port = startPort;
+
+    const tryListen = () => {
+      const onError = (err: NodeJS.ErrnoException) => {
+        server.off("listening", onListening);
+        if (err.code === "EADDRINUSE" && ++attempt < maxAttempts) {
+          port += 1;
+          tryListen();
+        } else {
+          reject(err);
+        }
+      };
+      const onListening = () => {
+        server.off("error", onError);
+        resolve(port);
+      };
+      server.once("error", onError);
+      server.once("listening", onListening);
+      server.listen(port);
+    };
+
+    tryListen();
+  });
 }
 
 function handleCreateJob(req: IncomingMessage, res: ServerResponse, opts: ServerOpts) {
@@ -154,7 +219,10 @@ function handleCreateJob(req: IncomingMessage, res: ServerResponse, opts: Server
       res.end(JSON.stringify({ error: "prompt is required" }));
       return;
     }
-    const jobId = runJob(parsed, { cwd: opts.cwd, claudeBin: opts.claudeBin });
+    const jobId = runJob(parsed, {
+      cwd: opts.cwd,
+      bins: { claude: opts.claudeBin, codex: opts.codexBin },
+    });
     const body_: CreateJobResponse = { jobId };
     res.writeHead(202, { "content-type": "application/json" });
     res.end(JSON.stringify(body_));
@@ -238,13 +306,46 @@ function promptBasedMessage(root: { promptPreview?: string; prompt?: string; job
   return `${subject}\n\nspidey-grab job ${root.jobId}`;
 }
 
+// Cache the bundle keyed by mtime+size so we don't re-read on every request,
+// and — more importantly — don't serve a partially-written bundle while
+// `tsup --watch` is mid-rebuild. esbuild's writer isn't atomic; a request
+// that lands during the write window would otherwise stream half a file and
+// the browser parses it with "Invalid or unexpected token".
+let bundleCache: { mtimeMs: number; size: number; content: Buffer } | null = null;
+
+function readInjectBundleSafe(injectPath: string): Buffer | null {
+  if (!existsSync(injectPath)) return null;
+  const stat = statSync(injectPath);
+  if (
+    bundleCache &&
+    bundleCache.mtimeMs === stat.mtimeMs &&
+    bundleCache.size === stat.size
+  ) {
+    return bundleCache.content;
+  }
+  // Read, then re-stat. If size/mtime moved between stat→read→re-stat,
+  // a write was in flight — fall back to the previous good cache instead
+  // of serving a torn read.
+  const content = readFileSync(injectPath);
+  const after = statSync(injectPath);
+  if (
+    after.mtimeMs !== stat.mtimeMs ||
+    after.size !== stat.size ||
+    content.length !== stat.size
+  ) {
+    return bundleCache?.content ?? null;
+  }
+  bundleCache = { mtimeMs: stat.mtimeMs, size: stat.size, content };
+  return content;
+}
+
 function serveInjectBundle(res: ServerResponse, injectPath: string) {
-  if (!existsSync(injectPath)) {
+  const content = readInjectBundleSafe(injectPath);
+  if (!content) {
     res.writeHead(500, { "content-type": "text/plain" });
-    res.end(`spidey-grab inject bundle not found at ${injectPath}. Run 'bun run build' in packages/spidey-grab.`);
+    res.end(`spidey-grab inject bundle not ready at ${injectPath}. Run 'npm run build' in the spidey-grab package, or wait for tsup --watch to finish its first build.`);
     return;
   }
-  const content = readFileSync(injectPath);
   res.writeHead(200, {
     "content-type": "application/javascript; charset=utf-8",
     "cache-control": "no-store",
@@ -272,8 +373,10 @@ function resolveInjectBundle(): string {
   // wouldn't land on dist/inject.js — let the dev orchestrator point at the
   // built bundle explicitly.
   if (process.env.SPIDEY_GRAB_INJECT_BUNDLE) return process.env.SPIDEY_GRAB_INJECT_BUNDLE;
-  const here = typeof __dirname === "string" ? __dirname : dirname(fileURLToPath(import.meta.url));
-  return resolve(here, "..", "inject.js");
+  // tsup's `shims: true` provides __dirname in both CJS (native) and ESM
+  // (shimmed). Both built locations (dist/cli/ and dist/plugin/) sit one
+  // level under dist/, so the relative resolution is the same.
+  return resolve(__dirname, "..", "inject.js");
 }
 
 function printBanner(opts: ServerOpts) {
@@ -285,6 +388,7 @@ function printBanner(opts: ServerOpts) {
     `  port: ${opts.port}`,
     `  cwd:  ${opts.cwd}`,
     `  claude: ${opts.claudeBin}`,
+    `  codex:  ${opts.codexBin}`,
     "",
     "  paste this into your app's <head>:",
     "",

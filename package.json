@@ -1,36 +1,118 @@
 {
   "name": "spidey-grab",
   "version": "0.1.0",
-  "description": "Visual element-level Claude prompts for any local React app",
-  "private": true,
+  "description": "Click any element in your local React app, type a prompt, get a Claude Code agent to edit the source on disk.",
+  "keywords": [
+    "claude",
+    "claude-code",
+    "react",
+    "devtools",
+    "vite-plugin",
+    "agent",
+    "cli"
+  ],
+  "license": "MIT",
+  "author": "Matheus Mendes <mmendes@midjourney.com>",
+  "homepage": "https://github.com/imMatheus/spidey#readme",
+  "bugs": {
+    "url": "https://github.com/imMatheus/spidey/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/imMatheus/spidey.git"
+  },
   "type": "module",
   "bin": {
-    "spidey-grab": "./bin/spidey-grab.cjs"
+    "spidey-grab": "./dist/cli/index.cjs"
+  },
+  "main": "./dist/plugin/vite.cjs",
+  "module": "./dist/plugin/vite.js",
+  "types": "./dist/plugin/vite.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/plugin/vite.d.ts",
+        "default": "./dist/plugin/vite.js"
+      },
+      "require": {
+        "types": "./dist/plugin/vite.d.cts",
+        "default": "./dist/plugin/vite.cjs"
+      }
+    },
+    "./vite": {
+      "import": {
+        "types": "./dist/plugin/vite.d.ts",
+        "default": "./dist/plugin/vite.js"
+      },
+      "require": {
+        "types": "./dist/plugin/vite.d.cts",
+        "default": "./dist/plugin/vite.cjs"
+      }
+    },
+    "./next": {
+      "import": {
+        "types": "./dist/plugin/next.d.ts",
+        "default": "./dist/plugin/next.js"
+      },
+      "require": {
+        "types": "./dist/plugin/next.d.cts",
+        "default": "./dist/plugin/next.cjs"
+      }
+    },
+    "./package.json": "./package.json"
   },
   "files": [
-    "bin",
-    "dist"
+    "dist",
+    "README.md",
+    "LICENSE"
   ],
+  "engines": {
+    "node": ">=18"
+  },
   "scripts": {
     "build": "tsup",
     "dev": "bun scripts/dev.ts",
-    "start": "node bin/spidey-grab.cjs",
+    "start": "node dist/cli/index.cjs",
     "typecheck": "tsc --noEmit",
+    "prepublishOnly": "npm run build",
     "example:vite": "cd examples/vite-app && bun run dev",
     "example:next": "cd examples/next-app && bun run dev"
   },
+  "publishConfig": {
+    "access": "public"
+  },
+  "peerDependencies": {
+    "next": "^13.0.0 || ^14.0.0 || ^15.0.0 || ^16.0.0",
+    "react": "^17.0.0 || ^18.0.0 || ^19.0.0",
+    "vite": "^4.0.0 || ^5.0.0 || ^6.0.0 || ^7.0.0 || ^8.0.0"
+  },
+  "peerDependenciesMeta": {
+    "next": {
+      "optional": true
+    },
+    "react": {
+      "optional": true
+    },
+    "vite": {
+      "optional": true
+    }
+  },
   "dependencies": {
-    "@pierre/diffs": "^1.1.20",
-    "bippy": "^0.5.39",
-    "diff": "^7.0.0",
-    "motion": "^12.38.0",
     "ws": "^8.20.0"
   },
   "devDependencies": {
+    "@pierre/diffs": "^1.1.20",
     "@types/diff": "^7.0.0",
     "@types/node": "^22.0.0",
+    "@types/react": "^19.2.14",
     "@types/ws": "^8.5.12",
+    "bippy": "^0.5.39",
+    "diff": "^7.0.0",
+    "motion": "^12.38.0",
+    "next": "^16.2.5",
+    "react": "^19.2.6",
     "tsup": "^8.5.1",
-    "typescript": "^5.5.0"
+    "typescript": "^5.5.0",
+    "vite": "^8.0.10"
   }
 }

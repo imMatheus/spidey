@@ -1,16 +1,13 @@
 /**
- * One-stop dev harness for spidey-grab. Runs three processes in parallel:
+ * One-stop dev harness for spidey-grab. Runs two processes in parallel:
  *
- *   1) tsup --watch    → keeps dist/inject.js fresh (the IIFE bundle the CLI
- *                        serves to browsers; rebuilt on save)
- *   2) bun --watch CLI → runs src/cli/index.ts directly from source and
- *                        auto-restarts when any imported file changes
- *   3) vite dev        → the example vite-app on :5400 (its index.html already
- *                        references http://localhost:7878/spidey-grab.js)
- *
- * The IIFE bundle is read off disk on each request, so client changes show up
- * on the next browser refresh without restarting the CLI. CLI changes restart
- * the CLI itself via bun's built-in watcher.
+ *   1) tsup --watch    → keeps dist/inject.js fresh (the IIFE the daemon
+ *                        serves to browsers) and rebuilds the plugins on
+ *                        save so the example picks up changes via its
+ *                        `file:../..` dep.
+ *   2) example dev     → the chosen example app. Its bundler config uses
+ *                        `spidey-grab/{vite,next}` so the daemon boots
+ *                        in-process — no separate CLI subprocess needed.
  *
  * Any child exiting takes the others down so the terminal isn't left with
  * zombies. Ctrl-C cleans up everything.
@@ -71,8 +68,8 @@ function shutdown() {
 process.on("SIGINT", shutdown);
 process.on("SIGTERM", shutdown);
 
-// Make sure the IIFE bundle exists before the CLI starts serving — otherwise
-// the very first browser request 404s until tsup finishes its first build.
+// Make sure the IIFE bundle exists before the example starts serving —
+// otherwise the very first browser request 404s until tsup's first build.
 if (!existsSync(INJECT_BUNDLE)) {
   console.log("[init] no dist/inject.js yet, running initial build…");
   const r = Bun.spawnSync(["bun", "run", "build"], { cwd: PKG, stdio: ["inherit", "inherit", "inherit"] });
@@ -80,14 +77,10 @@ if (!existsSync(INJECT_BUNDLE)) {
 }
 
 start("tsup", ["bunx", "tsup", "--watch"], PKG);
-start("cli",  ["bun", "--watch", "src/cli/index.ts", "--cwd", EXAMPLE_DIR], PKG, {
-  SPIDEY_GRAB_INJECT_BUNDLE: INJECT_BUNDLE,
-});
 start("example", ["bun", "run", "dev"], EXAMPLE_DIR);
 
 console.log(
   `\nspidey-grab dev:` +
-    `\n  CLI       http://localhost:7878/spidey-grab.js (rebuilt on save)` +
-    `\n  example   ${exampleName} (see its dev script for the port)` +
+    `\n  example   ${exampleName} (daemon boots in-process via the plugin)` +
     `\n`,
 );

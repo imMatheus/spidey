@@ -11,6 +11,15 @@ import type {
 import { animate as motionAnimate } from "motion";
 import type { JobSocket } from "./socket";
 import { renderDiff } from "./diff-render";
+import { agentLabel } from "./agent";
+import type { AgentKind } from "../protocol";
+
+/** Agent that ran the parent turn — continuations stay on the same agent so
+ *  threads don't mix claude session resume with a fresh codex run. Older
+ *  bundles predate the agent field and are treated as claude. */
+function bundleAgent(b: { agent?: AgentKind } | undefined): AgentKind {
+  return b?.agent === "codex" ? "codex" : "claude";
+}
 
 export interface DiffSidebarOpts {
   parent: HTMLElement;
@@ -24,13 +33,14 @@ interface PendingTurn {
   step?: string;
   status: "running" | "failed";
   error?: string;
+  agent: AgentKind;
 }
 
 type CommitTerminal = "ready-to-push" | "pushed";
 
 interface SidebarPersistedState {
   rootJobId: string;
-  pending?: { jobId: string; prompt: string };
+  pending?: { jobId: string; prompt: string; agent?: AgentKind };
 }
 
 const SIDEBAR_STORAGE_KEY = "spidey-grab:sidebar:v1";
@@ -135,7 +145,10 @@ export class DiffSidebar {
     this.boundKey = (e) => this.onKey(e);
   }
 
-  async show(jobId: string, opts: { pending?: { jobId: string; prompt: string } } = {}) {
+  async show(
+    jobId: string,
+    opts: { pending?: { jobId: string; prompt: string; agent?: AgentKind } } = {},
+  ) {
     if (this.removeTimer != null) {
       clearTimeout(this.removeTimer);
       this.removeTimer = null;
@@ -144,38 +157,82 @@ export class DiffSidebar {
     this.renderShell(el, "loading…");
     this.openInternal();
 
+    let landed = false;
     try {
       const res = await fetch(`${this.opts.baseUrl}jobs/${encodeURIComponent(jobId)}/thread`);
-      if (!res.ok) {
-        // fall back to the single-bundle endpoint for older daemon builds
-        const r2 = await fetch(`${this.opts.baseUrl}jobs/${encodeURIComponent(jobId)}/diff`);
-        if (!r2.ok) {
-          this.renderError(el, `couldn't load history (${res.status})`);
-          return;
-        }
-        const single = (await r2.json()) as JobDiffBundle;
-        this.rootJobId = single.jobId;
-        this.entries = [single];
-      } else {
+      if (res.ok) {
         const body = (await res.json()) as JobThreadResponse;
         this.rootJobId = body.rootJobId;
         this.entries = body.entries;
+        landed = true;
+      } else if (res.status !== 404) {
+        // fall back to the single-bundle endpoint for older daemon builds
+        const r2 = await fetch(`${this.opts.baseUrl}jobs/${encodeURIComponent(jobId)}/diff`);
+        if (r2.ok) {
+          const single = (await r2.json()) as JobDiffBundle;
+          this.rootJobId = single.jobId;
+          this.entries = [single];
+          landed = true;
+        } else {
+          this.renderError(el, `couldn't load history (${res.status})`);
+          return;
+        }
+      } else {
+        // 404 — try the diff endpoint too in case it serves something.
+        const r2 = await fetch(`${this.opts.baseUrl}jobs/${encodeURIComponent(jobId)}/diff`);
+        if (r2.ok) {
+          const single = (await r2.json()) as JobDiffBundle;
+          this.rootJobId = single.jobId;
+          this.entries = [single];
+          landed = true;
+        }
       }
     } catch (err) {
       this.renderError(el, `couldn't reach daemon: ${(err as Error).message}`);
       return;
     }
 
+    if (!landed) {
+      // Job hasn't finalized yet — render in pending-only mode if we know
+      // the prompt. The websocket finalize handler will re-fetch the thread
+      // once the daemon writes its history bundle.
+      if (!opts.pending) {
+        this.renderError(el, "this job hasn't finished yet — try again once it's done");
+        return;
+      }
+      this.rootJobId = jobId;
+      this.entries = [];
+    }
+
     this.pending = null;
     if (opts.pending && !this.entries.some((e) => e.jobId === opts.pending!.jobId)) {
+      const inferredAgent: AgentKind =
+        opts.pending.agent ??
+        // For continuations whose pending was set by submitContinuation,
+        // we lock to the parent's agent. For root pending opens (no prior
+        // entries) without an explicit agent, fall back to claude.
+        (this.entries.length > 0
+          ? bundleAgent(this.entries[this.entries.length - 1])
+          : "claude");
       this.pending = {
         jobId: opts.pending.jobId,
         prompt: opts.pending.prompt,
         status: "running",
+        agent: inferredAgent,
       };
+      // Hedge against the race where the job finalized between our first
+      // fetch and our websocket subscription becoming live. If so, the
+      // refresh will pull in the real bundle and clear `pending`.
+      if (!landed) {
+        setTimeout(() => {
+          if (this.pending && this.pending.jobId === opts.pending!.jobId) {
+            void this.refreshThread();
+          }
+        }, 250);
+      }
     }
     // Recover terminal commit state if we're re-opening the same thread.
-    this.commitTerminal = readCommitTerminal(this.rootJobId);
+    this.commitTerminal = readCommitTerminal(this.rootJobId!);
     this.cachedChanges = null;
     this.persistState();
     this.renderSidebar();
@@ -189,7 +246,11 @@ export class DiffSidebar {
     writePersistedSidebar({
       rootJobId: this.rootJobId,
       pending: this.pending
-        ? { jobId: this.pending.jobId, prompt: this.pending.prompt }
+        ? {
+            jobId: this.pending.jobId,
+            prompt: this.pending.prompt,
+            agent: this.pending.agent,
+          }
         : undefined,
     });
   }
@@ -922,6 +983,11 @@ export class DiffSidebar {
     counts.textContent = `${entry.filesChanged} file${entry.filesChanged === 1 ? "" : "s"} · +${entry.additions} −${entry.deletions}`;
     meta.appendChild(counts);
 
+    const agentChip = document.createElement("span");
+    agentChip.className = "turn-agent";
+    agentChip.textContent = agentLabel(bundleAgent(entry));
+    meta.appendChild(agentChip);
+
     meta.appendChild(timeChipElement(entry.createdAt));
 
     turn.appendChild(meta);
@@ -977,6 +1043,11 @@ export class DiffSidebar {
     status.appendChild(label);
     meta.appendChild(status);
 
+    const agentChip = document.createElement("span");
+    agentChip.className = "turn-agent";
+    agentChip.textContent = agentLabel(pending.agent);
+    meta.appendChild(agentChip);
+
     turn.appendChild(meta);
 
     if (pending.status === "failed" && pending.error) {
@@ -1016,9 +1087,17 @@ export class DiffSidebar {
     composer.className = "diff-sidebar-composer";
 
     const ta = document.createElement("textarea");
-    ta.placeholder = last?.sessionId
-      ? "continue the conversation…"
-      : "follow-up (note: original session metadata missing — claude won't have prior context)";
+    const agent = bundleAgent(last);
+    const label = agentLabel(agent);
+    if (agent === "claude") {
+      ta.placeholder = last?.sessionId
+        ? `continue the conversation with ${label}…`
+        : `follow-up (note: ${label} session metadata missing — prior context unavailable)`;
+    } else {
+      // Codex doesn't have a session-resume hop in our flow; the backend
+      // inlines prior turns as plain context, so a continuation always works.
+      ta.placeholder = `continue the conversation with ${label}…`;
+    }
     ta.rows = 3;
     composer.appendChild(ta);
     this.composerTextarea = ta;
@@ -1070,6 +1149,10 @@ export class DiffSidebar {
     const req: CreateJobRequest = {
       prompt: value,
       parentJobId: parent.jobId,
+      // Lock continuations to the parent's agent. Mixing agents inside one
+      // thread would break claude's --resume hop and confuse codex's inline
+      // context, so we stay on whichever agent started the thread.
+      agent: bundleAgent(parent),
     };
 
     try {
@@ -1083,7 +1166,12 @@ export class DiffSidebar {
         return;
       }
       const body = (await res.json()) as CreateJobResponse;
-      this.pending = { jobId: body.jobId, prompt: value, status: "running" };
+      this.pending = {
+        jobId: body.jobId,
+        prompt: value,
+        status: "running",
+        agent: bundleAgent(parent),
+      };
       this.composerTextarea.value = "";
       this.persistState();
       this.renderSidebar();

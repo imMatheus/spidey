@@ -1,5 +1,11 @@
 export type JobStatus = "running" | "done" | "failed";
 
+export type AgentKind = "claude" | "codex";
+
+export const AGENT_KINDS: AgentKind[] = ["claude", "codex"];
+
+export const DEFAULT_AGENT: AgentKind = "claude";
+
 export interface SourceLocation {
   file: string;
   line?: number;
@@ -19,6 +25,8 @@ export interface CreateJobRequest {
   context?: ElementContext;
   /** When set, the new job resumes the parent's claude session instead of starting fresh. */
   parentJobId?: string;
+  /** Which underlying agent runs this job. Defaults to claude server-side. */
+  agent?: AgentKind;
 }
 
 export interface CreateJobResponse {
@@ -36,6 +44,12 @@ export interface JobSnapshot {
   step?: string;
   error?: string;
   createdAt: number;
+  /** User-facing prompt. Sent so clients can render an in-flight job in the
+   *  diff sidebar (which otherwise has no history bundle to load). */
+  prompt?: string;
+  /** Agent running this job. Used by the sidebar to show the right label
+   *  on in-flight turns and to lock continuations to the correct agent. */
+  agent?: AgentKind;
 }
 
 export interface JobTargetSummary {
@@ -56,7 +70,11 @@ export interface JobHistorySummary {
   deletions: number;
   error?: string;
   parentJobId?: string;
+  /** Set only for claude jobs — used to resume the underlying claude session. */
   sessionId?: string;
+  /** Which agent ran this job. Older bundles (pre-multi-agent) won't have this
+   *  — treat missing as `claude` for backward compat. */
+  agent?: AgentKind;
 }
 
 export interface FileDiff {

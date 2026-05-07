@@ -1,3 +1,4 @@
+import { SpideyGrab } from "spidey-grab/next";
 import { Navbar } from "../components/Navbar";
 import "./globals.css";
 
@@ -10,7 +11,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <head>
-        <script src="http://localhost:7878/spidey-grab.js" async />
+        <SpideyGrab />
       </head>
       <body>
         <Navbar />

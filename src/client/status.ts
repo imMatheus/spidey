@@ -18,13 +18,20 @@ export interface StatusCounts {
 
 type StatusListener = (counts: StatusCounts) => void;
 
+export interface StatusManagerOpts {
+  /** Fired when the user clicks a status badge — wire this to open the diff sidebar for the job. */
+  onBadgeClick?: (jobId: string) => void;
+}
+
 export class StatusManager {
   private overlay: OverlayLayer;
   private byJobId = new Map<string, Tracked>();
   private listeners = new Set<StatusListener>();
+  private opts: StatusManagerOpts;
 
-  constructor(overlay: OverlayLayer) {
+  constructor(overlay: OverlayLayer, opts: StatusManagerOpts = {}) {
     this.overlay = overlay;
+    this.opts = opts;
   }
 
   counts(): StatusCounts {
@@ -60,6 +67,7 @@ export class StatusManager {
     const outlineId = this.overlay.attach(target, "running", {
       withBadge: true,
       refinder,
+      onBadgeClick: () => this.opts.onBadgeClick?.(jobId),
     });
     this.overlay.setBadgeText(outlineId, { spinner: true, step: "starting" });
     this.byJobId.set(jobId, { outlineId, status: "running", fingerprint });
@@ -86,6 +94,7 @@ export class StatusManager {
     const outlineId = this.overlay.attach(target, snapshot.status === "running" ? "running" : snapshot.status, {
       withBadge: true,
       refinder,
+      onBadgeClick: () => this.opts.onBadgeClick?.(persisted.jobId),
     });
     this.byJobId.set(persisted.jobId, {
       outlineId,
