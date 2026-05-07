@@ -37,6 +37,7 @@ export interface ServerHandle {
 
 export async function startServer(opts: ServerOpts): Promise<ServerHandle> {
   const injectPath = resolveInjectBundle();
+  const diffBundlePath = resolve(injectPath, "..", "inject-diff.js");
 
   const httpServer = createServer((req, res) => {
     setCors(res);
@@ -57,6 +58,11 @@ export async function startServer(opts: ServerOpts): Promise<ServerHandle> {
 
     if (req.method === "GET" && (url === "/spidey-grab.js" || url === "/inject.js")) {
       serveInjectBundle(res, injectPath);
+      return;
+    }
+
+    if (req.method === "GET" && (url === "/spidey-grab-diff.js" || url === "/inject-diff.js")) {
+      serveInjectBundle(res, diffBundlePath);
       return;
     }
 
@@ -306,22 +312,22 @@ function promptBasedMessage(root: { promptPreview?: string; prompt?: string; job
   return `${subject}\n\nspidey-grab job ${root.jobId}`;
 }
 
-// Cache the bundle keyed by mtime+size so we don't re-read on every request,
-// and — more importantly — don't serve a partially-written bundle while
-// `tsup --watch` is mid-rebuild. esbuild's writer isn't atomic; a request
-// that lands during the write window would otherwise stream half a file and
-// the browser parses it with "Invalid or unexpected token".
-let bundleCache: { mtimeMs: number; size: number; content: Buffer } | null = null;
+// Cache each bundle (core + diff) keyed by path → mtime+size so we don't
+// re-read on every request, and — more importantly — don't serve a partially-
+// written bundle while `tsup --watch` is mid-rebuild. esbuild's writer isn't
+// atomic; a request that lands during the write window would otherwise stream
+// half a file and the browser parses it with "Invalid or unexpected token".
+const bundleCache = new Map<
+  string,
+  { mtimeMs: number; size: number; content: Buffer }
+>();
 
 function readInjectBundleSafe(injectPath: string): Buffer | null {
   if (!existsSync(injectPath)) return null;
   const stat = statSync(injectPath);
-  if (
-    bundleCache &&
-    bundleCache.mtimeMs === stat.mtimeMs &&
-    bundleCache.size === stat.size
-  ) {
-    return bundleCache.content;
+  const cached = bundleCache.get(injectPath);
+  if (cached && cached.mtimeMs === stat.mtimeMs && cached.size === stat.size) {
+    return cached.content;
   }
   // Read, then re-stat. If size/mtime moved between stat→read→re-stat,
   // a write was in flight — fall back to the previous good cache instead
@@ -333,9 +339,13 @@ function readInjectBundleSafe(injectPath: string): Buffer | null {
     after.size !== stat.size ||
     content.length !== stat.size
   ) {
-    return bundleCache?.content ?? null;
+    return cached?.content ?? null;
   }
-  bundleCache = { mtimeMs: stat.mtimeMs, size: stat.size, content };
+  bundleCache.set(injectPath, {
+    mtimeMs: stat.mtimeMs,
+    size: stat.size,
+    content,
+  });
   return content;
 }
 

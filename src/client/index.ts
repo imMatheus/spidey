@@ -15,7 +15,8 @@ import { JobSocket } from './socket'
 import { resolveTarget } from './source'
 import { buildFingerprint, findByFingerprint } from './refind'
 import { persistence } from './persistence'
-import { DiffSidebar, loadPersistedSidebar, timeChipHTML } from './diff-sidebar'
+import { LazyDiffSidebar } from './lazy-diff-sidebar'
+import { loadPersistedSidebar, timeChipHTML } from './sidebar-utils'
 import { agentSelection, agentLabel } from './agent'
 import type {
   AgentKind,
@@ -41,7 +42,7 @@ function boot() {
   const mount = mountShadow()
   const overlay = new OverlayLayer(mount.layer)
   const socket = new JobSocket(baseUrl)
-  const diffSidebar = new DiffSidebar({ parent: mount.layer, baseUrl, socket })
+  const diffSidebar = new LazyDiffSidebar({ parent: mount.layer, baseUrl, socket })
   const status = new StatusManager(overlay, {
     onBadgeClick: (jobId) => {
       const pending = pendingJobs.get(jobId)

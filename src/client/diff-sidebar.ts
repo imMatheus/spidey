@@ -13,12 +13,29 @@ import type { JobSocket } from "./socket";
 import { renderDiff } from "./diff-render";
 import { agentLabel } from "./agent";
 import type { AgentKind } from "../protocol";
+import {
+  timeChipElement,
+  writePersistedSidebar,
+} from "./sidebar-utils";
 
 /** Agent that ran the parent turn — continuations stay on the same agent so
  *  threads don't mix claude session resume with a fresh codex run. Older
- *  bundles predate the agent field and are treated as claude. */
+ *  bundles predate the agent field; for those we use the presence of a
+ *  sessionId as a hint (claude is the only agent that records one), otherwise
+ *  fall back to claude. */
 function bundleAgent(b: { agent?: AgentKind } | undefined): AgentKind {
-  return b?.agent === "codex" ? "codex" : "claude";
+  if (b?.agent === "codex" || b?.agent === "claude") return b.agent;
+  return "claude";
+}
+
+/** True when we're confident the bundle is claude (explicit field or has a
+ *  session id). Used to gate the "session metadata missing" warning so we
+ *  don't show it for codex turns or for bundles whose agent we can't tell. */
+function bundleIsClaude(b: { agent?: AgentKind; sessionId?: string } | undefined): boolean {
+  if (!b) return false;
+  if (b.agent === "claude") return true;
+  if (b.agent === "codex") return false;
+  return Boolean(b.sessionId);
 }
 
 export interface DiffSidebarOpts {
@@ -38,12 +55,6 @@ interface PendingTurn {
 
 type CommitTerminal = "ready-to-push" | "pushed";
 
-interface SidebarPersistedState {
-  rootJobId: string;
-  pending?: { jobId: string; prompt: string; agent?: AgentKind };
-}
-
-const SIDEBAR_STORAGE_KEY = "spidey-grab:sidebar:v1";
 // Keyed by rootJobId so terminal state outlives sidebar hide/show, which
 // always clears the SIDEBAR_STORAGE_KEY slot.
 const COMMIT_TERMINAL_STORAGE_KEY = "spidey-grab:commit-terminal:v1";
@@ -70,31 +81,6 @@ function writeCommitTerminal(rootJobId: string, value: CommitTerminal | null) {
 
 function readCommitTerminal(rootJobId: string): CommitTerminal | null {
   return readCommitTerminalMap()[rootJobId] ?? null;
-}
-
-function readPersistedSidebar(): SidebarPersistedState | null {
-  try {
-    const raw = sessionStorage.getItem(SIDEBAR_STORAGE_KEY);
-    if (!raw) return null;
-    const parsed = JSON.parse(raw) as SidebarPersistedState;
-    if (!parsed || typeof parsed.rootJobId !== "string") return null;
-    return parsed;
-  } catch {
-    return null;
-  }
-}
-
-function writePersistedSidebar(state: SidebarPersistedState | null) {
-  try {
-    if (state === null) sessionStorage.removeItem(SIDEBAR_STORAGE_KEY);
-    else sessionStorage.setItem(SIDEBAR_STORAGE_KEY, JSON.stringify(state));
-  } catch {
-    // ignore
-  }
-}
-
-export function loadPersistedSidebar(): SidebarPersistedState | null {
-  return readPersistedSidebar();
 }
 
 export class DiffSidebar {
@@ -420,7 +406,12 @@ export class DiffSidebar {
       const body = this.buildChatBody();
       this.el.appendChild(body);
       this.bodyEl = body;
-      this.el.appendChild(this.buildComposer(last));
+      // Only show the composer when there's a real parent to continue from.
+      // While a root job is still running we have a pending turn but no
+      // bundle yet — `last` is undefined, and rendering the composer here
+      // would default the placeholder to "claude" (the bundleAgent fallback)
+      // even for codex threads. Wait for the bundle to land.
+      if (last) this.el.appendChild(this.buildComposer(last));
       requestAnimationFrame(() => {
         if (this.bodyEl) this.bodyEl.scrollTop = this.bodyEl.scrollHeight;
         this.positionIndicator(false);
@@ -1089,15 +1080,14 @@ export class DiffSidebar {
     const ta = document.createElement("textarea");
     const agent = bundleAgent(last);
     const label = agentLabel(agent);
-    if (agent === "claude") {
-      ta.placeholder = last?.sessionId
-        ? `continue the conversation with ${label}…`
-        : `follow-up (note: ${label} session metadata missing — prior context unavailable)`;
-    } else {
-      // Codex doesn't have a session-resume hop in our flow; the backend
-      // inlines prior turns as plain context, so a continuation always works.
-      ta.placeholder = `continue the conversation with ${label}…`;
-    }
+    // Only warn about missing session metadata when we know the parent is
+    // claude — codex inlines prior turns server-side and bundles with no
+    // agent field whose claude-ness we can't confirm shouldn't surface a
+    // claude-specific caveat.
+    const claudeWithoutSession = bundleIsClaude(last) && !last?.sessionId;
+    ta.placeholder = claudeWithoutSession
+      ? `follow-up (note: ${label} session metadata missing — prior context unavailable)`
+      : `continue the conversation with ${label}…`;
     ta.rows = 3;
     composer.appendChild(ta);
     this.composerTextarea = ta;
@@ -1270,28 +1260,3 @@ function renderFileBlock(file: FileDiff): HTMLDivElement {
   return block;
 }
 
-export function formatRelativeTime(ts: number): string {
-  const diffMs = Date.now() - ts;
-  if (diffMs < 0) return "now";
-  const sec = Math.floor(diffMs / 1000);
-  if (sec < 60) return `${sec}s`;
-  const min = Math.floor(sec / 60);
-  if (min < 60) return `${min}m`;
-  const hr = Math.floor(min / 60);
-  if (hr < 24) return `${hr}h`;
-  const day = Math.floor(hr / 24);
-  return `${day}d`;
-}
-
-const CLOCK_ICON_SVG = `<svg viewBox="0 0 16 16" fill="currentColor" stroke-linejoin="round" aria-hidden="true"><path fill-rule="evenodd" clip-rule="evenodd" d="M5.35066 2.06247C5.96369 1.78847 6.62701 1.60666 7.32351 1.53473L7.16943 0.0426636C6.31208 0.1312 5.49436 0.355227 4.73858 0.693033L5.35066 2.06247ZM8.67651 1.53473C11.9481 1.87258 14.5 4.63876 14.5 8.00001C14.5 11.5899 11.5899 14.5 8.00001 14.5C4.63901 14.5 1.87298 11.9485 1.5348 8.67722L0.0427551 8.83147C0.459163 12.8594 3.86234 16 8.00001 16C12.4183 16 16 12.4183 16 8.00001C16 3.86204 12.8589 0.458666 8.83059 0.0426636L8.67651 1.53473ZM2.73972 4.18084C3.14144 3.62861 3.62803 3.14195 4.18021 2.74018L3.29768 1.52727C2.61875 2.02128 2.02064 2.61945 1.52671 3.29845L2.73972 4.18084ZM1.5348 7.32279C1.60678 6.62656 1.78856 5.96348 2.06247 5.35066L0.693033 4.73858C0.355343 5.4941 0.131354 6.31152 0.0427551 7.16854L1.5348 7.32279ZM8.75001 4.75V4H7.25001V4.75V7.875C7.25001 8.18976 7.3982 8.48615 7.65001 8.675L9.55001 10.1L10.15 10.55L11.05 9.35L10.45 8.9L8.75001 7.625V4.75Z"/></svg>`;
-
-export function timeChipHTML(ts: number): string {
-  return `<span class="time-chip">${CLOCK_ICON_SVG}<span>${formatRelativeTime(ts)}</span></span>`;
-}
-
-export function timeChipElement(ts: number): HTMLSpanElement {
-  const span = document.createElement("span");
-  span.className = "time-chip";
-  span.innerHTML = `${CLOCK_ICON_SVG}<span>${formatRelativeTime(ts)}</span>`;
-  return span;
-}
