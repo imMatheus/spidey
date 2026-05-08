@@ -1,12 +1,18 @@
 # Spidey Sense
 
-![Spidey](https://raw.githubusercontent.com/imMatheus/spidey-sense/main/spidey.png)
+![Spidey](https://raw.githubusercontent.com/imMatheus/spidey-sense/main/spidey-demo.gif)
 
 Click any element in your local React app, type "make it red", get a Claude
 Code agent to edit the source on disk. Multiple jobs run concurrently with
 per-element status badges so you can keep working while edits land.
 
 ## Install
+
+```bash
+bun install -D spidey-sense
+```
+
+or
 
 ```bash
 npm install -D spidey-sense
