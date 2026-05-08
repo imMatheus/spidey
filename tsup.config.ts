@@ -18,12 +18,14 @@ const pierreWebComponents = path.join(
 const shikiStub = path.join(here, "src/client/shiki-stubs/shiki.mjs");
 const emptyStub = path.join(here, "src/client/shiki-stubs/empty.mjs");
 
-// Each config below watches ONLY src/** (and tsup.config.ts) when in watch
-// mode. The default tsup behaviour is to watch the cwd and only ignore the
-// current config's outDir — which means each config's outDir change re-triggers
-// every OTHER config, producing an endless rebuild loop. Locking the watch path
-// to src avoids that and stops the IIFE from being torn-down/rebuilt mid-request.
-const WATCH = ["src/**", "tsup.config.ts"];
+// `tsup --watch` (no path) defaults to watching cwd and only ignoring each
+// config's own outDir, so writes to dist/cli would re-trigger the plugin/IIFE
+// configs and vice-versa — an endless rebuild loop that truncates dist/inject.js
+// mid-write. The dev orchestrator (scripts/dev.ts) passes explicit paths via
+// `--watch src --watch tsup.config.ts` to scope the watcher tightly. Don't
+// hard-code `watch:` in the config below — it forces watch mode on every run
+// (including `npm run build` and `npm publish`'s `prepublishOnly`), which then
+// hangs the publish.
 
 export default defineConfig([
   // CLI binary (CJS so the shebang works on every Node)
@@ -39,7 +41,6 @@ export default defineConfig([
     shims: true,
     external: ["ws"],
     banner: { js: "#!/usr/bin/env node" },
-    watch: WATCH,
   },
   // Bundler plugins (ESM + CJS, dual-published). `vite`, `next`, and `react`
   // are the host's dependencies — never bundle them.
@@ -61,7 +62,6 @@ export default defineConfig([
     esbuildOptions(options) {
       options.jsx = "automatic";
     },
-    watch: WATCH,
   },
   // Core browser IIFE that the daemon serves at /spidey-sense.js. Small —
   // doesn't include the diff sidebar (which is loaded on demand from the
@@ -78,7 +78,6 @@ export default defineConfig([
     minify: true,
     clean: false,
     outExtension: () => ({ js: ".js" }),
-    watch: WATCH,
   },
   // Lazy-loaded diff sidebar bundle. Served at /spidey-sense-diff.js. Only
   // fetched the first time the user opens a diff (clicks a status badge).
@@ -106,6 +105,5 @@ export default defineConfig([
         "@shikijs/engine-oniguruma/wasm-inlined": emptyStub,
       };
     },
-    watch: WATCH,
   },
 ]);

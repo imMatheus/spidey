@@ -1,4 +1,4 @@
-# 🕷 Spidey Grab
+# Spidey Sense
 
 ![Spidey](https://raw.githubusercontent.com/imMatheus/spidey-sense/main/spidey.png)
 
