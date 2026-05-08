@@ -1,6 +1,6 @@
 # 🕷 Spidey Grab
 
-![Spidey](https://raw.githubusercontent.com/imMatheus/spidey/main/spidey.png)
+![Spidey](https://raw.githubusercontent.com/imMatheus/spidey-sense/main/spidey.png)
 
 Click any element in your local React app, type "make it red", get a Claude
 Code agent to edit the source on disk. Multiple jobs run concurrently with
@@ -17,13 +17,13 @@ npm install -D spidey-sense
 Add the plugin to your `vite.config.ts`:
 
 ```ts
-import { defineConfig } from "vite";
-import react from "@vitejs/plugin-react";
-import spideySense from "spidey-sense/vite";
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+import spideySense from 'spidey-sense/vite'
 
 export default defineConfig({
   plugins: [react(), spideySense()],
-});
+})
 ```
 
 ### Next.js
@@ -33,21 +33,23 @@ your root layout:
 
 ```js
 // next.config.mjs
-import { withSpideySense } from "spidey-sense/next";
-export default withSpideySense({});
+import { withSpideySense } from 'spidey-sense/next'
+export default withSpideySense({})
 ```
 
 ```tsx
 // app/layout.tsx (App Router)
-import { SpideySense } from "spidey-sense/next";
+import { SpideySense } from 'spidey-sense/next'
 
 export default function RootLayout({ children }) {
   return (
     <html>
-      <head><SpideySense /></head>
+      <head>
+        <SpideySense />
+      </head>
       <body>{children}</body>
     </html>
-  );
+  )
 }
 ```
 
@@ -79,13 +81,13 @@ A button appears in the bottom-right of your app:
 
 ```ts
 spideySense({
-  port: 7878,                    // default; auto-bumps if taken
-  cwd: undefined,                // repo root for `claude` jobs (defaults to vite root)
-  claudeBin: "claude",           // path to the claude binary
-  codexBin: "codex",             // path to the codex binary (optional agent)
+  port: 7878, // default; auto-bumps if taken
+  cwd: undefined, // repo root for `claude` jobs (defaults to vite root)
+  claudeBin: 'claude', // path to the claude binary
+  codexBin: 'codex', // path to the codex binary (optional agent)
   softFailOnMissingClaude: true, // log a warning instead of failing if claude isn't installed
-  disabled: false,               // skip plugin entirely (useful for env-gated configs)
-});
+  disabled: false, // skip plugin entirely (useful for env-gated configs)
+})
 ```
 
 ## Standalone CLI (no Vite)

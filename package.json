@@ -13,13 +13,13 @@
   ],
   "license": "MIT",
   "author": "Matheus Mendes",
-  "homepage": "https://github.com/imMatheus/spidey#readme",
+  "homepage": "https://github.com/imMatheus/spidey-sense#readme",
   "bugs": {
-    "url": "https://github.com/imMatheus/spidey/issues"
+    "url": "https://github.com/imMatheus/spidey-sense/issues"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/imMatheus/spidey.git"
+    "url": "git+https://github.com/imMatheus/spidey-sense.git"
   },
   "type": "module",
   "bin": {
