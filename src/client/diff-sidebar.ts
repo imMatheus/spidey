@@ -57,7 +57,7 @@ type CommitTerminal = "ready-to-push" | "pushed";
 
 // Keyed by rootJobId so terminal state outlives sidebar hide/show, which
 // always clears the SIDEBAR_STORAGE_KEY slot.
-const COMMIT_TERMINAL_STORAGE_KEY = "spidey-grab:commit-terminal:v1";
+const COMMIT_TERMINAL_STORAGE_KEY = "spidey-sense:commit-terminal:v1";
 
 function readCommitTerminalMap(): Record<string, CommitTerminal> {
   try {
@@ -1152,7 +1152,7 @@ export class DiffSidebar {
         body: JSON.stringify(req),
       });
       if (!res.ok) {
-        console.error("[spidey-grab] continuation failed", res.status, await res.text());
+        console.error("[spidey-sense] continuation failed", res.status, await res.text());
         return;
       }
       const body = (await res.json()) as CreateJobResponse;
@@ -1166,7 +1166,7 @@ export class DiffSidebar {
       this.persistState();
       this.renderSidebar();
     } catch (err) {
-      console.error("[spidey-grab] continuation error", err);
+      console.error("[spidey-sense] continuation error", err);
     } finally {
       this.submitting = false;
       if (this.composerSubmit) this.composerSubmit.disabled = false;
@@ -1196,7 +1196,7 @@ const COMMIT_CHEVRON_SVG = `<svg viewBox="0 0 16 16" fill="none" stroke="current
 
 const COMMIT_CHECK_SVG = `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8.5L6.5 12L13 4"/></svg>`;
 
-const COMMIT_MODE_KEY = "spidey-grab:commit-mode:v1";
+const COMMIT_MODE_KEY = "spidey-sense:commit-mode:v1";
 
 function readCommitMode(): "commit" | "commit-push" {
   try {

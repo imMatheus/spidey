@@ -403,7 +403,7 @@ function finalize(args: FinalizeArgs) {
   try {
     history.write(args.cwd, bundle);
   } catch (err) {
-    console.error("[spidey-grab] failed to persist history", err);
+    console.error("[spidey-sense] failed to persist history", err);
   }
 
   jobStore.finish(args.jobId, args.status, args.error);

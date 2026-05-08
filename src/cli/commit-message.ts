@@ -136,7 +136,7 @@ function buildPrompt(thread: { entries: JobDiffBundle[] }, changes: FileDiff[]):
     "Rules:",
     "- First line: imperative subject under 72 characters, no trailing period.",
     "- If a body adds value, leave a blank line then 1-3 sentences explaining what changed and why.",
-    "- Do not mention yourself, the AI, the prompt, or 'spidey-grab'.",
+    "- Do not mention yourself, the AI, the prompt, or 'spidey-sense'.",
     "- Do not wrap the message in quotes, code fences, or any commentary. Output only the message.",
     "",
     `Original prompts driving these changes (most recent last):`,

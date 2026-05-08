@@ -52,16 +52,16 @@ export async function startServer(opts: ServerOpts): Promise<ServerHandle> {
 
     if (req.method === "GET" && (url === "/" || url === "/health")) {
       res.writeHead(200, { "content-type": "application/json" });
-      res.end(JSON.stringify({ ok: true, service: "spidey-grab", cwd: opts.cwd }));
+      res.end(JSON.stringify({ ok: true, service: "spidey-sense", cwd: opts.cwd }));
       return;
     }
 
-    if (req.method === "GET" && (url === "/spidey-grab.js" || url === "/inject.js")) {
+    if (req.method === "GET" && (url === "/spidey-sense.js" || url === "/inject.js")) {
       serveInjectBundle(res, injectPath);
       return;
     }
 
-    if (req.method === "GET" && (url === "/spidey-grab-diff.js" || url === "/inject-diff.js")) {
+    if (req.method === "GET" && (url === "/spidey-sense-diff.js" || url === "/inject-diff.js")) {
       serveInjectBundle(res, diffBundlePath);
       return;
     }
@@ -306,10 +306,10 @@ function readRequestBody(req: IncomingMessage, maxBytes: number): Promise<string
 }
 
 function promptBasedMessage(root: { promptPreview?: string; prompt?: string; jobId: string }): string {
-  const subject = (root.promptPreview || root.prompt || "spidey-grab changes")
+  const subject = (root.promptPreview || root.prompt || "spidey-sense changes")
     .split("\n")[0]
     .slice(0, 72);
-  return `${subject}\n\nspidey-grab job ${root.jobId}`;
+  return `${subject}\n\nspidey-sense job ${root.jobId}`;
 }
 
 // Cache each bundle (core + diff) keyed by path → mtime+size so we don't
@@ -353,7 +353,7 @@ function serveInjectBundle(res: ServerResponse, injectPath: string) {
   const content = readInjectBundleSafe(injectPath);
   if (!content) {
     res.writeHead(500, { "content-type": "text/plain" });
-    res.end(`spidey-grab inject bundle not ready at ${injectPath}. Run 'npm run build' in the spidey-grab package, or wait for tsup --watch to finish its first build.`);
+    res.end(`spidey-sense inject bundle not ready at ${injectPath}. Run 'npm run build' in the spidey-sense package, or wait for tsup --watch to finish its first build.`);
     return;
   }
   res.writeHead(200, {
@@ -382,7 +382,7 @@ function resolveInjectBundle(): string {
   // Dev runs the CLI from src/cli/ via bun --watch, so the relative path
   // wouldn't land on dist/inject.js — let the dev orchestrator point at the
   // built bundle explicitly.
-  if (process.env.SPIDEY_GRAB_INJECT_BUNDLE) return process.env.SPIDEY_GRAB_INJECT_BUNDLE;
+  if (process.env.SPIDEY_SENSE_INJECT_BUNDLE) return process.env.SPIDEY_SENSE_INJECT_BUNDLE;
   // tsup's `shims: true` provides __dirname in both CJS (native) and ESM
   // (shimmed). Both built locations (dist/cli/ and dist/plugin/) sit one
   // level under dist/, so the relative resolution is the same.
@@ -390,10 +390,10 @@ function resolveInjectBundle(): string {
 }
 
 function printBanner(opts: ServerOpts) {
-  const tag = `<script src="http://localhost:${opts.port}/spidey-grab.js"></script>`;
+  const tag = `<script src="http://localhost:${opts.port}/spidey-sense.js"></script>`;
   const lines = [
     "",
-    "  spidey-grab is running",
+    "  spidey-sense is running",
     "",
     `  port: ${opts.port}`,
     `  cwd:  ${opts.cwd}`,

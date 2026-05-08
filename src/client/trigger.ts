@@ -38,7 +38,7 @@ export class TriggerButton {
 
     const button = document.createElement("div");
     button.className = "trigger";
-    button.title = "spidey-grab";
+    button.title = "spidey-sense";
     button.innerHTML = ICON;
     button.addEventListener("click", (e) => {
       e.preventDefault();

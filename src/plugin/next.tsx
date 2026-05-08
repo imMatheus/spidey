@@ -1,34 +1,34 @@
 /**
- * Next.js integration for spidey-grab.
+ * Next.js integration for spidey-sense.
  *
  * Two pieces, because Next doesn't expose a single hook that lets a plugin
  * both boot a side process and inject a `<script>` into the rendered HTML:
  *
- *   1) `withSpideyGrab(nextConfig)` wraps your `next.config.{js,mjs,ts}`.
+ *   1) `withSpideySense(nextConfig)` wraps your `next.config.{js,mjs,ts}`.
  *      When `next dev` loads the config, the daemon starts in the same
  *      Node process (no second terminal). It's a no-op in `next build`
  *      and `next start` (NODE_ENV === "production").
  *
- *   2) `<SpideyGrab />` is a server component you drop inside the `<head>`
+ *   2) `<SpideySense />` is a server component you drop inside the `<head>`
  *      of your root layout (App Router) or `_document.tsx` (Pages Router).
- *      In dev it renders a `<script async src="http://localhost:PORT/spidey-grab.js" />`;
+ *      In dev it renders a `<script async src="http://localhost:PORT/spidey-sense.js" />`;
  *      in prod it renders nothing.
  *
- * The two pieces communicate via `process.env.SPIDEY_GRAB_PORT`, which
- * `withSpideyGrab` sets after the daemon picks a free port.
+ * The two pieces communicate via `process.env.SPIDEY_SENSE_PORT`, which
+ * `withSpideySense` sets after the daemon picks a free port.
  *
  * Usage:
  *
  *   // next.config.mjs
- *   import { withSpideyGrab } from "spidey-grab/next";
- *   export default withSpideyGrab({});
+ *   import { withSpideySense } from "spidey-sense/next";
+ *   export default withSpideySense({});
  *
  *   // app/layout.tsx
- *   import { SpideyGrab } from "spidey-grab/next";
+ *   import { SpideySense } from "spidey-sense/next";
  *   export default function RootLayout({ children }) {
  *     return (
  *       <html>
- *         <head><SpideyGrab /></head>
+ *         <head><SpideySense /></head>
  *         <body>{children}</body>
  *       </html>
  *     );
@@ -37,7 +37,7 @@
 import { spawnSync } from "node:child_process";
 import { startServer, type ServerHandle } from "../cli/server";
 
-export interface SpideyGrabNextOptions {
+export interface SpideySenseNextOptions {
   /** Port to start the daemon on. Auto-bumps if taken. Default: 7878. */
   port?: number;
   /** Repo root passed to spawned `claude` jobs. Default: `process.cwd()`. */
@@ -54,9 +54,9 @@ export interface SpideyGrabNextOptions {
 
 let bootPromise: Promise<ServerHandle | undefined> | undefined;
 
-export function withSpideyGrab<T extends object>(
+export function withSpideySense<T extends object>(
   nextConfig: T = {} as T,
-  options: SpideyGrabNextOptions = {},
+  options: SpideySenseNextOptions = {},
 ): T {
   // No-op for `next build` / `next start`. Next sets NODE_ENV before loading
   // the config file, so this is a reliable signal.
@@ -74,16 +74,16 @@ export function withSpideyGrab<T extends object>(
     // If a standalone CLI (or another Next instance) is already serving the
     // daemon on this port, point at it instead of trying to bind too.
     if (await probeDaemon(`http://localhost:${port}`)) {
-      process.env.SPIDEY_GRAB_PORT = String(port);
-      console.log(`\n  \u{1F578}  spidey-grab already running at http://localhost:${port} — reusing it\n`);
+      process.env.SPIDEY_SENSE_PORT = String(port);
+      console.log(`\n  \u{1F578}  spidey-sense already running at http://localhost:${port} — reusing it\n`);
       return undefined;
     }
 
     if (!hasBinary(claudeBin)) {
       const msg =
-        `[spidey-grab] '${claudeBin}' binary not found on PATH. ` +
+        `[spidey-sense] '${claudeBin}' binary not found on PATH. ` +
         `Install Claude Code (https://docs.claude.com/claude-code) or pass ` +
-        `\`claudeBin\` to withSpideyGrab(). Skipping daemon boot.`;
+        `\`claudeBin\` to withSpideySense(). Skipping daemon boot.`;
       if (softFail) {
         console.warn(msg);
         return undefined;
@@ -103,9 +103,9 @@ export function withSpideyGrab<T extends object>(
       });
 
       // The component reads this to know which port to point its script tag at.
-      process.env.SPIDEY_GRAB_PORT = String(handle.port);
+      process.env.SPIDEY_SENSE_PORT = String(handle.port);
 
-      console.log(`\n  \u{1F578}  spidey-grab listening on ${handle.url}\n`);
+      console.log(`\n  \u{1F578}  spidey-sense listening on ${handle.url}\n`);
 
       const cleanup = () => {
         void handle.close();
@@ -117,7 +117,7 @@ export function withSpideyGrab<T extends object>(
       return handle;
     } catch (err) {
       console.warn(
-        `[spidey-grab] failed to start daemon: ${(err as Error)?.message || err}`,
+        `[spidey-sense] failed to start daemon: ${(err as Error)?.message || err}`,
       );
       return undefined;
     }
@@ -130,14 +130,14 @@ export function withSpideyGrab<T extends object>(
  * Server component. Drop inside `<head>` of `app/layout.tsx` (App Router)
  * or `_document.tsx` (Pages Router). Renders nothing in production.
  */
-export function SpideyGrab() {
+export function SpideySense() {
   if (process.env.NODE_ENV === "production") return null;
-  const port = process.env.SPIDEY_GRAB_PORT || "7878";
+  const port = process.env.SPIDEY_SENSE_PORT || "7878";
   return (
     <script
       async
-      src={`http://localhost:${port}/spidey-grab.js`}
-      data-spidey-grab="true"
+      src={`http://localhost:${port}/spidey-sense.js`}
+      data-spidey-sense="true"
     />
   );
 }
@@ -159,7 +159,7 @@ async function probeDaemon(url: string): Promise<boolean> {
     clearTimeout(timer);
     if (!res.ok) return false;
     const body = (await res.json()) as { service?: string };
-    return body.service === "spidey-grab";
+    return body.service === "spidey-sense";
   } catch {
     return false;
   }

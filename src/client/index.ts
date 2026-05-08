@@ -30,13 +30,13 @@ import { AGENT_KINDS } from '../protocol'
 
 declare global {
   interface Window {
-    __SPIDEY_GRAB__?: boolean
+    __SPIDEY_SENSE__?: boolean
   }
 }
 
 function boot() {
-  if (window.__SPIDEY_GRAB__) return
-  window.__SPIDEY_GRAB__ = true
+  if (window.__SPIDEY_SENSE__) return
+  window.__SPIDEY_SENSE__ = true
 
   const baseUrl = detectBaseUrl()
   const mount = mountShadow()
@@ -416,7 +416,7 @@ function boot() {
           })
           if (!res.ok) {
             console.error(
-              '[spidey-grab] failed to create job',
+              '[spidey-sense] failed to create job',
               res.status,
               await res.text(),
             )
@@ -426,7 +426,7 @@ function boot() {
           status.track(body.jobId, submittedTarget, fp, { persist: true })
           trackPendingJob(body.jobId, prompt, submittedAgent)
         } catch (err) {
-          console.error('[spidey-grab] could not reach daemon', err)
+          console.error('[spidey-sense] could not reach daemon', err)
         }
       },
       onCancel: () => {
@@ -531,7 +531,7 @@ function detectBaseUrl(): string {
   const scripts = document.querySelectorAll<HTMLScriptElement>('script[src]')
   for (const s of Array.from(scripts).reverse()) {
     const src = s.src
-    if (src && /spidey-grab(?:\.js|\/inject\.js)/.test(src)) {
+    if (src && /spidey-sense(?:\.js|\/inject\.js)/.test(src)) {
       try {
         const u = new URL(src)
         return `${u.origin}/`

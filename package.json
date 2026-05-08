@@ -1,7 +1,7 @@
 {
-  "name": "spidey-grab",
+  "name": "spidey-sense",
   "version": "0.1.0",
-  "description": "Click any element in your local React app, type a prompt, get a Claude Code agent to edit the source on disk.",
+  "description": "Click any element in your local React app, type a prompt, get a Claude Code or codex agent to edit the source on disk.",
   "keywords": [
     "claude",
     "claude-code",
@@ -23,7 +23,7 @@
   },
   "type": "module",
   "bin": {
-    "spidey-grab": "./dist/cli/index.cjs"
+    "spidey-sense": "./dist/cli/index.cjs"
   },
   "main": "./dist/plugin/vite.cjs",
   "module": "./dist/plugin/vite.js",

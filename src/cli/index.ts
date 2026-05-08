@@ -57,7 +57,7 @@ function parseArgs(argv: string[]): CliOpts {
 function printHelp() {
   process.stdout.write(
     [
-      "usage: spidey-grab [options]",
+      "usage: spidey-sense [options]",
       "",
       "options:",
       "  --port <n>        port to listen on (default: 7878)",
@@ -72,7 +72,7 @@ function printHelp() {
 }
 
 function die(msg: string): never {
-  process.stderr.write(`spidey-grab: ${msg}\n`);
+  process.stderr.write(`spidey-sense: ${msg}\n`);
   process.exit(1);
 }
 
@@ -81,7 +81,7 @@ function checkClaude(claudeBin: string) {
   if (probe.error || probe.status !== 0) {
     process.stderr.write(
       [
-        `spidey-grab: could not run '${claudeBin} --version'.`,
+        `spidey-sense: could not run '${claudeBin} --version'.`,
         "",
         "this tool spawns the local 'claude' CLI to run agent jobs.",
         "install Claude Code from https://docs.claude.com/claude-code, or pass --claude-bin <path>.",
@@ -95,6 +95,6 @@ function checkClaude(claudeBin: string) {
 const opts = parseArgs(process.argv.slice(2));
 checkClaude(opts.claudeBin);
 startServer({ ...opts, installSignalHandlers: true, printBanner: true }).catch((err) => {
-  process.stderr.write(`spidey-grab: ${err?.message || err}\n`);
+  process.stderr.write(`spidey-sense: ${err?.message || err}\n`);
   process.exit(1);
 });

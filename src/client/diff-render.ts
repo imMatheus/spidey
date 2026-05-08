@@ -1,7 +1,7 @@
 import { FileDiff, preloadHighlighter, processFile } from "@pierre/diffs";
 import "@pierre/diffs/web-components";
 
-// Languages spidey-grab actively highlights. Each one costs ~100 KB minified
+// Languages spidey-sense actively highlights. Each one costs ~100 KB minified
 // in the lazy diff bundle because the IIFE format inlines all dynamic imports.
 // Anything not registered here renders as plain text (still readable). Add
 // sparingly — keep the list to file types that are common in React/Vite/Next

@@ -1,8 +1,8 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
-import spideyGrab from "spidey-grab/vite";
+import spideySense from "spidey-sense/vite";
 
 export default defineConfig({
-  plugins: [react(), spideyGrab()],
+  plugins: [react(), spideySense()],
   server: { port: 5400 },
 });

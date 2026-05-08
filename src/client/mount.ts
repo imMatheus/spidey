@@ -8,7 +8,7 @@ export interface ShadowMount {
 
 export function mountShadow(): ShadowMount {
   const host = document.createElement("div");
-  host.dataset.spideyGrab = "true";
+  host.dataset.spideySense = "true";
   host.style.all = "initial";
   host.style.position = "fixed";
   host.style.inset = "0";

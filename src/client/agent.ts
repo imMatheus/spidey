@@ -1,7 +1,7 @@
 import type { AgentKind } from '../protocol'
 import { AGENT_KINDS, DEFAULT_AGENT } from '../protocol'
 
-const STORAGE_KEY = 'spidey-grab.agent'
+const STORAGE_KEY = 'spidey-sense.agent'
 
 export interface AgentInfo {
   kind: AgentKind

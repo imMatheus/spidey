@@ -1,4 +1,4 @@
-import { SpideyGrab } from "spidey-grab/next";
+import { SpideySense } from "spidey-sense/next";
 import { Navbar } from "../components/Navbar";
 import "./globals.css";
 
@@ -11,7 +11,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <head>
-        <SpideyGrab />
+        <SpideySense />
       </head>
       <body>
         <Navbar />

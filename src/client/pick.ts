@@ -27,7 +27,7 @@ export class Picker {
   start() {
     if (this.active) return;
     this.active = true;
-    document.documentElement.classList.add("spidey-grab-picking");
+    document.documentElement.classList.add("spidey-sense-picking");
     document.body.style.cursor = "crosshair";
     window.addEventListener("pointermove", this.boundMove, true);
     window.addEventListener("pointerdown", this.boundDown, true);
@@ -37,7 +37,7 @@ export class Picker {
   stop() {
     if (!this.active) return;
     this.active = false;
-    document.documentElement.classList.remove("spidey-grab-picking");
+    document.documentElement.classList.remove("spidey-sense-picking");
     document.body.style.cursor = "";
     window.removeEventListener("pointermove", this.boundMove, true);
     window.removeEventListener("pointerdown", this.boundDown, true);

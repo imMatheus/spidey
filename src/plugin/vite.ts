@@ -1,8 +1,8 @@
 /**
- * Vite plugin for spidey-grab.
+ * Vite plugin for spidey-sense.
  *
- * In dev mode, boots the spidey-grab daemon in the same process as the Vite
- * dev server (no second terminal) and injects a `<script src=".../spidey-grab.js">`
+ * In dev mode, boots the spidey-sense daemon in the same process as the Vite
+ * dev server (no second terminal) and injects a `<script src=".../spidey-sense.js">`
  * into every served HTML page. In build mode the plugin is a no-op so nothing
  * leaks into production bundles.
  *
@@ -10,17 +10,17 @@
  *
  *   // vite.config.ts
  *   import { defineConfig } from "vite";
- *   import spideyGrab from "spidey-grab/vite";
+ *   import spideySense from "spidey-sense/vite";
  *
  *   export default defineConfig({
- *     plugins: [spideyGrab()],
+ *     plugins: [spideySense()],
  *   });
  */
 import { spawnSync } from "node:child_process";
 import type { Plugin, ResolvedConfig } from "vite";
 import { startServer, type ServerHandle } from "../cli/server";
 
-export interface SpideyGrabPluginOptions {
+export interface SpideySensePluginOptions {
   /**
    * Port to start the daemon on. If taken, the plugin will pick the next
    * available one. Default: 7878.
@@ -47,7 +47,7 @@ export interface SpideyGrabPluginOptions {
   disabled?: boolean;
 }
 
-export default function spideyGrab(options: SpideyGrabPluginOptions = {}): Plugin {
+export default function spideySense(options: SpideySensePluginOptions = {}): Plugin {
   let handle: ServerHandle | undefined;
   let externalUrl: string | undefined;
   let resolvedConfig: ResolvedConfig | undefined;
@@ -59,7 +59,7 @@ export default function spideyGrab(options: SpideyGrabPluginOptions = {}): Plugi
   const port = options.port ?? 7878;
 
   return {
-    name: "spidey-grab",
+    name: "spidey-sense",
     apply: "serve",
 
     configResolved(config) {
@@ -71,7 +71,7 @@ export default function spideyGrab(options: SpideyGrabPluginOptions = {}): Plugi
 
       const cwd = options.cwd ?? resolvedConfig?.root ?? process.cwd();
 
-      // If something is already serving spidey-grab on the requested port
+      // If something is already serving spidey-sense on the requested port
       // (typically the standalone CLI started by `bun run dev`), reuse it
       // instead of racing for the same port. Avoids two daemons fighting
       // and the script tag landing on a stale URL.
@@ -79,16 +79,16 @@ export default function spideyGrab(options: SpideyGrabPluginOptions = {}): Plugi
       if (existing) {
         externalUrl = `http://localhost:${port}`;
         server.config.logger.info(
-          `\n  \u{1F578}  spidey-grab already running at ${externalUrl} — plugin will reuse it\n`,
+          `\n  \u{1F578}  spidey-sense already running at ${externalUrl} — plugin will reuse it\n`,
         );
         return;
       }
 
       if (!hasBinary(claudeBin)) {
         const msg =
-          `[spidey-grab] '${claudeBin}' binary not found on PATH. ` +
+          `[spidey-sense] '${claudeBin}' binary not found on PATH. ` +
           `Install Claude Code (https://docs.claude.com/claude-code) or pass ` +
-          `\`claudeBin\` to spideyGrab(). Skipping daemon boot.`;
+          `\`claudeBin\` to spideySense(). Skipping daemon boot.`;
         if (softFail) {
           server.config.logger.warn(msg);
           return;
@@ -108,13 +108,13 @@ export default function spideyGrab(options: SpideyGrabPluginOptions = {}): Plugi
         .then((h) => {
           handle = h;
           server.config.logger.info(
-            `\n  \u{1F578}  spidey-grab listening on ${h.url}\n`,
+            `\n  \u{1F578}  spidey-sense listening on ${h.url}\n`,
           );
           return { url: h.url };
         })
         .catch((err) => {
           server.config.logger.error(
-            `[spidey-grab] failed to start daemon: ${err?.message || err}`,
+            `[spidey-sense] failed to start daemon: ${err?.message || err}`,
           );
           return undefined;
         });
@@ -132,7 +132,7 @@ export default function spideyGrab(options: SpideyGrabPluginOptions = {}): Plugi
     async transformIndexHtml() {
       if (options.disabled) return;
       // Make sure the daemon is up before we hand the URL to the browser —
-      // otherwise the first page load races and 404s on /spidey-grab.js.
+      // otherwise the first page load races and 404s on /spidey-sense.js.
       if (booting) await booting;
       const url = externalUrl ?? handle?.url;
       if (!url) return;
@@ -140,8 +140,8 @@ export default function spideyGrab(options: SpideyGrabPluginOptions = {}): Plugi
         {
           tag: "script",
           attrs: {
-            src: `${url}/spidey-grab.js`,
-            "data-spidey-grab": "true",
+            src: `${url}/spidey-sense.js`,
+            "data-spidey-sense": "true",
           },
           injectTo: "head-prepend",
         },
@@ -158,7 +158,7 @@ export default function spideyGrab(options: SpideyGrabPluginOptions = {}): Plugi
 }
 
 /** Quick HEAD-equivalent probe to see if our daemon already owns this port.
- *  Matches on the `service: "spidey-grab"` field so we don't accidentally
+ *  Matches on the `service: "spidey-sense"` field so we don't accidentally
  *  reuse some unrelated server that happens to be listening. */
 async function probeDaemon(url: string): Promise<boolean> {
   try {
@@ -168,7 +168,7 @@ async function probeDaemon(url: string): Promise<boolean> {
     clearTimeout(timer);
     if (!res.ok) return false;
     const body = (await res.json()) as { service?: string };
-    return body.service === "spidey-grab";
+    return body.service === "spidey-sense";
   } catch {
     return false;
   }

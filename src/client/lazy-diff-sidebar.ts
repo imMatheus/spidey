@@ -7,7 +7,7 @@
  * job's diff, so paying that cost up-front is wasteful.
  *
  * This module exposes a small class with the same surface (`show(jobId, opts)`).
- * On the first call, it injects a `<script src=".../spidey-grab-diff.js">` into
+ * On the first call, it injects a `<script src=".../spidey-sense-diff.js">` into
  * the document, waits for the script to register `window.__SPIDEY_DIFF__`, then
  * forwards the call to the real `DiffSidebar`.
  *
@@ -63,13 +63,13 @@ export class LazyDiffSidebar {
         return this.instantiate(window.__SPIDEY_DIFF__);
       }
 
-      const url = new URL("spidey-grab-diff.js", this.opts.baseUrl).toString();
+      const url = new URL("spidey-sense-diff.js", this.opts.baseUrl).toString();
       await loadScript(url);
 
       const bundle = window.__SPIDEY_DIFF__;
       if (!bundle) {
         throw new Error(
-          `[spidey-grab] diff bundle loaded from ${url} did not register window.__SPIDEY_DIFF__`,
+          `[spidey-sense] diff bundle loaded from ${url} did not register window.__SPIDEY_DIFF__`,
         );
       }
       return this.instantiate(bundle);

@@ -9,7 +9,7 @@ per-element status badges so you can keep working while edits land.
 ## Install
 
 ```bash
-npm install -D spidey-grab
+npm install -D spidey-sense
 ```
 
 ### Vite
@@ -19,10 +19,10 @@ Add the plugin to your `vite.config.ts`:
 ```ts
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
-import spideyGrab from "spidey-grab/vite";
+import spideySense from "spidey-sense/vite";
 
 export default defineConfig({
-  plugins: [react(), spideyGrab()],
+  plugins: [react(), spideySense()],
 });
 ```
 
@@ -33,31 +33,31 @@ your root layout:
 
 ```js
 // next.config.mjs
-import { withSpideyGrab } from "spidey-grab/next";
-export default withSpideyGrab({});
+import { withSpideySense } from "spidey-sense/next";
+export default withSpideySense({});
 ```
 
 ```tsx
 // app/layout.tsx (App Router)
-import { SpideyGrab } from "spidey-grab/next";
+import { SpideySense } from "spidey-sense/next";
 
 export default function RootLayout({ children }) {
   return (
     <html>
-      <head><SpideyGrab /></head>
+      <head><SpideySense /></head>
       <body>{children}</body>
     </html>
   );
 }
 ```
 
-For the Pages Router, put `<SpideyGrab />` inside the `<Head>` of your
+For the Pages Router, put `<SpideySense />` inside the `<Head>` of your
 `pages/_document.tsx` instead.
 
 ---
 
 Run your dev server like normal — `npm run dev`. The plugin boots the
-spidey-grab daemon in the same process and injects the runtime script in
+spidey-sense daemon in the same process and injects the runtime script in
 dev only. No second terminal, no manual `<script>` paste, and nothing ships
 to production builds.
 
@@ -78,7 +78,7 @@ A button appears in the bottom-right of your app:
 ## Plugin options
 
 ```ts
-spideyGrab({
+spideySense({
   port: 7878,                    // default; auto-bumps if taken
   cwd: undefined,                // repo root for `claude` jobs (defaults to vite root)
   claudeBin: "claude",           // path to the claude binary
@@ -95,7 +95,7 @@ directly and paste the printed `<script>` tag into your app's `<head>` (in
 dev only):
 
 ```bash
-npx spidey-grab --cwd /path/to/your/repo
+npx spidey-sense --cwd /path/to/your/repo
 ```
 
 CLI flags:

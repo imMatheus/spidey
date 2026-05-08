@@ -1,12 +1,12 @@
 /**
- * One-stop dev harness for spidey-grab. Runs two processes in parallel:
+ * One-stop dev harness for spidey-sense. Runs two processes in parallel:
  *
  *   1) tsup --watch    → keeps dist/inject.js fresh (the IIFE the daemon
  *                        serves to browsers) and rebuilds the plugins on
  *                        save so the example picks up changes via its
  *                        `file:../..` dep.
  *   2) example dev     → the chosen example app. Its bundler config uses
- *                        `spidey-grab/{vite,next}` so the daemon boots
+ *                        `spidey-sense/{vite,next}` so the daemon boots
  *                        in-process — no separate CLI subprocess needed.
  *
  * Any child exiting takes the others down so the terminal isn't left with
@@ -85,7 +85,7 @@ start("tsup", ["bunx", "tsup", "--watch", "src", "--watch", "tsup.config.ts"], P
 start("example", ["bun", "run", "dev"], EXAMPLE_DIR);
 
 console.log(
-  `\nspidey-grab dev:` +
+  `\nspidey-sense dev:` +
     `\n  example   ${exampleName} (daemon boots in-process via the plugin)` +
     `\n`,
 );

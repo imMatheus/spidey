@@ -14,7 +14,7 @@ export interface SidebarPersistedState {
   pending?: { jobId: string; prompt: string; agent?: AgentKind };
 }
 
-const SIDEBAR_STORAGE_KEY = "spidey-grab:sidebar:v1";
+const SIDEBAR_STORAGE_KEY = "spidey-sense:sidebar:v1";
 
 export function readPersistedSidebar(): SidebarPersistedState | null {
   try {

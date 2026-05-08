@@ -1,6 +1,6 @@
 import type { Fingerprint } from "./refind";
 
-const KEY = "spidey-grab:active-jobs:v1";
+const KEY = "spidey-sense:active-jobs:v1";
 
 export interface PersistedJob {
   jobId: string;

@@ -1,6 +1,6 @@
-import { withSpideyGrab } from "spidey-grab/next";
+import { withSpideySense } from "spidey-sense/next";
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {};
 
-export default withSpideyGrab(nextConfig);
+export default withSpideySense(nextConfig);

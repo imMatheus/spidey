@@ -1,5 +1,5 @@
 /**
- * Slim re-export of `shiki` for spidey-grab's browser bundle.
+ * Slim re-export of `shiki` for spidey-sense's browser bundle.
  *
  * The default `shiki` entry — and the `shiki/bundle/full` entry that it uses
  * — re-export `bundledLanguages` and `bundledThemes`, which together are
@@ -9,7 +9,7 @@
  * previously dominated `dist/inject.js`.
  *
  * @pierre/diffs only looks up languages/themes by name in those maps, so we
- * can safely substitute reduced versions covering the languages spidey-grab
+ * can safely substitute reduced versions covering the languages spidey-sense
  * actually highlights (typescript/javascript/tsx/jsx/json/css/html/markdown),
  * plus a single theme (github-light). That alone takes the bundle from
  * ~9.6 MB to under 1 MB.
@@ -34,7 +34,7 @@ export {
 export * from "@shikijs/core";
 
 // --- Reduced bundles ------------------------------------------------------
-// Only the languages and themes spidey-grab's diff sidebar actually renders.
+// Only the languages and themes spidey-sense's diff sidebar actually renders.
 // Each entry is a lazy `() => import(...)`; esbuild will inline these in the
 // IIFE build, so the cost of adding a new language is roughly its grammar
 // JSON size (typically 20-60 KB minified).
@@ -92,7 +92,7 @@ export const {
 
 export function createOnigurumaEngine() {
   throw new Error(
-    "[spidey-grab] oniguruma engine was stubbed out; use createJavaScriptRegexEngine instead",
+    "[spidey-sense] oniguruma engine was stubbed out; use createJavaScriptRegexEngine instead",
   );
 }
 

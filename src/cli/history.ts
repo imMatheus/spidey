@@ -10,7 +10,7 @@ const LIST_LIMIT = 100;
 
 function repoDir(cwd: string): string {
   const hash = createHash("sha256").update(cwd).digest("hex").slice(0, 12);
-  return join(homedir(), ".spidey-grab", "history", hash);
+  return join(homedir(), ".spidey-sense", "history", hash);
 }
 
 function ensureDir(dir: string) {
@@ -29,7 +29,7 @@ export const history = {
     try {
       writeFileSync(path, JSON.stringify(bundle, null, 2));
     } catch (err) {
-      console.error("[spidey-grab] failed to write history file", err);
+      console.error("[spidey-sense] failed to write history file", err);
       return;
     }
     pruneOldest(dir, KEEP_LATEST);

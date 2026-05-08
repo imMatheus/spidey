@@ -13,7 +13,7 @@ const pierreWebComponents = path.join(
 // Substitute `shiki` with our slim re-export. Default shiki ships maps of
 // dynamic imports for ~200 languages and ~50 themes; in an IIFE bundle every
 // one of those gets inlined, blowing the bundle to ~9 MB. The stub only
-// exposes the 8 languages and 1 theme spidey-grab actually highlights, and
+// exposes the 8 languages and 1 theme spidey-sense actually highlights, and
 // no-ops the WASM oniguruma engine (we use the JS engine).
 const shikiStub = path.join(here, "src/client/shiki-stubs/shiki.mjs");
 const emptyStub = path.join(here, "src/client/shiki-stubs/empty.mjs");
@@ -63,14 +63,14 @@ export default defineConfig([
     },
     watch: WATCH,
   },
-  // Core browser IIFE that the daemon serves at /spidey-grab.js. Small —
+  // Core browser IIFE that the daemon serves at /spidey-sense.js. Small —
   // doesn't include the diff sidebar (which is loaded on demand from the
   // separate inject-diff.js bundle below).
   {
     entry: { inject: "src/client/index.ts" },
     outDir: "dist",
     format: ["iife"],
-    globalName: "SpideyGrab",
+    globalName: "SpideySense",
     target: "es2020",
     platform: "browser",
     splitting: false,
@@ -80,14 +80,14 @@ export default defineConfig([
     outExtension: () => ({ js: ".js" }),
     watch: WATCH,
   },
-  // Lazy-loaded diff sidebar bundle. Served at /spidey-grab-diff.js. Only
+  // Lazy-loaded diff sidebar bundle. Served at /spidey-sense-diff.js. Only
   // fetched the first time the user opens a diff (clicks a status badge).
   // This is where the heavy stuff — `@pierre/diffs`, shiki — lives.
   {
     entry: { "inject-diff": "src/client/diff-entry.ts" },
     outDir: "dist",
     format: ["iife"],
-    globalName: "SpideyGrabDiff",
+    globalName: "SpideySenseDiff",
     target: "es2020",
     platform: "browser",
     splitting: false,
