@@ -68,6 +68,7 @@ export class StatusManager {
       withBadge: true,
       refinder,
       onBadgeClick: () => this.opts.onBadgeClick?.(jobId),
+      expectedPageKey: fingerprint.pageKey,
     });
     this.overlay.setBadgeText(outlineId, { spinner: true, step: "starting" });
     this.byJobId.set(jobId, { outlineId, status: "running", fingerprint });
@@ -95,6 +96,7 @@ export class StatusManager {
       withBadge: true,
       refinder,
       onBadgeClick: () => this.opts.onBadgeClick?.(persisted.jobId),
+      expectedPageKey: persisted.fingerprint.pageKey,
     });
     this.byJobId.set(persisted.jobId, {
       outlineId,

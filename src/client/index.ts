@@ -384,6 +384,7 @@ function boot() {
     selectedOutlineId = overlay.attach(target, 'selected', {
       withBadge: false,
       refinder: () => findByFingerprint(currentFp),
+      expectedPageKey: currentFp.pageKey,
     })
 
     activePromptBox = new PromptBox({

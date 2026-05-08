@@ -13,6 +13,10 @@ export interface Fingerprint {
   displayName: string | null;
   classes: string[];
   source: { file: string; line?: number } | null;
+  /** Pathname + search captured at fingerprint time. Used to gate refinding
+   *  when the user navigates away — without this, querying for `h1` on a
+   *  different page would happily latch onto an unrelated heading. */
+  pageKey: string;
 }
 
 export function buildFingerprint(target: Element, resolved: ResolvedTarget): Fingerprint {
@@ -24,10 +28,24 @@ export function buildFingerprint(target: Element, resolved: ResolvedTarget): Fin
     source: resolved.source
       ? { file: resolved.source.file, line: resolved.source.line }
       : null,
+    pageKey: currentPageKey(),
   };
 }
 
+/** Stable identifier for "the page we're on". Pathname + search is enough for
+ *  SPAs (react-router pushState changes the pathname); we deliberately ignore
+ *  the hash so `#section` jumps don't invalidate matches. */
+export function currentPageKey(): string {
+  if (typeof location === "undefined") return "";
+  return location.pathname + location.search;
+}
+
 export async function findByFingerprint(fp: Fingerprint): Promise<Element | null> {
+  // Don't try to find the element on a page it never lived on. Returning null
+  // here keeps the entry alive (hidden) so it can re-appear when the user
+  // navigates back; the overlay's wrong-page handling pauses the timeout.
+  if (fp.pageKey && fp.pageKey !== currentPageKey()) return null;
+
   const tag = fp.tagName || "*";
   let candidates: Element[];
   try {

@@ -16,6 +16,10 @@ export interface AnchoredElement {
   state: OutlineState;
   refinder?: Refinder;
   search?: SearchState;
+  /** When set, the entry only refinds while `currentPageKey()` matches this.
+   *  Lets us track elements across SPA navigation: hide on the wrong page
+   *  without prematurely giving up, light back up when the user returns. */
+  expectedPageKey?: string;
 }
 
 const SEARCH_TIMEOUT_MS = 8000;
@@ -68,11 +72,17 @@ export class OverlayLayer {
   attach(
     target: Element,
     state: OutlineState,
-    opts: { withBadge: boolean; refinder?: Refinder; onBadgeClick?: () => void },
+    opts: {
+      withBadge: boolean;
+      refinder?: Refinder;
+      onBadgeClick?: () => void;
+      expectedPageKey?: string;
+    },
   ): symbol {
     const id = Symbol("anchored");
     const entry = this.createEntry(target, state, opts.withBadge);
     if (opts.refinder) entry.refinder = opts.refinder;
+    if (opts.expectedPageKey) entry.expectedPageKey = opts.expectedPageKey;
     if (opts.onBadgeClick && entry.badge) {
       this.bindBadgeClick(entry.badge, opts.onBadgeClick);
     }
@@ -260,14 +270,30 @@ export class OverlayLayer {
 
     if (!entry.refinder) return;
 
+    const offPage = this.isOffPage(entry);
+
     if (!entry.search) {
       entry.search = { startedAt: Date.now(), inFlight: false, nextTimer: null };
-      this.attemptRefind(id, entry);
+      // Don't waste a refinder trip while we're on a different page.
+      if (!offPage) this.attemptRefind(id, entry);
+      return;
+    }
+
+    if (offPage) {
+      // Pause the disappear-timeout while the user is on a different page.
+      // We keep the entry alive so it can light back up if/when they return.
+      entry.search.startedAt = Date.now();
       return;
     }
 
     if (Date.now() - entry.search.startedAt > SEARCH_TIMEOUT_MS) {
       this.removeEntry(id);
+      return;
+    }
+    // Resume refinding — typically this fires when the user just navigated
+    // back to the page where the element lives.
+    if (!entry.search.inFlight && entry.search.nextTimer == null) {
+      this.attemptRefind(id, entry);
     }
   }
 
@@ -285,6 +311,13 @@ export class OverlayLayer {
           this.retarget(id, found);
           return;
         }
+        const offPage = this.isOffPage(current);
+        if (offPage) {
+          // Don't time out, don't reschedule via JS timer — the rAF loop
+          // will call handleDisconnected again next frame and decide.
+          current.search.startedAt = Date.now();
+          return;
+        }
         if (Date.now() - current.search.startedAt > SEARCH_TIMEOUT_MS) {
           this.removeEntry(id);
           return;
@@ -300,6 +333,12 @@ export class OverlayLayer {
         const current = this.anchored.get(id);
         if (current?.search) current.search.inFlight = false;
       });
+  }
+
+  private isOffPage(entry: AnchoredElement): boolean {
+    if (!entry.expectedPageKey) return false;
+    if (typeof location === "undefined") return false;
+    return entry.expectedPageKey !== location.pathname + location.search;
   }
 }
 
