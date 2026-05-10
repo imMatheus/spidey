@@ -75,13 +75,27 @@ export default function spideySense(options: SpideySensePluginOptions = {}): Plu
       // (typically the standalone CLI started by `bun run dev`), reuse it
       // instead of racing for the same port. Avoids two daemons fighting
       // and the script tag landing on a stale URL.
+      //
+      // BUT — only reuse when its cwd matches ours. Otherwise we'd happily
+      // route every prompt at a daemon pointing at a different repo (a stale
+      // dev server from another project), and the agent would try to edit
+      // files in that other repo, which look like silent "no changes" to the
+      // user. When the cwds don't match, fall through to startServer with
+      // autoPort, which finds a free neighbouring port.
       const existing = await probeDaemon(`http://localhost:${port}`);
-      if (existing) {
+      if (existing && cwdsMatch(existing.cwd, cwd)) {
         externalUrl = `http://localhost:${port}`;
         server.config.logger.info(
           `\n  \u{1F578}  spidey-sense already running at ${externalUrl} — plugin will reuse it\n`,
         );
         return;
+      }
+      if (existing) {
+        server.config.logger.warn(
+          `[spidey-sense] port ${port} is held by another spidey-sense daemon ` +
+            `(cwd: ${existing.cwd ?? "unknown"}). Starting a fresh daemon on ` +
+            `the next free port for this project (${cwd}).`,
+        );
       }
 
       if (!hasBinary(claudeBin)) {
@@ -104,6 +118,10 @@ export default function spideySense(options: SpideySensePluginOptions = {}): Plu
         autoPort: true,
         installSignalHandlers: false,
         printBanner: false,
+        // Vite plugin only runs in `serve` mode, so always-on bundle watch
+        // is correct here — when tsup rewrites dist/inject.js the daemon
+        // emits bundle:changed and connected browsers reload themselves.
+        watchBundles: true,
       })
         .then((h) => {
           handle = h;
@@ -159,19 +177,31 @@ export default function spideySense(options: SpideySensePluginOptions = {}): Plu
 
 /** Quick HEAD-equivalent probe to see if our daemon already owns this port.
  *  Matches on the `service: "spidey-sense"` field so we don't accidentally
- *  reuse some unrelated server that happens to be listening. */
-async function probeDaemon(url: string): Promise<boolean> {
+ *  reuse some unrelated server that happens to be listening. Returns the
+ *  daemon's cwd too so the caller can decide whether reuse is safe. */
+async function probeDaemon(
+  url: string,
+): Promise<{ cwd: string | undefined } | null> {
   try {
     const ctrl = new AbortController();
     const timer = setTimeout(() => ctrl.abort(), 500);
     const res = await fetch(`${url}/health`, { signal: ctrl.signal });
     clearTimeout(timer);
-    if (!res.ok) return false;
-    const body = (await res.json()) as { service?: string };
-    return body.service === "spidey-sense";
+    if (!res.ok) return null;
+    const body = (await res.json()) as { service?: string; cwd?: string };
+    if (body.service !== "spidey-sense") return null;
+    return { cwd: body.cwd };
   } catch {
-    return false;
+    return null;
   }
+}
+
+function cwdsMatch(a: string | undefined, b: string | undefined): boolean {
+  if (!a || !b) return false;
+  // Trailing slashes / case differences shouldn't matter on macOS' default
+  // case-insensitive volume; normalise both before comparing.
+  const norm = (s: string) => s.replace(/[\\/]+$/, "").toLowerCase();
+  return norm(a) === norm(b);
 }
 
 function hasBinary(bin: string): boolean {

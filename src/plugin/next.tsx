@@ -71,12 +71,23 @@ export function withSpideySense<T extends object>(
   const port = options.port ?? 7878;
 
   bootPromise = (async () => {
+    const ourCwd = options.cwd ?? process.cwd();
     // If a standalone CLI (or another Next instance) is already serving the
-    // daemon on this port, point at it instead of trying to bind too.
-    if (await probeDaemon(`http://localhost:${port}`)) {
+    // daemon on this port, point at it instead of trying to bind too. But
+    // only when its cwd matches ours — otherwise we'd route prompts at a
+    // daemon pointing at a different repo and silently edit nothing.
+    const existing = await probeDaemon(`http://localhost:${port}`);
+    if (existing && cwdsMatch(existing.cwd, ourCwd)) {
       process.env.SPIDEY_SENSE_PORT = String(port);
       console.log(`\n  \u{1F578}  spidey-sense already running at http://localhost:${port} — reusing it\n`);
       return undefined;
+    }
+    if (existing) {
+      console.warn(
+        `[spidey-sense] port ${port} is held by another spidey-sense daemon ` +
+          `(cwd: ${existing.cwd ?? "unknown"}). Starting a fresh daemon on ` +
+          `the next free port for this project (${ourCwd}).`,
+      );
     }
 
     if (!hasBinary(claudeBin)) {
@@ -94,12 +105,15 @@ export function withSpideySense<T extends object>(
     try {
       const handle = await startServer({
         port,
-        cwd: options.cwd ?? process.cwd(),
+        cwd: ourCwd,
         claudeBin,
         codexBin: options.codexBin ?? "codex",
         autoPort: true,
         installSignalHandlers: false,
         printBanner: false,
+        // We only get here in dev (production exits early at the top).
+        // Watching dist/inject.js means rebuilds trigger an in-page reload.
+        watchBundles: true,
       });
 
       // The component reads this to know which port to point its script tag at.
@@ -151,16 +165,25 @@ function hasBinary(bin: string): boolean {
   }
 }
 
-async function probeDaemon(url: string): Promise<boolean> {
+async function probeDaemon(
+  url: string,
+): Promise<{ cwd: string | undefined } | null> {
   try {
     const ctrl = new AbortController();
     const timer = setTimeout(() => ctrl.abort(), 500);
     const res = await fetch(`${url}/health`, { signal: ctrl.signal });
     clearTimeout(timer);
-    if (!res.ok) return false;
-    const body = (await res.json()) as { service?: string };
-    return body.service === "spidey-sense";
+    if (!res.ok) return null;
+    const body = (await res.json()) as { service?: string; cwd?: string };
+    if (body.service !== "spidey-sense") return null;
+    return { cwd: body.cwd };
   } catch {
-    return false;
+    return null;
   }
+}
+
+function cwdsMatch(a: string | undefined, b: string | undefined): boolean {
+  if (!a || !b) return false;
+  const norm = (s: string) => s.replace(/[\\/]+$/, "").toLowerCase();
+  return norm(a) === norm(b);
 }

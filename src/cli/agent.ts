@@ -4,6 +4,7 @@ import { buildPrompt } from "./prompt";
 import { diffs } from "./diffs";
 import { gitSnapshot } from "./git-snapshot";
 import { history } from "./history";
+import { prepareAttachments } from "./attachments";
 import type {
   AgentKind,
   CreateJobRequest,
@@ -32,7 +33,8 @@ export function runJob(req: CreateJobRequest, opts: RunOpts): string {
 
 function runClaudeJob(req: CreateJobRequest, opts: RunOpts): string {
   const rec = jobStore.create({ prompt: req.prompt, agent: "claude" });
-  const prompt = buildPrompt(req, { agent: "claude" });
+  const attachments = prepareAttachments(opts.cwd, rec.jobId, req.images);
+  const prompt = buildPrompt(req, { agent: "claude", attachments });
   diffs.init(rec.jobId, opts.cwd);
 
   let resumeSessionId: string | null = null;
@@ -226,12 +228,13 @@ function shortenPath(p: string): string {
 
 function runCodexJob(req: CreateJobRequest, opts: RunOpts): string {
   const rec = jobStore.create({ prompt: req.prompt, agent: "codex" });
+  const attachments = prepareAttachments(opts.cwd, rec.jobId, req.images);
   // For continuations, hand codex the full prior thread inline since it
   // doesn't keep state across our spawn boundary.
   const thread = req.parentJobId
     ? history.thread(opts.cwd, req.parentJobId)?.entries
     : undefined;
-  const prompt = buildPrompt(req, { agent: "codex", thread });
+  const prompt = buildPrompt(req, { agent: "codex", thread, attachments });
   // codex doesn't emit tool-use events we can hook, so capture diffs by
   // diffing the working tree before/after the run.
   gitSnapshot.init(rec.jobId, opts.cwd);

@@ -17,6 +17,11 @@ import {
   timeChipElement,
   writePersistedSidebar,
 } from "./sidebar-utils";
+import {
+  AttachmentsController,
+  bindClipboardAndDrop,
+  buildAttachButton,
+} from "./attachments";
 
 /** Agent that ran the parent turn — continuations stay on the same agent so
  *  threads don't mix claude session resume with a fresh codex run. Older
@@ -89,6 +94,7 @@ export class DiffSidebar {
   private bodyEl: HTMLDivElement | null = null;
   private composerTextarea: HTMLTextAreaElement | null = null;
   private composerSubmit: HTMLButtonElement | null = null;
+  private composerAttachments: AttachmentsController | null = null;
   private isOpen = false;
   private boundOutside: (e: PointerEvent) => void;
   private boundKey: (e: KeyboardEvent) => void;
@@ -259,6 +265,8 @@ export class DiffSidebar {
       this.bodyEl = null;
       this.composerTextarea = null;
       this.composerSubmit = null;
+      this.composerAttachments?.destroy();
+      this.composerAttachments = null;
       this.entries = [];
       this.pending = null;
       this.rootJobId = null;
@@ -1092,15 +1100,29 @@ export class DiffSidebar {
     composer.appendChild(ta);
     this.composerTextarea = ta;
 
+    const thumbs = document.createElement("div");
+    thumbs.className = "attachment-thumbs empty";
+    composer.appendChild(thumbs);
+    // The composer is recreated on every renderSidebar()/swapBody() so we
+    // tear down the previous controller's URLs before installing a fresh one.
+    this.composerAttachments?.destroy();
+    this.composerAttachments = new AttachmentsController({ thumbsEl: thumbs });
+
     const row = document.createElement("div");
     row.className = "composer-row";
 
+    const left = document.createElement("div");
+    left.className = "composer-row-left";
+    left.appendChild(buildAttachButton(this.composerAttachments));
     const hint = document.createElement("span");
     hint.className = "composer-hint";
     hint.textContent = "enter to send · shift+enter newline";
-    row.appendChild(hint);
+    left.appendChild(hint);
+    row.appendChild(left);
 
     const submit = document.createElement("button");
+    submit.type = "button";
+    submit.className = "composer-send";
     submit.textContent = "send";
     submit.addEventListener("click", (e) => {
       e.preventDefault();
@@ -1111,6 +1133,8 @@ export class DiffSidebar {
     this.composerSubmit = submit;
 
     composer.appendChild(row);
+
+    bindClipboardAndDrop(composer, this.composerAttachments);
 
     ta.addEventListener("keydown", (e) => {
       if (e.key === "Enter" && !e.shiftKey) {
@@ -1136,6 +1160,7 @@ export class DiffSidebar {
     this.submitting = true;
     if (this.composerSubmit) this.composerSubmit.disabled = true;
 
+    const images = this.composerAttachments?.toPayload() ?? [];
     const req: CreateJobRequest = {
       prompt: value,
       parentJobId: parent.jobId,
@@ -1143,6 +1168,7 @@ export class DiffSidebar {
       // thread would break claude's --resume hop and confuse codex's inline
       // context, so we stay on whichever agent started the thread.
       agent: bundleAgent(parent),
+      images: images.length ? images : undefined,
     };
 
     try {
@@ -1163,6 +1189,7 @@ export class DiffSidebar {
         agent: bundleAgent(parent),
       };
       this.composerTextarea.value = "";
+      this.composerAttachments?.clear();
       this.persistState();
       this.renderSidebar();
     } catch (err) {

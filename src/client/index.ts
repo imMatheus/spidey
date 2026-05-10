@@ -31,6 +31,7 @@ import { AGENT_KINDS } from '../protocol'
 declare global {
   interface Window {
     __SPIDEY_SENSE__?: boolean
+    __SPIDEY_SENSE_RELOADING__?: boolean
   }
 }
 
@@ -86,6 +87,18 @@ function boot() {
       cachedHistory = null
       if (wasPending && historyMenuOpen) {
         void refreshHistoryMenu()
+      }
+    }
+    if (event.type === 'bundle:changed') {
+      // Daemon detected a fresh build of dist/inject.js (typically tsup --watch
+      // in `bun run dev`). Reload so the new code takes effect — without
+      // this the browser would still be running whatever it parsed on first
+      // page load. We guard with a class flag so two near-simultaneous events
+      // don't trigger two reloads.
+      if (!window.__SPIDEY_SENSE_RELOADING__) {
+        window.__SPIDEY_SENSE_RELOADING__ = true
+        console.log('[spidey-sense] bundle changed — reloading…')
+        location.reload()
       }
     }
     status.handleServerEvent(event)
@@ -393,7 +406,7 @@ function boot() {
       resolved,
       clickX,
       clickY,
-      onSubmit: async (prompt, submittedTarget, submittedResolved) => {
+      onSubmit: async (prompt, submittedTarget, submittedResolved, images) => {
         const box = activePromptBox
         activePromptBox = null
         box?.destroy()
@@ -406,6 +419,7 @@ function boot() {
           source: submittedResolved.source,
           context: submittedResolved.context,
           agent: submittedAgent,
+          images: images.length ? images : undefined,
         }
 
         try {

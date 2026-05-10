@@ -1,21 +1,26 @@
 import type { AgentKind, CreateJobRequest, JobDiffBundle } from "../protocol";
+import type { PreparedAttachment } from "./attachments";
 
 export interface BuildPromptCtx {
   agent: AgentKind;
   /** All prior bundles in this thread, oldest-first. Only consulted for codex
    *  continuations (claude resumes via session id). */
   thread?: JobDiffBundle[];
+  /** Files written to disk for this job that the agent should read for
+   *  visual context (typically pasted/dropped screenshots). */
+  attachments?: PreparedAttachment[];
 }
 
 export function buildPrompt(req: CreateJobRequest, ctx: BuildPromptCtx): string {
   if (req.parentJobId) {
-    return ctx.agent === "codex"
+    const base = ctx.agent === "codex"
       ? buildCodexContinuation(req, ctx.thread ?? [])
       : // Claude resumes via --resume <sessionId> and already has the full
         // prior turn list in scope, so we just forward the new user message.
         req.prompt;
+    return appendAttachments(base, ctx.attachments);
   }
-  return buildFreshPrompt(req);
+  return appendAttachments(buildFreshPrompt(req), ctx.attachments);
 }
 
 function buildFreshPrompt(req: CreateJobRequest): string {
@@ -46,6 +51,21 @@ INSTRUCTIONS:
 - Do not reformat unrelated code.
 - If the source line is unknown, use the component name and text preview to find the right element.
 - Make the edit directly to the file.`;
+}
+
+/** Appends an `ATTACHED IMAGES:` block. Both Claude Code (Read tool, which
+ *  handles image files) and Codex (vision-aware Read) can pull these in if
+ *  they need to look at what the user pasted. */
+function appendAttachments(
+  basePrompt: string,
+  attachments: PreparedAttachment[] | undefined,
+): string {
+  if (!attachments || attachments.length === 0) return basePrompt;
+  const lines = attachments.map((a, i) => `  ${i + 1}. ${a.absPath}`);
+  return `${basePrompt}
+
+ATTACHED IMAGES (paths on disk — use the Read tool to view if relevant):
+${lines.join("\n")}`;
 }
 
 /** Codex doesn't keep a session across our spawn boundary, so we hand it the

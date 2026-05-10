@@ -1,4 +1,9 @@
 import type { ResolvedTarget } from "./source";
+import {
+  AttachmentsController,
+  bindClipboardAndDrop,
+} from "./attachments";
+import type { ImageAttachment } from "../protocol";
 
 export interface PromptBoxOpts {
   parent: HTMLElement;
@@ -6,7 +11,12 @@ export interface PromptBoxOpts {
   resolved: ResolvedTarget;
   clickX?: number;
   clickY?: number;
-  onSubmit: (prompt: string, target: Element, resolved: ResolvedTarget) => void;
+  onSubmit: (
+    prompt: string,
+    target: Element,
+    resolved: ResolvedTarget,
+    images: ImageAttachment[],
+  ) => void;
   onCancel: () => void;
   onNavigate?: (
     current: Element,
@@ -26,6 +36,7 @@ export class PromptBox {
   private boundKey: (e: KeyboardEvent) => void;
   private boundDown: (e: PointerEvent) => void;
   private destroyed = false;
+  private attachments: AttachmentsController;
 
   private currentTarget: Element;
   private currentResolved: ResolvedTarget;
@@ -65,11 +76,21 @@ export class PromptBox {
     el.appendChild(textarea);
     this.textarea = textarea;
 
+    // Thumbnails row sits between the textarea and the action row so it grows
+    // downward as images are added without nudging the textarea around.
+    const thumbs = document.createElement("div");
+    thumbs.className = "attachment-thumbs empty";
+    el.appendChild(thumbs);
+    this.attachments = new AttachmentsController({ thumbsEl: thumbs });
+
     const row = document.createElement("div");
     row.className = "row";
+    // No attach button here — the prompt box is a tight floating UI; users
+    // attach images via paste or drag-and-drop instead. The sidebar composer
+    // is roomier and does have an explicit attach button.
     const hint = document.createElement("span");
     hint.className = "hint";
-    hint.textContent = "↑↓←→ navigate · esc cancel";
+    hint.textContent = "↑↓←→ navigate · esc cancel · drop / paste images";
     const button = document.createElement("button");
     button.textContent = "Send";
     button.addEventListener("click", () => this.submit());
@@ -79,6 +100,10 @@ export class PromptBox {
 
     opts.parent.appendChild(el);
     this.el = el;
+
+    // Paste / drop into anywhere on the box (not just the textarea) so the
+    // user doesn't have to land precisely on the input to attach.
+    bindClipboardAndDrop(el, this.attachments);
 
     this.updateMeta();
 
@@ -102,6 +127,7 @@ export class PromptBox {
     if (this.animationTimer !== null) clearTimeout(this.animationTimer);
     this.textarea.removeEventListener("keydown", this.boundKey);
     window.removeEventListener("pointerdown", this.boundDown, true);
+    this.attachments.destroy();
     this.el.remove();
   }
 
@@ -144,7 +170,12 @@ export class PromptBox {
   private submit() {
     const value = this.textarea.value.trim();
     if (!value) return;
-    this.opts.onSubmit(value, this.currentTarget, this.currentResolved);
+    this.opts.onSubmit(
+      value,
+      this.currentTarget,
+      this.currentResolved,
+      this.attachments.toPayload(),
+    );
   }
 
   private async tryNavigate(direction: "up" | "down" | "left" | "right") {

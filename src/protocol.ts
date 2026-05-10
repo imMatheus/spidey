@@ -27,6 +27,19 @@ export interface CreateJobRequest {
   parentJobId?: string;
   /** Which underlying agent runs this job. Defaults to claude server-side. */
   agent?: AgentKind;
+  /** Inline image attachments. The server writes each to a temp file under
+   *  `.spidey-sense/uploads/<jobId>/` and references the resulting paths in
+   *  the prompt so claude/codex can read them via their image-aware tools. */
+  images?: ImageAttachment[];
+}
+
+export interface ImageAttachment {
+  /** Filename hint, e.g. "screenshot.png" — only used to derive the saved
+   *  filename + extension. Not trusted as a path. */
+  name: string;
+  mimeType: string;
+  /** Raw base64 (no `data:...;base64,` prefix). */
+  dataBase64: string;
 }
 
 export interface CreateJobResponse {
@@ -36,7 +49,12 @@ export interface CreateJobResponse {
 export type ServerEvent =
   | { type: "hello"; jobs: JobSnapshot[] }
   | { type: "job:created"; job: JobSnapshot }
-  | { type: "job:status"; jobId: string; status: JobStatus; step?: string; error?: string };
+  | { type: "job:status"; jobId: string; status: JobStatus; step?: string; error?: string }
+  /** Sent in dev when the daemon detects a fresh build of the inject bundle.
+   *  Browser-side handler reacts by reloading so the new code takes effect
+   *  without a manual refresh. Production daemons don't watch — they emit
+   *  this only when the bundle file actually changes after startup. */
+  | { type: "bundle:changed" };
 
 export interface JobSnapshot {
   jobId: string;

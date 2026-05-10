@@ -401,6 +401,13 @@ export const STYLES = `
   align-items: center;
   gap: 8px;
 }
+.prompt-box .row .row-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  flex: 1;
+}
 .prompt-box .hint {
   font-size: 11px;
   color: var(--ds-gray-600);
@@ -895,11 +902,20 @@ export const STYLES = `
   align-items: center;
   gap: 8px;
 }
+.diff-sidebar-composer .composer-row-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  flex: 1;
+}
 .diff-sidebar-composer .composer-hint {
   font-size: 11px;
   color: var(--ds-gray-600);
 }
-.diff-sidebar-composer button {
+/* Send button only — scoped via .composer-send so we don't blanket every
+   button in the composer (the attach button keeps its own circular styling). */
+.diff-sidebar-composer .composer-send {
   background: var(--ds-gray-1000);
   color: var(--ds-gray-100);
   border: none;
@@ -910,8 +926,8 @@ export const STYLES = `
   cursor: pointer;
   font-family: inherit;
 }
-.diff-sidebar-composer button:hover { background: var(--ds-gray-900); }
-.diff-sidebar-composer button:disabled { opacity: 0.5; cursor: not-allowed; }
+.diff-sidebar-composer .composer-send:hover { background: var(--ds-gray-900); }
+.diff-sidebar-composer .composer-send:disabled { opacity: 0.5; cursor: not-allowed; }
 .diff-sidebar-body.loading,
 .diff-sidebar-body.error,
 .diff-sidebar-empty {
@@ -1002,5 +1018,113 @@ export const STYLES = `
 }
 .diff-line.context {
   color: var(--ds-gray-1000);
+}
+
+/* --- image attachments (prompt box + sidebar composer) --- */
+.attachment-thumbs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  /* When empty we collapse so the row above sits flush against the action row. */
+  padding: 0;
+  margin: 0;
+}
+.attachment-thumbs.empty {
+  display: none;
+}
+.attachment-thumb {
+  position: relative;
+  width: 56px;
+  height: 56px;
+  border-radius: 6px;
+  overflow: hidden;
+  background: var(--ds-gray-100);
+  box-shadow: 0 0 0 1px hsla(var(--ds-gray-1000-value), 0.08);
+  flex-shrink: 0;
+}
+.attachment-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.attachment-thumb-remove {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  border: 1px solid hsla(0, 0%, 100%, 0.12);
+  background: hsla(var(--ds-gray-1000-value), 0.72);
+  color: hsla(0, 0%, 100%, 0.88);
+  font-size: 12px;
+  line-height: 1;
+  cursor: pointer;
+  font-family: inherit;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  transition: background 120ms ease, color 120ms ease, border-color 120ms ease;
+}
+.attachment-thumb-remove:hover {
+  background: var(--ds-red-900);
+  border-color: hsla(0, 0%, 100%, 0.2);
+  color: #fff;
+}
+
+.attachment-attach {
+  display: inline-flex;
+  align-items: center;
+}
+.attachment-attach input[type="file"] {
+  display: none;
+}
+.attachment-attach-button {
+  width: 26px;
+  height: 26px;
+  border-radius: 999px;
+  background: var(--ds-background-100);
+  border: 1px solid hsla(var(--ds-gray-1000-value), 0.14);
+  color: var(--ds-gray-900);
+  cursor: pointer;
+  font-family: inherit;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  flex-shrink: 0;
+  box-shadow: 0 1px 1px hsla(var(--ds-gray-1000-value), 0.04);
+  transition:
+    background 120ms ease,
+    color 120ms ease,
+    border-color 120ms ease,
+    box-shadow 120ms ease,
+    transform 120ms ease;
+}
+.attachment-attach-button:hover {
+  color: var(--ds-gray-1000);
+  border-color: hsla(var(--ds-gray-1000-value), 0.28);
+  box-shadow: 0 1px 2px hsla(var(--ds-gray-1000-value), 0.08);
+  transform: translateY(-1px);
+}
+.attachment-attach-button:active {
+  transform: translateY(0);
+  box-shadow: inset 0 1px 1px hsla(var(--ds-gray-1000-value), 0.06);
+}
+.attachment-attach-button svg {
+  width: 14px;
+  height: 14px;
+}
+
+/* Drag-over highlight on the prompt box / sidebar composer when an image
+   is being dragged in from the desktop. */
+.prompt-box.drag-over,
+.diff-sidebar-composer.drag-over {
+  outline: 2px dashed var(--ds-blue-700);
+  outline-offset: -4px;
 }
 `

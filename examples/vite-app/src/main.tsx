@@ -14,12 +14,14 @@ function Layout({ children }: { children: React.ReactNode }) {
       <main
         className="main"
         style={{
-          background: 'linear-gradient(180deg, rgba(255,255,255,0.85) 0%, rgba(250,250,252,0.9) 100%)',
+          background:
+            'linear-gradient(180deg, rgba(255,255,255,0.85) 0%, rgba(250,250,252,0.9) 100%)',
           backdropFilter: 'saturate(140%) blur(8px)',
           WebkitBackdropFilter: 'saturate(140%) blur(8px)',
           border: '1px solid rgba(15, 23, 42, 0.06)',
           borderRadius: 20,
-          boxShadow: '0 1px 2px rgba(15,23,42,0.04), 0 12px 40px -12px rgba(15,23,42,0.12)',
+          boxShadow:
+            '0 1px 2px rgba(15,23,42,0.04), 0 12px 40px -12px rgba(15,23,42,0.12)',
           padding: '56px 48px',
           margin: '32px auto',
           maxWidth: 920,
@@ -37,14 +39,34 @@ function Layout({ children }: { children: React.ReactNode }) {
 function Home() {
   return (
     <Layout>
-      <h1 style={{ color: 'blue' }}>hi cheng!</h1>
-      <p className="lead" style={{ fontSize: '24px', color: 'black' }}>
-        A demo Vite app for testing Spidey with realistic React content, interactive source mapping, visual element selection, style editing, component inspection, and fast feedback loops while changes are applied directly back to the original source files.
+      <h1 style={{ color: 'blue' }}>Hi friend!</h1>
+      <div style={{ display: 'flex' }}>
+        <a href="#12" style={{ backgroundColor: 'red' }}>
+          link
+        </a>
+        <button
+          onClick={() => {
+            alert('aaa')
+          }}
+          style={{ transform: 'scale(3)', transformOrigin: 'left top' }}
+        >
+          link
+        </button>
+      </div>
+      <p className="lead" style={{ fontSize: '24px', color: 'red' }}>
+        A demo Vite app for testing Spidey with realistic React content,
+        interactive source mapping, visual element selection, style editing,
+        component inspection, and fast feedback loops while changes are applied
+        directly back to the original source files.
       </p>
       <div className="card-grid" style={{ gridTemplateColumns: '1fr' }}>
         <div className="card">
           <h3>Fast</h3>
-          <p style={{ fontWeight: 'bold', color: 'red' }}>Hot module replacement keeps your edits reflected in the browser instantly, and cold starts spin up in a fraction of the time you'd expect from a traditional bundler.</p>
+          <p style={{ fontWeight: 'bold', color: 'red' }}>
+            Hot module replacement keeps your edits reflected in the browser
+            instantly, and cold starts spin up in a fraction of the time you'd
+            expect from a traditional bundler.
+          </p>
         </div>
         <div className="card">
           <h3>Typed</h3>
@@ -52,11 +74,24 @@ function Home() {
         </div>
         <div className="card">
           <h3>Composable</h3>
-          <p>Bring your own routing, state, styling. Mix and match the libraries you already love without fighting an opinionated framework, because every team has different needs and constraints. Whether you prefer React Router or TanStack Router, Redux or Zustand or Jotai, Tailwind or vanilla CSS or styled-components, the choice is entirely yours and nothing here will get in your way. This flexibility means you can adopt the tool incrementally, swap pieces out as your project evolves, and keep using the patterns your team is already productive with — no rewrites required, no lock-in, no surprises down the road.</p>
+          <p>
+            Bring your own routing, state, styling. Mix and match the libraries
+            you already love without fighting an opinionated framework, because
+            every team has different needs and constraints. Whether you prefer
+            React Router or TanStack Router, Redux or Zustand or Jotai, Tailwind
+            or vanilla CSS or styled-components, the choice is entirely yours
+            and nothing here will get in your way. This flexibility means you
+            can adopt the tool incrementally, swap pieces out as your project
+            evolves, and keep using the patterns your team is already productive
+            with — no rewrites required, no lock-in, no surprises down the road.
+          </p>
         </div>
         <div className="card">
           <h3>Scalable</h3>
-          <p>Add new sections and workflows as your app grows, while keeping the page structure clear and easy to maintain.</p>
+          <p>
+            Add new sections and workflows as your app grows, while keeping the
+            page structure clear and easy to maintain.
+          </p>
         </div>
       </div>
     </Layout>
@@ -67,10 +102,20 @@ function About() {
   return (
     <Layout>
       <h1 style={{ color: 'red' }}>About</h1>
-      <p style={{ fontSize: '1.25rem' }}>Acme is a fictional company that exists only inside this demo, created purely as a placeholder to showcase how the application looks and behaves with realistic-seeming content rather than empty filler text.</p>
+      <p style={{ fontSize: '1.25rem' }}>
+        Acme is a fictional company that exists only inside this demo, created
+        purely as a placeholder to showcase how the application looks and
+        behaves with realistic-seeming content rather than empty filler text.
+      </p>
       <ul style={{ color: 'red' }}>
-        <li style={{ fontWeight: 'bold' }}>Founded in 2026 by a small group of engineers passionate about building reliable, well-tested canvas tooling</li>
-        <li style={{ fontStyle: 'italic' }}>Headquartered nowhere in particular, with a fully distributed team spread across multiple time zones and continents</li>
+        <li style={{ fontWeight: 'bold' }}>
+          Founded in 2026 by a small group of engineers passionate about
+          building reliable, well-tested canvas tooling
+        </li>
+        <li style={{ fontStyle: 'italic' }}>
+          Headquartered nowhere in particular, with a fully distributed team
+          spread across multiple time zones and continents
+        </li>
         <li>Specializes in stress-testing canvas viewers</li>
       </ul>
       <ColorBox variant="blue" text="test box" />

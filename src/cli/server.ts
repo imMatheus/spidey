@@ -1,5 +1,5 @@
 import { createServer, IncomingMessage, ServerResponse } from "node:http";
-import { readFileSync, existsSync, statSync } from "node:fs";
+import { readFileSync, existsSync, statSync, watch, type FSWatcher } from "node:fs";
 import { resolve } from "node:path";
 import { WebSocketServer, WebSocket } from "ws";
 import { jobStore } from "./jobs";
@@ -27,6 +27,11 @@ export interface ServerOpts {
   installSignalHandlers?: boolean;
   /** When true, print the banner with the script tag. CLI only. */
   printBanner?: boolean;
+  /** When true, watch the inject bundles on disk and emit a `bundle:changed`
+   *  event over the websocket on every rebuild so connected browsers can
+   *  auto-reload. Used by the dev orchestrator + the bundler plugins in
+   *  serve mode; off by default for production CLI usage. */
+  watchBundles?: boolean;
 }
 
 export interface ServerHandle {
@@ -131,13 +136,33 @@ export async function startServer(opts: ServerOpts): Promise<ServerHandle> {
   // ws re-emits the underlying http server's errors. EADDRINUSE on first
   // listen would crash here otherwise; the http retry path handles them.
   wss.on("error", () => {});
+  // Track open client sockets so the bundle watcher can broadcast to them.
+  const clients = new Set<WebSocket>();
   wss.on("connection", (socket) => {
+    clients.add(socket);
     const hello: ServerEvent = { type: "hello", jobs: jobStore.list() };
     sendSafe(socket, hello);
     const unsubscribe = jobStore.subscribe((event) => sendSafe(socket, event));
-    socket.on("close", unsubscribe);
+    socket.on("close", () => {
+      clients.delete(socket);
+      unsubscribe();
+    });
     socket.on("error", () => {});
   });
+
+  const broadcast = (event: ServerEvent) => {
+    for (const c of clients) sendSafe(c, event);
+  };
+
+  const stopBundleWatcher = opts.watchBundles
+    ? watchBundlesForChanges([injectPath, diffBundlePath], () => {
+        // Drop our cached bundle bytes — the next /spidey-sense.js fetch will
+        // read the new file and connected clients will reload to pick it up.
+        bundleCache.delete(injectPath);
+        bundleCache.delete(diffBundlePath);
+        broadcast({ type: "bundle:changed" });
+      })
+    : null;
 
   const port = await listenWithRetry(httpServer, opts.port, opts.autoPort ?? false);
 
@@ -149,6 +174,7 @@ export async function startServer(opts: ServerOpts): Promise<ServerHandle> {
   const close = (): Promise<void> => {
     if (closing) return closing;
     closing = new Promise((resolveClose) => {
+      stopBundleWatcher?.();
       jobStore.cancelAll();
       wss.close();
       httpServer.close(() => resolveClose());
@@ -207,7 +233,10 @@ function handleCreateJob(req: IncomingMessage, res: ServerResponse, opts: Server
   let body = "";
   req.on("data", (chunk) => {
     body += chunk;
-    if (body.length > 1_000_000) {
+    // Image attachments are inlined as base64, so a typical screenshot drop
+    // can land in the 5–10MB range. Keep a hard ceiling so a runaway client
+    // can't OOM the daemon, but make it generous enough to cover real use.
+    if (body.length > 50_000_000) {
       req.destroy();
     }
   });
@@ -361,6 +390,86 @@ function serveInjectBundle(res: ServerResponse, injectPath: string) {
     "cache-control": "no-store",
   });
   res.end(content);
+}
+
+/**
+ * Watches the inject bundles for changes and fires `onChange` once per real
+ * rebuild. tsup's writes aren't atomic — fs.watch may fire several times for
+ * a single rebuild as esbuild truncates → writes header → finishes. We
+ * debounce 200ms and double-check with stat so we only emit when the file's
+ * size has actually settled.
+ *
+ * Returns a teardown function that closes the watchers.
+ */
+function watchBundlesForChanges(
+  paths: string[],
+  onChange: () => void,
+): () => void {
+  const watchers: FSWatcher[] = [];
+  const lastStat = new Map<string, { mtimeMs: number; size: number }>();
+  let timer: NodeJS.Timeout | null = null;
+
+  const settle = () => {
+    timer = null;
+    let changed = false;
+    for (const p of paths) {
+      try {
+        if (!existsSync(p)) continue;
+        const s = statSync(p);
+        const prev = lastStat.get(p);
+        if (!prev || prev.mtimeMs !== s.mtimeMs || prev.size !== s.size) {
+          lastStat.set(p, { mtimeMs: s.mtimeMs, size: s.size });
+          if (prev) changed = true; // first sighting isn't a "change"
+        }
+      } catch {
+        // ignore — file might be in the middle of a rename/replace
+      }
+    }
+    if (changed) {
+      try {
+        onChange();
+      } catch {
+        // ignore
+      }
+    }
+  };
+
+  // seed lastStat so the very first fs.watch tick after startup isn't
+  // mistaken for a real change.
+  for (const p of paths) {
+    try {
+      if (existsSync(p)) {
+        const s = statSync(p);
+        lastStat.set(p, { mtimeMs: s.mtimeMs, size: s.size });
+      }
+    } catch {
+      // ignore
+    }
+  }
+
+  for (const p of paths) {
+    try {
+      const w = watch(p, { persistent: false }, () => {
+        if (timer != null) clearTimeout(timer);
+        timer = setTimeout(settle, 200);
+      });
+      w.on("error", () => {});
+      watchers.push(w);
+    } catch {
+      // file may not exist yet — fine, no watch installed for it
+    }
+  }
+
+  return () => {
+    if (timer != null) clearTimeout(timer);
+    for (const w of watchers) {
+      try {
+        w.close();
+      } catch {
+        // ignore
+      }
+    }
+  };
 }
 
 function setCors(res: ServerResponse) {
